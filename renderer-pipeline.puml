@@ -1,0 +1,20 @@
+@startuml
+left to right direction
+[*] --> appsrc
+appsrc: Input from application memory
+appsrc --> rtpjitterbuffer
+rtpjitterbuffer: Reorder RTP packets when they are out of order
+rtpjitterbuffer --> rtmp2tdepay
+rtmp2tdepay: RTP depayloader for RTMP
+rtmp2tdepay --> tsdemux
+tsdemux: Demux MPEG-TS stream
+tsdemux --> h264parse
+h264parse: Parse H.264 stream
+h264parse --> vaapih264dec
+vaapih264dec: Hardware H.264 decoding
+vaapih264dec --> videoconvert
+videoconvert: Convert video format
+videoconvert --> autovideosink
+autovideosink: Output to screen
+autovideosink --> [*]
+@enduml
