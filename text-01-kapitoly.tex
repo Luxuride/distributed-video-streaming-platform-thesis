@@ -1,30 +1,100 @@
 \section{Introduction}
 This work explores the possibilities of decentralized video streaming using \ac{P2P} technologies. The main goal is to create a functional prototype of a \ac{P2P} video streaming application and evaluate its performance and stability. The motivation behind this work is to address the limitations of traditional centralized video streaming solutions such as expensive infrastructure costs, single points of failure, and scalability issues. By leveraging \ac{P2P} technologies, I aim to test the feasibility of a decentralized approach to video streaming that can potentially offer improved scalability, resilience, and cost-effectiveness. I will also explore downside of \ac{P2P} video streaming such as latency, quality and security concerns.
 
-Taking into account outages of major centralized server providers, like AWS or Cloudflare, it is clear that there is need for more decentralized solutions that are not dependent on single entities. This work aims to contribute to the understanding of how \ac{P2P} technologies can be applied to video streaming and what benefits and challenges they bring.
+In current state, most video streaming solutions rely on centralized servers or \ac{CDN}s to distribute video content to users. While these solutions have been effective in delivering high-quality video streams, they also come with several drawbacks. Centralized server providers can suddenly experience outages, leading to service disruptions for users. With the current centralized model, this can lead to most of the Internet being inaccesible during such outages.
 
-The paper is structured into several parts. First, I will provide an overview of video recording and encoding techniques. Then, I will discuss the current state of video streaming and the challenges associated with it. Next, I will describe the implementation of the \ac{P2P} video streaming prototype, including the choice of programming language, screen recording, encoding, and transport layer. Finally, I will present the results of performance and stability testing and conclude with a summary of findings and future work.
+It is clear that there is need for more decentralized solutions that are not dependent on single entities. This work aims to contribute to the understanding of how \ac{P2P} technologies can be applied to video streaming and what benefits and challenges they bring.
 
-\section{What is video streaming}
-Video streaming is method of video data transmission from server to client. On surface level the video streaming consists of 3 main parts.
+In this paper I focus on live video streaming using \ac{P2P}.
+\section{Background}
+\subsection{Peer To Peer}
+\cite{schollmeierDefinitionPeertopeerNetworking2001}
+\subsection{Video Streaming}
+Video streaming is method of transmitting video data over a network in a continuous flow, allowing users to watch the video content in real-time without needing to download the entire file beforehand.
+
+
+\subsubsection{Video Streaming Pipeline}
+The following quote explains the end-to-end video streaming pipeline, which covers the entire process from video capture to playback on the user's device.
+\begin{quote}
+The end-to-end streaming pipeline starts at the ingestion stage with the capture of raw video by a camera-equipped device, with a codec applying spatial and temporal compression to the raw footage for reducing the video size, and subsequent upload of the encoded video over the Internet to a media server.
+
+(\dots)
+
+The processing stage, which primarily involves internal operations within the media server, handles the storage and transformation of ingested video. Transformation tasks, such as video segmentation and transcoding, enable the pipeline to manage heterogeneity in network connectivity and device capabilities. Video segmentation divides the video into smaller chunks, while transcoding converts these chunks into multiple representations with different resolutions, bitrates, and frame rates.
+
+(\dots)
+
+The distribution stage handles video delivery from the media server to a user device, which decodes and plays back the content. In addition to ISPs providing network connectivity, this stage involves CDNs that disseminate video from their edge servers to user devices with low latency and high QoE. To address the heterogeneity of user devices and variable network conditions, a media player on the user device runs an ABR algorithm. Among the components of the end-to-end pipeline, ABR, QoE, and CDN aspects attract the most research efforts. QoE models express users’ subjective experience as a function of measurable influence factors (IFs) like stall duration and video quality. They rely on subjective testing and user experience design. Network engineering ensures low latency and high bitrate, which QoE models account for directly or through other IFs. Data science enhances their predictive power with learning-based techniques.
+\cite{peroniEndtoEndPipelinePerspective2025}
+\end{quote}
+
+My work mainly focuses on the distribution stage of the video streaming pipeline, specifically on the transport layer that delivers video content from the media server to user devices. I explore how \ac{P2P} technologies can be utilized in this stage to create a decentralized video streaming solution. However, I also touch upon other aspects of the video streaming pipeline, such as video encoding and decoding, as in my implementation they influence viability of my transport layer solution.
+
+\begin{quote}
+The basic idea of video streaming is to split the video
+into parts, transmit these parts in succession, and enable the receiver to
+decode and playback the video as these parts are received, without having to
+wait for the entire video to be delivered.
+\cite{apostolopoulosVideoStreamingConcepts}
+\end{quote}
+
+It is a method of video data transmission from server to client. From data transport perspective, video streaming can be broken down into 3 main parts:
 \begin{itemize}
     \item Producer - Creates video stream to be provided to consumers
     \item Transport layer - Provides provided video stream to all consumers
     \item Consumer - Accepts video stream from transport layer
 \end{itemize}
-These 3 parts can be implemented in various ways depending on the use case. The most common implementation is client-server model where producer and consumer are separate entities and transport layer is provided by central server or \ac{CDN}.
+We can later use these these parts when discussing various transport layer implementations.
 
-\subsection{Static video streaming}
-Static video streaming is method of video streaming where the video content is pre-recorded and stored on a server. The server then delivers the video content to clients upon request. This method is commonly used for on-demand video services, such as Netflix or YouTube, where users can choose from a library of pre-recorded videos to watch at their convenience.
+\subsubsection{Static video streaming}
+Static video streaming is method of video streaming where the video content is pre-recorded and stored on a server. The server then delivers the video content to clients upon request.
 
 This method allows for efficient use of bandwidth and decrease of latency, as the video can be stored on \ac{CDN} located closer to the user.
-\subsection{Live video streaming}
+
+
+\subsubsection{Live video streaming}
 Live video streaming is method of video streaming where the video content is captured and transmitted in real-time. This means there is no video file but rather a continuous stream of video data being sent from the producer to the consumer.
 
-According to Cloudflare \ac{CDN} can also be used to distribute the live stream to multiple viewers, but the latency is usually higher compared to static video streaming due to the real-time nature of the content. \cite{WhatVideoCDN}
-\subsection{\ac{P2P} video streaming}
+According to Cloudflare\cite{WhatVideoCDN} \ac{CDN} can also be used to distribute the live stream to multiple viewers, but the latency is usually higher compared to static video streaming due to the real-time nature of the content.
+\subsubsection{\ac{P2P} video streaming}
 \ac{P2P} video streaming is method of video streaming where the video content is distributed among multiple peers in a decentralized manner. In this model, each peer can act as both a producer and a consumer of video content in the transport layer. This means that when a peer receives a video stream, it can also share that stream with other peers in the network, reducing the load on the original producer and improving scalability.
+
 The clear downsides of \ac{P2P} video streaming are increased latency and potential quality issues due to the decentralized nature of the network. Additionally, security concerns may arise as peers may not be trustworthy sources of video content.
+
+\subsection{Basic Problems with video streaming}
+The basic problems of video streaming are bandwidth, delay jitter and loss rate. \cite{apostolopoulosVideoStreamingConcepts} There are also other problems in mesh networks like some implementations of \ac{P2P} streaming, which can also introduce packet order jitter.
+
+\subsubsection{Bandwidth}
+\begin{quote}
+The bandwidth available between two points in the Internet is generally
+unknown and time-varying. If the sender transmits faster than the available
+bandwidth then congestion occurs, packets are lost, and there is a severe
+drop in video quality. If the sender transmits slower than the available
+bandwidth then the receiver produces sub-optimal video quality. \cite{apostolopoulosVideoStreamingConcepts}
+\end{quote}
+\subsubsection{Delay jitter}
+\begin{quote}
+The end-to-end delay that a packet experiences may fluctuate from packet to
+packet. This variation in end-to-end delay is referred to as the delay jitter.
+Delay jitter is a problem because the receiver must receive/decode/display
+frames at a constant rate, and any late frames resulting from the delay jitter
+can produce problems in the reconstructed video, e.g. jerks in the video.
+\cite{apostolopoulosVideoStreamingConcepts}
+\end{quote}
+
+It is mostly pronounced in mesh networks like some \ac{P2P} implementations. Packets may arrive out of order due to the decentralized nature of the network. This can lead to packet loss due to packet being unpresentable at the time of arrival, as the receiver must reorder packets before decoding and rendering the video stream. Packet jitter can be mitigated through techniques such as jitterbuffer, but it introduces latency at the cost of stable playback.
+
+\subsubsection{Loss rate}
+\begin{quote}
+A number of different types of
+losses may occur, depending on the particular network under consideration.
+For example, wired packet networks such as the Internet are afflicted by
+packet loss, where an entire packet is erased (lost). On the other hand,
+wireless channels are typically afflicted by bit errors or burst errors. Losses
+can have a very destructive effect on the reconstructed video quality. To
+combat the effect of losses, a video streaming system is designed with error
+control. \cite{apostolopoulosVideoStreamingConcepts}
+\end{quote}
 
 \section{Handling video streams}
 Common stream sources for streaming are camera or computer screen. In raw form, these data sources are not viable for network transport due to their large sizes.
@@ -46,7 +116,9 @@ Video codec is software that compresses and decompresses digital video. The term
 
 All video codecs work by optimizing the representation of video data and therefore reducing entropy of the video stream.
 
-"As is the case with any encoder, there are two basic groups of factors affecting the size and quality of the encoded video: specifics about the source video's format and contents, and the characteristics and configuration of the codec used while encoding the video." \cite{WebVideoCodec2025}
+\begin{quote}
+As is the case with any encoder, there are two basic groups of factors affecting the size and quality of the encoded video: specifics about the source video's format and contents, and the characteristics and configuration of the codec used while encoding the video. \cite{WebVideoCodec2025}
+\end{quote}
 
 \break
 Smaller video sizes often require more destructive approach to reducing entropy of video stream or more computing power, usually both. It is important to balance these three parameters when choosing codecs and their configurations.
@@ -108,29 +180,31 @@ There is also IPFS which offers static video storage and streaming capabilities 
 
 
 
-\section{Implementation of \ac{P2P} video streaming}
+\section{Implementation of my video streaming solution}
 \subsection{Choice of programming language}
 I have chosen Rust programming language because of my familiarity with programming in the chosen language but alse because of it's speed. Fast programming language is needed for critical systems like video streaming.
 \subsection{Screen Recording}
 For screen recording I have chosen to only implement wayland screen capture, as that is the platform I am developing on and it also abstracts any need for handling window and screen choice. That is handled on the OS side.
 I am using 
 \subsection{Encoding}
-There are 2 main encoding/decoding libraries. FFmpeg and GStreamer.
-\subsubsection{Gstreamer}
-GStreamer is a pipeline-based framework. You build a graph of processing elements to manage the flow of media. It is highly modular and flexible, ideal for complex, dynamic media applications.
-\subsubsection{FFmpeg}
-FFmpeg is a collection of libraries for encoding. There 
+There are 2 main encoding/decoding libraries. FFmpeg and GStreamer. I have chosen GStreamer because of it's pipeline based approach which allows for easy construction of complex media processing workflows. It is also highly modular and extensible, with a wide range of plugins available for various media formats and processing tasks.
 \subsection{Network Layer}
-
+For network layer I have chosen libp2p library. Libp2p is modular network stack that provides various protocols and transports for building \ac{P2P} applications. It is widely used in decentralized applications like IPFS \cite{Libp2pIPFSDocs} and Ethereum 2.0 \cite{Libp2pEthereumMerge}.
+\subsubsection{Gossipsub}
+Gossipsub is a pub-sub protocol built on top of libp2p. It allows peers to subscribe to topics and publish messages to those topics. Gossipsub uses a mesh network topology, where each peer maintains connections to a subset of other peers in the network. This allows for efficient message dissemination and resilience against peer failures.
+\subsubsection{Stream}
+Libp2p's stream protocol allows for direct peer-to-peer communication between two peers. It establishes a direct connection between the sender and receiver, allowing for continuous data flow. This approach is expected to provide lower latency and more reliable delivery compared to Gossipsub, as streams are designed for direct peer-to-peer communication. In my implementation it is supposed to be used as a baseline for performance comparison, as it does not provide mesh network topology, but rather relies on the person producing the stream to connect to all consumers directly.
 \subsubsection{Security}
+Libp2p offers encrypted communication between peers out of the box using Noise Protocol Framework or TLS. Libp2p also supports QUIC transport protocol, which provides built-in encryption. \cite{SecurityConsiderations}
 \subsubsection{Authentication}
-\subsection{Gossipsub}
+Gossipsub supports peer authentication using public-key cryptography. Each peer has a unique identity based on a public/private key pair. When a peer joins the network, it shares its public key with other peers. This allows peers to verify the authenticity of messages received from other peers.
 
-\subsection{Stream}
-\subsubsection{Integrity check}
-\subsection{Combination of Gossipsub and Stream}
 \section{Current implementation}
 My implementation is split into my testing binary I am using to glue all the parts together and then library crates for screen recording, decoding and transport layer.
+
+First implementation used mpegts format for video stream, however they were causing gossipsub stream to be overwhelmed with huge volume of data as mpegts packets are only 188 bytes in size. This overwhelmed gossipsub and caused the stream to halt.
+
+To solve this issue I have switched to RTP packets which size I can control.
 \subsection{Screen recording crate}
 For screen recording I am using ashpd's wayland-capture library. It provides simple interface for capturing screen content on wayland compositors supporting the screen-capture portal. This portal is already widely supported by most wayland compositors including major compositors like GNOME's Mutter and KDE's KWin.
 Using the library I receive pipewire file descriptor which I then provide to GStreamer's pipewire source element to get video frames into GStreamer pipeline.
@@ -145,7 +219,6 @@ The Recorder Pipeline displays the flow of data from the PipeWire source to the 
 
 There are also edge cases for when hardware encoding is unavailable, in which case software encoding is used instead. The final output is an RTP stream that can be sent over the network. The benefit of encoding into RTP packets is their consistent size, which prevents sending large packets that could clog the transport layer. The output of the pipeline is then sent into the memory of host program to be then used in the transport layer.
 
-\break
 \subsection{Rendering crate}
 For decoding I am also using GStreamer. The decoding pipeline is much simpler than the encoding pipeline as it only needs to decode the incoming RTP packets back into raw video frames for display.
 
@@ -158,18 +231,63 @@ For decoding I am also using GStreamer. The decoding pipeline is much simpler th
 The decoding pipeline consists of RTP depayloader, H264 decoder, videoconvert, and autovideosink elements. The RTP depayloader extracts the encoded video data from the RTP packets, which is then decoded by the H264 decoder. The videoconvert element ensures that the video format is compatible with the display sink, which is handled by autovideosink.
 
 \subsection{Transport layer crate}
-The transport layer is implemented using libp2p's Gossipsub protocol for peer-to-peer communication.
-
-There are two implementations of the transport layer. The first one uses only Gossipsub for sending video data, while the second uses solely stream to send data between peers. Finally, there is a hybrid implementation that combines both Gossipsub and stream for data transmission.
+There are two implementations of the transport layer. The first one uses only Gossipsub for sending video data, while the second uses solely stream to send data between peers.
 \subsubsection{Gossipsub}
+This implementation uses Gossipsub protocol to send video data as messages between peers. The video data is split into smaller chunks to fit within the message size limits of Gossipsub. Each chunk is then sent as a separate message to the peers in the network.
 
+Expected downsides of this approach are increased latency, potential packet loss, and out-of-order delivery due to the nature of Gossipsub's message dissemination.
+
+The upside of this approach is mesh network topology, which increases resilience and decentralization of the network.
 \subsubsection{Stream}
-\subsubsection{Hybrid}
+This implementation uses libp2p's stream protocol to establish direct connections between peers for video data transmission. A stream is created between the sender and receiver, allowing for continuous data flow. This approach is expected to provide lower latency and more reliable delivery compared to Gossipsub, as streams are designed for direct peer-to-peer communication.
+
+The downside of this approach is the need for direct connections between peers, which may limit scalability and decentralization compared to Gossipsub's mesh network.
+
+As this approach does not provide mesh network topology, but rather relies on the person producing the stream to connect to all consumers directly, it is used as a baseline for performance comparison.
 
 \section{Testing of stability and performance}
-\subsection{Latency testing}
-\subsection{Packet order variability}
-\subsection{Late packet testing}
-\subsection{Throughput testing}
+\subsection{Reusable source}
+To facilitate consistent and repeatable testing, I made an implementation of video source, that uses a pre-recorded video file as the source of video data instead of live screen capture. This allows me to have a controlled environment for testing, where the input video stream remains constant across different test runs. This is crucial for accurately measuring performance metrics such as latency, packet loss, and throughput, as it eliminates variability that could arise from changing screen content during live capture.
 
+I have decided to use Big Buck Bunny video as the source video for testing. Big Buck Bunny is commonly used for testing and benchmarking video processing applications because it is royalty-free and open-source. \cite{BigBuckBunny}
+\subsection{Testing metadata}
+To effectively monitor and analyze the performance of the \ac{P2P} video streaming application, I have added metadata to each video packet being transmitted. This metadata includes:
+\begin{itemize}
+    \item Packet creation timestamp - This allows me to measure the time taken for each packet to travel from the sender to the receiver
+    \item Packet sequence number - This helps in identifying lost or out-of-order packets during transmission
+\end{itemize}
+\subsection{Latency testing}
+To measure the latency of the video streaming application, I calculate the time difference between when a packet is created (using the creation timestamp) and when it is received by the consumer. By averaging these time differences over multiple packets, I can obtain an overall latency metric for the streaming session. This metric is crucial for assessing the responsiveness of the \ac{P2P} video streaming application, as high latency can lead to noticeable delays in video playback and negatively impact the user experience.
+\subsection{Packet loss testing}
+Packet loss is determined by missing sequence numbers in the received packets. By tracking the sequence numbers of incoming packets, I can identify any gaps that indicate lost packets during transmission. The packet loss rate is calculated as the ratio of lost packets to the total number of packets sent. This metric is important for evaluating the reliability of the \ac{P2P} video streaming application, as high packet loss can lead to degraded video quality and interruptions in playback.
+\subsection{Packet order variability}
+To evaluate the order in which packets are received, I analyze the sequence numbers of incoming packets. By tracking the sequence numbers, I can determine if packets are arriving in the correct order or if there are instances of out-of-order delivery. This metric influences additional delay for reordering packets before decoding and rendering, which heavily impacts stream latency.
+\subsection{Late packet testing}
+Late packets are identified by comparing the arrival time of each packet against a predefined threshold based on the expected playback time. If a packet arrives after its scheduled playback time, it is considered late. Late packets are discarded as they cannot be used for real-time playback.
+The late packet rate is calculated as the ratio of late packets to the total number of packets received. This metric is important for understanding how well the streaming application can maintain smooth playback, as late packets can lead to buffering and interruptions in the video stream.
+\subsection{Throughput testing}
+Throughput is measured by calculating the total amount of data successfully received over a specific time interval. By tracking the size of incoming packets and the time taken to receive them, I can compute the average data rate in bits per second (bps). This metric provides insight into the efficiency of the \ac{P2P} video streaming application in utilizing available network bandwidth.
+I can achieve throughput measurment by testing on different source video bitrates and seeing change in other metrics like latency and packet loss.
+This will categorize the testing into multiple bitrates, comparing how well the transport layer handles different levels of data load.
+
+\subsection{Analysis data}
+I have created an implementation of receiver which does not render the video stream but rather collects the testing metadata and saves it into a csv file for later analysis. Each received packet is logged with its associated metadata, including creation timestamp, sequence number, arrival time, and size. This data can be used for further analysis of performance metrics such as latency, packet loss, and throughput.
+\begin{verbatim}
+#[derive(Serialize)]
+pub struct AnalysisItem {
+    creation_time: u128,
+    arrival_time: u128,
+    index: u64,
+    size: u32,
+}
+\end{verbatim}
+\subsection{Testing environment}
+To run the tests, I have created three virtual machines using QEMU/KVM. Each virtual machine is running Fedora Silverblue 43. I have also created 2 virtual network interfaces, where 2 of the machines are connected to one of the interfaces while the other machine is connected to both interfaces. This allows me to verify functionality of the mesh network topology in Gossipsub implementation.
+\section{Analysis}
+\section{Future work}
+\subsection{Hybrid Transport Architectures}
+Subsequent research could explore more complex transport layer implementations that combine the benefits of both Gossipsub and stream protocols. The gossipsub could be used as signaling layer to discover video chunks on the network, while stream protocol could be used for direct peer-to-peer transmission of video data. This hybrid approach could potentially provide the scalability and resilience of Gossipsub while also achieving the low latency and reliable delivery of stream protocol.
+\subsection{Large scale stress testing}
+To validate the system's robustness, future studies must prioritize large-scale stress testing of the \ac{P2P} application. This involves deploying the protocol across a high volume of geographically distributed peers in a real-world network environment. The primary objective is to evaluate performance metrics—specifically jitter, latency, and packet loss—under high-concurrency conditions. These tests will provide critical insights into the application's scalability limits and behavior under heavy load.\subsection{Support for sub-streams}
+Finally, expanding the protocol to support sub-streams represents a significant functional upgrade. Sub-streams would enable secondary video feeds, such as guest webcams or screen sharing, to operate alongside the primary broadcast. Implementing this feature would transition the protocol from a passive consumption tool into a comprehensive solution for interactive video conferencing and collaborative environments.
 \section{Conclusion}

@@ -19,8 +19,6 @@
 % Základní balíčky jsou dole v souboru šablony fim-uhk-thesis.cls
 % Basic packages are at the bottom of template file fim-uhk-thesis.cls
 % zde můžeme vložit vlastní balíčky / you can place own packages here
-\usepackage{svg}
-
 
 %---rm---------------
 \renewcommand{\rmdefault}{lmr}%zavede Latin Modern Roman jako rm / set Latin Modern Roman as rm
@@ -39,7 +37,6 @@
 
 \usepackage{url}
 \usepackage{pifont}
-
 
 % =======================================================================
 % balíček "hyperref" vytváří klikací odkazy v pdf, pokud tedy použijeme pdflatex
@@ -212,7 +209,7 @@
   % seznam příloh / list of appendices
   % \printcontents[section]{l}{0}{\setcounter{tocdepth}{2}}
   
-  \printacronyms[name=Seznam zkratek,heading=section*]
+  \printacronyms[name=List of Abbreviations,heading=section*]
   
   \newpage
   % vynechani stranky v oboustrannem rezimu

@@ -3,4 +3,4 @@
 *.pdf
 *.ptc
 *.synctex.gz
-
+.vscode
