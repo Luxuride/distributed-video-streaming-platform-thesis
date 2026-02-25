@@ -25,8 +25,7 @@ The processing stage, which primarily involves internal operations within the me
 (\dots)
 
 The distribution stage handles video delivery from the media server to a user device, which decodes and plays back the content. In addition to ISPs providing network connectivity, this stage involves CDNs that disseminate video from their edge servers to user devices with low latency and high QoE. To address the heterogeneity of user devices and variable network conditions, a media player on the user device runs an ABR algorithm. Among the components of the end-to-end pipeline, ABR, QoE, and CDN aspects attract the most research efforts. QoE models express users’ subjective experience as a function of measurable influence factors (IFs) like stall duration and video quality. They rely on subjective testing and user experience design. Network engineering ensures low latency and high bitrate, which QoE models account for directly or through other IFs. Data science enhances their predictive power with learning-based techniques.
-\end{quote}
-\cite{peroniEndtoEndPipelinePerspective2025}
+\end{quote}\cite{peroniEndtoEndPipelinePerspective2025}
 
 My work mainly focuses on the distribution stage of the video streaming pipeline, specifically on the transport layer that delivers video content from the media server to user devices. I explore how \ac{P2P} technologies can be utilized in this stage to create a decentralized video streaming solution. However, I also touch upon other aspects of the video streaming pipeline, such as video encoding and decoding, as in my implementation they influence viability of my transport layer solution.
 
@@ -35,8 +34,7 @@ The basic idea of video streaming is to split the video
 into parts, transmit these parts in succession, and enable the receiver to
 decode and playback the video as these parts are received, without having to
 wait for the entire video to be delivered.
-\end{quote}
-\cite{apostolopoulosVideoStreamingConcepts}
+\end{quote}~\cite{apostolopoulosVideoStreamingConcepts}
 
 It is a method of video data transmission from server to client. From data transport perspective, video streaming can be broken down into 3 main parts:
 \begin{itemize}
@@ -71,8 +69,7 @@ unknown and time-varying. If the sender transmits faster than the available
 bandwidth then congestion occurs, packets are lost, and there is a severe
 drop in video quality. If the sender transmits slower than the available
 bandwidth then the receiver produces sub-optimal video quality.
-\end{quote}
-\cite{apostolopoulosVideoStreamingConcepts}
+\end{quote}~\cite{apostolopoulosVideoStreamingConcepts}
 \subsubsection{Delay jitter}
 \begin{quote}
 The end-to-end delay that a packet experiences may fluctuate from packet to
@@ -80,8 +77,7 @@ packet. This variation in end-to-end delay is referred to as the delay jitter.
 Delay jitter is a problem because the receiver must receive/decode/display
 frames at a constant rate, and any late frames resulting from the delay jitter
 can produce problems in the reconstructed video, e.g. jerks in the video.
-\end{quote}
-\cite{apostolopoulosVideoStreamingConcepts}
+\end{quote}~\cite{apostolopoulosVideoStreamingConcepts}
 
 It is mostly pronounced in mesh networks like some \ac{P2P} implementations. Packets may arrive out of order due to the decentralized nature of the network. This can lead to packet loss due to packet being unpresentable at the time of arrival, as the receiver must reorder packets before decoding and rendering the video stream. Packet jitter can be mitigated through techniques such as jitterbuffer, but it introduces latency at the cost of stable playback.
 
@@ -95,8 +91,7 @@ wireless channels are typically afflicted by bit errors or burst errors. Losses
 can have a very destructive effect on the reconstructed video quality. To
 combat the effect of losses, a video streaming system is designed with error
 control.
-\end{quote}
-\cite{apostolopoulosVideoStreamingConcepts}
+\end{quote}~\cite{apostolopoulosVideoStreamingConcepts}
 
 \section{Handling video streams}
 Common stream sources for streaming are camera or computer screen. In raw form, these data sources are not viable for network transport due to their large sizes.
@@ -120,50 +115,35 @@ All video codecs work by optimizing the representation of video data and therefo
 
 \begin{quote}
 As is the case with any encoder, there are two basic groups of factors affecting the size and quality of the encoded video: specifics about the source video's format and contents, and the characteristics and configuration of the codec used while encoding the video.
-\end{quote}
-\cite{WebVideoCodec2025}
+\end{quote}~\cite{WebVideoCodec2025}
 
 \break
 Smaller video sizes often require more destructive approach to reducing entropy of video stream or more computing power, usually both. It is important to balance these three parameters when choosing codecs and their configurations.
 
-List of commonly used codecs and their characteristics:
-\begin{itemize}
-    \item AV1
-    \begin{itemize}
-        \item 50\% better compression than H264 \cite{WebVideoCodec2025}
-        \item Slow encoding speed
-        \item Limited hardware support \cite{WebVideoCodec2025}
-        \item "Royalty-free, open standard" \cite{WebVideoCodec2025}
-    \end{itemize}
-    \item H264
-    \begin{itemize}
-        \item Baseline compression
-        \item Fast encoding
-        \item Full hardware and software support \cite{WebVideoCodec2025}
-        \item "Proprietary with numerous patents. Commercial use requires a license." \cite{WebVideoCodec2025}
-    \end{itemize}
-    \item H265
-    \begin{itemize}
-        \item 50\% better compression than H264 \cite{WebVideoCodec2025}
-        \item Slower encoding speed
-        \item Mostly full hadrware and software support \cite{WebVideoCodec2025}
-        \item "Proprietary; confirm your compliance with the licensing requirements." \cite{WebVideoCodec2025}
-    \end{itemize}
-    \item VP8
-    \begin{itemize}
-        \item Similiar compression to H264
-        \item Fast encoding speed
-        \item Full hardware and software support \cite{WebVideoCodec2025}
-        \item "Open and free of royalties and any other licensing requirements" \cite{WebVideoCodec2025}
-    \end{itemize}
-    \item VP9
-    \begin{itemize}
-        \item 50\% better compression than H264 \cite{WebVideoCodec2025}
-        \item Normal encoding speed
-        \item Full hardware and software support \cite{WebVideoCodec2025}
-        \item "Open and free of royalties and any other licensing requirements" \cite{WebVideoCodec2025}
-    \end{itemize}
-\end{itemize}
+Table \ref{tab:codec-comparison} compares commonly used video codecs and their characteristics.
+
+\begin{table}[h]
+    \centering
+    \caption{Comparison of commonly used video codecs \cite{WebVideoCodec2025}}
+    \label{tab:codec-comparison}
+    \resizebox{\textwidth}{!}{%
+        \begin{tabular}{|l|l|l|l|l|}
+            \hline
+            \textbf{Codec} & \textbf{Compression} & \textbf{Encoding Speed} & \textbf{HW Support} & \textbf{Licensing} \\
+            \hline
+            AV1  & 50\% better than H264 & Slow   & Limited      & Royalty-free, open \\
+            \hline
+            H264 & Baseline              & Fast   & Full         & Proprietary \\
+            \hline
+            H265 & 50\% better than H264 & Slow   & Mostly full  & Proprietary \\
+            \hline
+            VP8  & Similar to H264       & Fast   & Full         & Royalty-free, open \\
+            \hline
+            VP9  & 50\% better than H264 & Normal & Full         & Royalty-free, open \\
+            \hline
+        \end{tabular}%
+    }
+\end{table}
 
 \subsection{Muxers}
 After the video and audio have been separately compressed by their respective codecs, they need to be combined into a single, synchronized package for delivery. This process is called multiplexing, or muxing.

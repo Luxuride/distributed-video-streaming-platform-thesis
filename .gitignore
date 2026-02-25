@@ -4,3 +4,4 @@
 *.ptc
 *.synctex.gz
 .vscode
+%OUTDIR%/
