@@ -33,7 +33,10 @@
 % to avoid unnecessary replacements in the API descriptions etc.
 \csdoublequotesoff
 
-
+% Redefine quote environment: italic text in quotation marks instead of indented block
+\renewenvironment{quote}
+  {\par\medskip\noindent\itshape``\ignorespaces}
+  {\unskip''\par\medskip}
 
 \usepackage{url}
 \usepackage{pifont}
