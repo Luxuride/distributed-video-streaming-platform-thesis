@@ -8,7 +8,16 @@ It is clear that there is need for more decentralized solutions that are not dep
 In this paper I focus on live video streaming using \ac{P2P}.
 \section{Background}
 \subsection{Peer To Peer}
-\cite{schollmeierDefinitionPeertopeerNetworking2001}
+
+Peer-to-peer (
+\ac{P2P}) networking is communication model where participating nodes (peers) can directly exchange data and services without relying exclusively on a permanently available central server. A widely used formalization defines \ac{P2P} systems through direct resource sharing between autonomous participants and distinguishes them from traditional client--server systems according to role distribution and control centralization.\cite{schollmeierDefinitionPeertopeerNetworking2001}
+
+From architecture perspective, \ac{P2P} systems are typically described as either pure or hybrid. In pure \ac{P2P}, peers provide both control and data-plane functions in decentralized manner. In hybrid \ac{P2P}, selected centralized components are preserved for tasks such as discovery, bootstrap, or coordination, while most payload distribution is delegated to peers. This classification is important in practice because many real systems are designed as hybrids to combine operational control with horizontal scalability.\cite{schollmeierDefinitionPeertopeerNetworking2001,xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012}
+
+The main advantages of \ac{P2P} include improved scalability through aggregate upload capacity of many peers, reduced dependency on single infrastructure provider, and potential cost reduction for large-scale content distribution. However, these benefits are accompanied by trade-offs: peer churn, asymmetric residential connectivity, heterogeneous device capabilities, and more complex trust and abuse resistance mechanisms compared to centralized delivery.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012,SecurityConsiderations}
+
+For video distribution, \ac{P2P} is commonly combined with \ac{CDN} infrastructure in hybrid designs. Literature shows this approach can reduce provider bandwidth costs while preserving service stability by using the \ac{CDN} as fallback when peer capacity is insufficient.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} This hybrid approach is also reflected in modern implementations and frameworks, where transport, peer discovery, and secure communication primitives are exposed by reusable protocol stacks (for example libp2p) and browser-oriented distribution libraries.\cite{Libp2pIPFSDocs,Libp2pEthereumMerge,NovageP2pmedialoader2025}
+
 \subsection{Video Streaming}
 Video streaming is method of transmitting video data over a network in a continuous flow, allowing users to watch the video content in real-time without needing to download the entire file beforehand.
 
@@ -108,11 +117,12 @@ The prepending calculation describes the size of raw video stream that we can ge
 For that we use a video codec, which handles the problem of large video files, by encoding video into more predictive patterns, decreasing overall size of the stream.
 It is decreasing entropy of the video stream and removing redundant information.
 
+The process of encoding video starts with the raw video data captured from the source (e.g., camera or screen recording). We use codec to compress this raw video data into a more compact format. The codec analyzes the video frames and identifies patterns, redundancies, and similarities between frames. It then applies various compression techniques to reduce the amount of data needed to represent the video while trying to maintain level of quality based on the encoding settings. The last step of encoding is packaging the compressed video data into a container format, which includes metadata and timing information for synchronization during playback.
+
 \subsection{Video codec}
 Video codec is software that compresses and decompresses digital video. The term "codec" is a portmanteau of "coder-decoder" or "compressor-decompressor." Video codecs are essential for reducing the size of video files, making them easier to store and transmit over networks.
 
 All video codecs work by optimizing the representation of video data and therefore reducing entropy of the video stream.
-
 \begin{quote}
 As is the case with any encoder, there are two basic groups of factors affecting the size and quality of the encoded video: specifics about the source video's format and contents, and the characteristics and configuration of the codec used while encoding the video.
 \end{quote}~\cite{WebVideoCodec2025}
