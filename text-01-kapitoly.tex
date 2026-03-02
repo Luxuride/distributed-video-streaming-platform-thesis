@@ -19,7 +19,25 @@ The main advantages of \ac{P2P} include improved scalability through aggregate u
 For video distribution, \ac{P2P} is commonly combined with \ac{CDN} infrastructure in hybrid designs. Literature shows this approach can reduce provider bandwidth costs while preserving service stability by using the \ac{CDN} as fallback when peer capacity is insufficient.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} This hybrid approach is also reflected in modern implementations and frameworks, where transport, peer discovery, and secure communication primitives are exposed by reusable protocol stacks (for example libp2p) and browser-oriented distribution libraries.\cite{Libp2pIPFSDocs,Libp2pEthereumMerge,NovageP2pmedialoader2025}
 
 \subsection{Video Streaming}
-Video streaming is method of transmitting video data over a network in a continuous flow, allowing users to watch the video content in real-time without needing to download the entire file beforehand.
+Video streaming is method of transmitting video data over a network in a continuous flow, allowing users to watch the video content in real-time without needing to download the entire file beforehand.  
+
+The term covers both "on‑demand" services (pre‑recorded content fetched by the client) and "live" broadcasts where the stream is generated and consumed simultaneously.  In practice the distinction blurs: on‑demand systems still deliver chunks progressively, and live systems may buffer a few seconds of content to allow for network variability.  Historically streaming relied on specialised protocols such as RTSP/RTMP, but in the last decade the industry has converged on HTTP‑based delivery because of ubiquitous firewall/NAT traversal and existing CDN infrastructures.
+
+Streaming differs from a simple progressive download in that the sender continually pushes data while the receiver decodes and presents frames as they arrive; the sender may also adapt the data rate in response to network conditions (see \S\ref{sec:abr}).
+
+\subsubsection{Adaptive Bitrate Streaming}
+\label{sec:abr}
+Adaptive bitrate (ABR) streaming is the mechanism by which a player dynamically switches between multiple encoded representations of a video depending on the available bandwidth, buffer occupancy and device capabilities. Without ABR, a single high‑quality stream would stall whenever the network cannot sustain the chosen rate, whereas a low‑bitrate stream wastes capacity on good connections. Early ABR algorithms were rate‑based (choose the highest bitrate below the measured throughput), buffer‑based (choose based on playback buffer level) or hybrid combinations; modern systems increasingly employ machine‑learning models trained on large datasets of network traces and QoE measurements. ABR logic is usually implemented client‑side and relies on manifests that list the available bitrates and segment URLs. Poor ABR decisions are one of the primary causes of buffering events, which are key influence factors in QoE models discussed in the previous subsection.
+
+\subsubsection{Streaming Protocols and Formats}
+Video streaming is not a single protocol but a family of delivery schemes. The most common today are:
+\begin{itemize}
+    \item \textbf{HTTP Live Streaming (HLS)} – developed by Apple and defined in RFC 8216, HLS uses an index playlist (.m3u8) containing URLs of media segments; segments are typically MPEG‑TS or fMP4 files fetched over HTTP/TCP (now QUIC) \cite{pantos_http_2017-1}. Players periodically reload the playlist to discover new segments.
+    \item \textbf{MPEG‑DASH} – an ISO standard that is similar to HLS but uses MPD manifests and supports fMP4 natively; transport is also HTTP/TCP/QUIC \cite{noauthor_standards_nodate}. Its standardization has encouraged decoupling of container format and transport.
+    \item \textbf{RTMP/RTSP} – older TCP‑based protocols used for low‑latency live streaming; RTMP carries FLV packets over a persistent TCP connection, while RTSP negotiates RTP/UDP streams. These are still used in encoder‑to‑server links but are being phased out in browsers.
+    \item \textbf{WebRTC} – designed for real‑time communication, WebRTC uses SRTP over UDP (or QUIC) and supports congestion control and retransmission schemes; it is the only protocol with broad browser support for sub‑second latency \cite{mcgrew_datagram_2010,noauthor_webrtc_nodate}.
+\end{itemize}
+Each protocol imposes different requirements on the underlying transport layer: HTTP‑based approaches inherit TCP’s in‑order delivery and congestion control, whereas RTP/UDP‑based systems expose packet loss and jitter directly to the application. Understanding these characteristics is crucial when designing a P2P transport since the replacement must either emulate or improve upon them.
 
 
 \subsubsection{Video Streaming Pipeline}
@@ -37,6 +55,8 @@ The distribution stage handles video delivery from the media server to a user de
 \end{quote}\cite{peroniEndtoEndPipelinePerspective2025}
 
 My work mainly focuses on the distribution stage of the video streaming pipeline, specifically on the transport layer that delivers video content from the media server to user devices. I explore how \ac{P2P} technologies can be utilized in this stage to create a decentralized video streaming solution. However, I also touch upon other aspects of the video streaming pipeline, such as video encoding and decoding, as in my implementation they influence viability of my transport layer solution.
+
+Modern distribution pipelines also generate manifests (playlists) and implement adaptive‑bitrate (ABR) logic in the player, which selects among multiple encoded representations based on observed throughput and buffer state (see \S\ref{sec:abr}). Manifest protocols such as HLS and MPEG‑DASH are transported over HTTP, riding on top of TCP or QUIC, which means that any P2P replacement needs to interoperate with or replicate these behaviours.
 
 \begin{quote}
 The basic idea of video streaming is to split the video
