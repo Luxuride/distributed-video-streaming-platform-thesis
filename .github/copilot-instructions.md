@@ -1,0 +1,69 @@
+# GitHub Copilot Instructions
+
+## Project Overview
+
+This is a **LaTeX bachelor's thesis (BP)** for UHK (Hradec Králové) FIM faculty, written in English. The thesis topic is implementing a distributed P2P video streaming platform in Rust using libp2p, GStreamer, and Wayland screen capture.
+
+## File Structure
+
+| File | Purpose |
+|---|---|
+| `main.tex` | Root document — thesis metadata only (author, title, supervisor, faculty, keywords, abstract) |
+| `text-01-kapitoly.tex` | All thesis body chapters — edit here for content |
+| `text-03-zkratky.tex` | Acronym definitions via `\DeclareAcronym{}` |
+| `text-02-literatura/text-02-literatura.bib` | BibTeX bibliography |
+| `fim-uhk-thesis.cls` | Custom document class (do not edit; based on VUT FIT template) |
+| `recorder-pipeline.puml` / `renderer-pipeline.puml` | PlantUML source for pipeline diagrams |
+| `out/recorder-pipeline/` / `out/renderer-pipeline/` | Generated diagram PNGs (referenced in LaTeX) |
+
+## Build Workflow
+
+**Enter the dev shell first** (provides `texliveFull`, `plantuml`, `graphviz`):
+```sh
+nix develop
+```
+
+**Generate PlantUML diagrams** (must be done before LaTeX compilation when `.puml` files change):
+```sh
+plantuml -tpng recorder-pipeline.puml -o out/recorder-pipeline/
+plantuml -tpng renderer-pipeline.puml -o out/renderer-pipeline/
+```
+
+**Compile the thesis** (standard LaTeX sequence):
+```sh
+pdflatex main && bibtex main && pdflatex main && pdflatex main
+```
+Or with `latexmk`:
+```sh
+latexmk -pdf main
+```
+
+## Key Conventions
+
+### Acronyms
+- Declare in `text-03-zkratky.tex`: `\DeclareAcronym{P2P}{short=P2P, long=Peer to Peer}`
+- Use in text with `\ac{P2P}` (expands on first use, abbreviates after)
+
+### Citations
+- Bibliography style is `iso690` — entries go in `text-02-literatura/text-02-literatura.bib`
+- Cite with `\cite{citekey}`, e.g. `\cite{schollmeierDefinitionPeertopeerNetworking2001}`
+- BibTeX keys follow pattern: `authorNameShortTitleYear`
+
+### Cross-references
+- Use `\label{sec:abr}` on sections/figures, reference with `\ref{sec:abr}` or `\S\ref{sec:abr}`
+- Figures reference generated PNGs: `\includegraphics[width=1\textwidth]{out/recorder-pipeline/recorder-pipeline.png}`
+
+### Document Class Options
+- Current: `\documentclass[english]{fim-uhk-thesis}` — keep `english` parameter for EN thesis
+- Supported: `english`, `slovak`, `enslovak`, `print`, `zadani`, `twoside`
+
+### Quote environment
+The `quote` environment is redefined (in `main.tex`) to render as inline italic with `""` instead of an indented block.
+
+## Thesis Architecture (for content editing)
+
+The implementation described covers:
+- **Recorder crate** — Wayland screen capture via `ashpd` → PipeWire FD → GStreamer pipeline → RTP/H.264 packets
+- **Renderer crate** — RTP packets → GStreamer decode pipeline → `autovideosink`  
+- **Transport layer** — Two libp2p implementations: Gossipsub (mesh, higher latency) vs. direct Stream (lower latency, no mesh)
+- **Testing** — QEMU/KVM VMs on Fedora Silverblue 43, Big Buck Bunny as test source, CSV-based metrics (latency, packet loss, sequence order, throughput)

@@ -10,9 +10,9 @@ In this paper I focus on live video streaming using \ac{P2P}.
 \subsection{Peer To Peer}
 
 Peer-to-peer (
-\ac{P2P}) networking is communication model where participating nodes (peers) can directly exchange data and services without relying exclusively on a permanently available central server. A widely used formalization defines \ac{P2P} systems through direct resource sharing between autonomous participants and distinguishes them from traditional client--server systems according to role distribution and control centralization.\cite{schollmeierDefinitionPeertopeerNetworking2001}
+\ac{P2P}) networking is communication model where participating nodes (peers) can directly exchange data and services without relying exclusively on a permanently available central server. A widely used formalization defines \ac{P2P} systems through direct resource sharing between autonomous participants and distinguishes them from traditional client--server systems according to role distribution and control centralization.
 
-From architecture perspective, \ac{P2P} systems are typically described as either pure or hybrid. In pure \ac{P2P}, peers provide both control and data-plane functions in decentralized manner. In hybrid \ac{P2P}, selected centralized components are preserved for tasks such as discovery, bootstrap, or coordination, while most payload distribution is delegated to peers. This classification is important in practice because many real systems are designed as hybrids to combine operational control with horizontal scalability.\cite{schollmeierDefinitionPeertopeerNetworking2001,xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012}
+From architecture perspective, \ac{P2P} systems are typically described as either pure or hybrid. In pure \ac{P2P}, peers provide both control and data-plane functions in decentralized manner. In hybrid \ac{P2P}, selected centralized components are preserved for tasks such as discovery, bootstrap, or coordination, while most payload distribution is delegated to peers. This classification is important in practice because many real systems are designed as hybrids to combine operational control with horizontal scalability.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012}
 
 The main advantages of \ac{P2P} include improved scalability through aggregate upload capacity of many peers, reduced dependency on single infrastructure provider, and potential cost reduction for large-scale content distribution. However, these benefits are accompanied by trade-offs: peer churn, asymmetric residential connectivity, heterogeneous device capabilities, and more complex trust and abuse resistance mechanisms compared to centralized delivery.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012,SecurityConsiderations}
 
@@ -32,7 +32,7 @@ Adaptive bitrate (ABR) streaming is the mechanism by which a player dynamically 
 \subsubsection{Streaming Protocols and Formats}
 Video streaming is not a single protocol but a family of delivery schemes. The most common today are:
 \begin{itemize}
-    \item \textbf{HTTP Live Streaming (HLS)} – developed by Apple and defined in RFC 8216, HLS uses an index playlist (.m3u8) containing URLs of media segments; segments are typically MPEG‑TS or fMP4 files fetched over HTTP/TCP (now QUIC) \cite{pantos_http_2017-1}. Players periodically reload the playlist to discover new segments.
+    \item \textbf{HTTP Live Streaming (HLS)} – developed by Apple and defined in RFC 8216, HLS uses an index playlist (.m3u8) containing URLs of media segments; segments are typically MPEG‑TS or fMP4 files fetched over HTTP/TCP (now QUIC) \cite{pantos_http_2017}. Players periodically reload the playlist to discover new segments.
     \item \textbf{MPEG‑DASH} – an ISO standard that is similar to HLS but uses MPD manifests and supports fMP4 natively; transport is also HTTP/TCP/QUIC \cite{noauthor_standards_nodate}. Its standardization has encouraged decoupling of container format and transport.
     \item \textbf{RTMP/RTSP} – older TCP‑based protocols used for low‑latency live streaming; RTMP carries FLV packets over a persistent TCP connection, while RTSP negotiates RTP/UDP streams. These are still used in encoder‑to‑server links but are being phased out in browsers.
     \item \textbf{WebRTC} – designed for real‑time communication, WebRTC uses SRTP over UDP (or QUIC) and supports congestion control and retransmission schemes; it is the only protocol with broad browser support for sub‑second latency \cite{mcgrew_datagram_2010,noauthor_webrtc_nodate}.
@@ -179,6 +179,102 @@ Table \ref{tab:codec-comparison} compares commonly used video codecs and their c
 After the video and audio have been separately compressed by their respective codecs, they need to be combined into a single, synchronized package for delivery. This process is called multiplexing, or muxing.
 
 A muxer interleaves the compressed video and audio streams (along with any other data, like subtitles or chapter markers) into a single file or stream, known as a container format. The container file includes timing information and metadata that tells the consumer's video player how to synchronize the different streams so that the audio perfectly matches the video playback.
+
+\subsection{Encoding pipeline}
+\label{sec:encoding-pipeline}
+An encoding pipeline is the ordered sequence of processing stages that transforms uncompressed raw video frames into a compact, network-ready bitstream. Each stage has a well-defined input and output, so individual stages can be replaced by different implementations (software, hardware-accelerated, remote) without affecting the rest of the pipeline. The following description uses H.264 as the concrete codec example; the same conceptual stages apply to all modern block-based codecs (H.265, VP9, AV1), with differences in internal algorithms and compression efficiency.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
+
+\subsubsection{Raw frame acquisition}
+The pipeline begins at the capture source. A camera or screen recorder emits an uncompressed raster frame at every tick of the capture clock — typically 24, 30, or 60 times per second. Each frame is a two-dimensional array of pixels stored in a native color format: screen recorders commonly output BGRA (four bytes per pixel), while hardware cameras typically produce NV12 or I420 (YUV planar formats).\cite{WebVideoCodec2025} As shown at the beginning of this section, a single 1080p frame at full color occupies approximately 8 MB, and a continuous 30 fps stream requires around 249 MB per second of raw data. Direct network transmission of such data volumes is impractical; the sole purpose of the subsequent pipeline stages is to reduce this volume as aggressively as possible while preserving perceptual quality.
+
+\subsubsection{Pre-processing}
+Before the compressed encoder can accept frames, several normalization steps adapt the raw input to the encoder's expectations:
+\begin{itemize}
+    \item \textbf{Frame rate control} --- The capture source may deliver frames at a variable or non-integer rate. The encoder requires a stable, constant frame rate for predictable bitrate and synchronization. A frame rate controller drops surplus frames and duplicates the most recent frame to fill gaps, enforcing the target rate.\cite{apostolopoulosVideoStreamingConcepts}
+    \item \textbf{Colorspace conversion} --- H.264 and most video codecs operate in the YCbCr (YUV) color space rather than RGB because human vision is considerably more sensitive to changes in brightness (luma, Y) than to changes in color (chroma, Cb and Cr). Converting to YUV enables \textit{chroma subsampling}: in the 4:2:0 scheme, the two chroma planes are stored at half the horizontal and vertical resolution of the luma plane, halving the chroma data volume with minimal perceptible quality loss. This conversion is a lossless operation for the luma channel and introduces only minor, imperceptible loss in the chroma channels.\cite{WebVideoCodec2025,apostolopoulosVideoStreamingConcepts}
+    \item \textbf{Scaling} (optional) --- If the capture resolution differs from the target encoding resolution, the frame is resampled to the desired dimensions using a filter such as bilinear or Lanczos interpolation.\cite{apostolopoulosVideoStreamingConcepts}
+\end{itemize}
+
+\subsubsection{Intra-frame compression}
+An \textit{I-frame} (intra-coded frame) is encoded entirely from its own content, without reference to any other frame. It is therefore fully self-contained and can be decoded independently — a property essential for random access, stream join, and error recovery.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
+
+Intra-frame compression exploits \textit{spatial redundancy}: adjacent pixels in a natural image are highly correlated, and a block of pixels can be predicted from its neighbors with small residual error. The process proceeds as follows:
+\begin{enumerate}
+    \item The frame is partitioned into macroblocks of 16$\times$16 pixels (H.264) or larger variable-size coding tree units (H.265, AV1).\cite{jesup_rtp_2011,WebVideoCodec2025}
+    \item \textit{Intra prediction} estimates each block by extrapolating from already-encoded neighboring blocks within the same frame, using one of several directional prediction modes. Only the difference (residual) between the prediction and the actual block is passed to the next step.\cite{apostolopoulosVideoStreamingConcepts}
+    \item A \textit{Discrete Cosine Transform} (DCT) converts each residual block from the spatial domain to the frequency domain, concentrating most of the signal energy into a small number of low-frequency coefficients while high-frequency coefficients remain near zero.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
+    \item \textit{Quantization} rounds each frequency coefficient to a configurable step size. High-frequency components — which represent fine texture detail that is largely invisible at normal viewing distances — are discarded with the most aggressive rounding. This is the primary lossy step in the pipeline; the quantization parameter (QP) or constant-rate factor (CRF) directly controls the trade-off between output bitrate and visual quality.\cite{WebVideoCodec2025}
+\end{enumerate}
+The quantized coefficients together with the chosen prediction modes constitute the compressed I-frame data.
+
+\subsubsection{Inter-frame compression}
+After the first I-frame, subsequent frames are encoded as \textit{P-frames} (predictive) or \textit{B-frames} (bi-directionally predicted). These exploit \textit{temporal redundancy}: consecutive frames in video of natural scenes are nearly identical because most content moves slowly relative to the frame rate.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
+
+\begin{itemize}
+    \item \textbf{Motion estimation} --- For each macroblock in the current frame the encoder searches a reference frame (an already-encoded earlier frame, or for B-frames both an earlier and a later frame) for the best-matching block within a search window. The displacement between the current and reference block positions is stored as a compact \textit{motion vector}.\cite{apostolopoulosVideoStreamingConcepts}
+    \item \textbf{Motion compensation} --- The encoder fetches the predicted block from the reference frame using the motion vector and subtracts it from the actual block, yielding a small \textit{residual}. Only this residual — not the full block content — is passed through DCT and quantization, achieving dramatically higher compression than intra coding alone.\cite{apostolopoulosVideoStreamingConcepts}
+    \item \textbf{B-frames} require the encoder to buffer future frames before the current frame can be encoded, introducing additional latency proportional to the look-ahead window. For this reason B-frames are often disabled in real-time streaming encoders where minimizing end-to-end latency takes priority over maximum compression efficiency.\cite{apostolopoulosVideoStreamingConcepts}
+\end{itemize}
+
+The periodic insertion of I-frames is governed by the \textit{Group of Pictures} (GOP) parameter. A shorter GOP improves resilience to packet loss and reduces the penalty for late stream joins, while a longer GOP allows more inter-frame references and better overall compression. Live streaming systems typically use GOP lengths of one to four seconds.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
+
+\subsubsection{Entropy coding}
+After quantization, the resulting integers (DCT coefficients, motion vectors, and codec syntax elements) still exhibit statistical structure: many coefficients are zero, and non-zero values cluster near the DC component. Entropy coding removes this redundancy losslessly, mapping frequently occurring patterns to shorter bit sequences.\cite{apostolopoulosVideoStreamingConcepts} H.264 supports two entropy coders:
+\begin{itemize}
+    \item \textbf{CAVLC} (Context-Adaptive Variable-Length Coding) --- lower computational complexity, used in the H.264 Baseline and Constrained Baseline profiles.\cite{jesup_rtp_2011}
+    \item \textbf{CABAC} (Context-Adaptive Binary Arithmetic Coding) --- approximately 10--15\% better compression than CAVLC for the same visual quality, used in the Main and High profiles at the cost of higher encoder and decoder complexity.\cite{WebVideoCodec2025,jesup_rtp_2011}
+\end{itemize}
+The output of entropy coding is the final compressed H.264 bitstream.
+
+\subsubsection{Network Abstraction Layer}
+The compressed bitstream is organized into \textit{NAL units} (Network Abstraction Layer units, defined in RFC~6184 for RTP transport\cite{jesup_rtp_2011}), which are self-delimiting data units designed to be carried over diverse network environments without knowledge of their contents:
+\begin{itemize}
+    \item \textbf{SPS} (Sequence Parameter Set) --- carries codec-level configuration: profile, level, resolution, frame rate, and decoder buffer requirements. A decoder must receive at least one SPS before it can decode any picture data.\cite{jesup_rtp_2011}
+    \item \textbf{PPS} (Picture Parameter Set) --- carries per-picture encoding parameters (e.g., entropy coder selection, deblocking filter settings) referenced by slice headers.\cite{jesup_rtp_2011}
+    \item \textbf{Slice NAL units} --- carry the compressed picture data, organized into one or more slices per frame. A slice is a self-contained unit of rows of macroblocks that can be decoded independently of other slices.\cite{jesup_rtp_2011}
+\end{itemize}
+NAL units are serialized in one of two byte-stream formats: \textit{Annex B} (start-code prefixed, standard for broadcast and file storage) or \textit{AVCC} (length-prefixed, used inside MP4/MOV containers).\cite{jesup_rtp_2011}
+
+\subsubsection{RTP packetization}
+For real-time network delivery, NAL units are wrapped into RTP (Real-time Transport Protocol) packets as specified in RFC~6184\cite{jesup_rtp_2011} using the RTP header format defined in RFC~3550\cite{schulzrinne_rtp_2003}:
+\begin{itemize}
+    \item \textbf{Fragmentation} --- A NAL unit larger than the path MTU (typically around 1400 bytes on Ethernet paths to avoid IP-level fragmentation) is split into \textit{Fragmentation Units} (FU-A), each sized to fit in a single IP datagram.\cite{jesup_rtp_2011}
+    \item \textbf{Sequence number} --- A monotonically increasing 16-bit counter in each RTP packet allows the receiver to detect missing packets and restore arrival order, both of which are required before the H.264 decoder can assemble a complete frame.\cite{schulzrinne_rtp_2003}
+    \item \textbf{Timestamp} --- A 32-bit timestamp based on a 90~kHz clock encodes the presentation time of the frame carried by the packet, enabling the receiver to schedule frames for display at the correct moment and to detect clock drift.\cite{jesup_rtp_2011,schulzrinne_rtp_2003}
+    \item \textbf{SSRC} (Synchronization Source Identifier) --- uniquely identifies the media source, allowing a receiver to demultiplex multiple streams arriving on the same socket.\cite{schulzrinne_rtp_2003}
+    \item \textbf{Marker bit} --- set on the last RTP packet of each frame, signaling to the receiver that it may assemble all collected fragments and submit the complete frame to the decoder.\cite{jesup_rtp_2011,schulzrinne_rtp_2003}
+\end{itemize}
+The resulting RTP datagrams are handed off to the transport layer for delivery to consumers.
+
+\subsubsection{Pipeline summary}
+Table~\ref{tab:encoding-pipeline-stages} summarizes the complete encoding pipeline, mapping each processing stage to its function, inputs, and outputs.
+
+\begin{table}[h]
+    \centering
+    \caption{Encoding pipeline stages from raw frames to network-ready RTP packets.}
+    \label{tab:encoding-pipeline-stages}
+    \resizebox{\textwidth}{!}{%
+        \begin{tabular}{|l|l|l|l|}
+            \hline
+            \textbf{Stage} & \textbf{Function} & \textbf{Input} & \textbf{Output} \\
+            \hline
+            Raw acquisition   & Capture source frames       & Camera / screen buffer   & Uncompressed frames (BGRA, NV12) \\
+            \hline
+            Pre-processing    & Normalize for encoder       & Uncompressed frames      & Fixed-rate YUV 4:2:0 frames \\
+            \hline
+            Intra compression & Exploit spatial redundancy  & Full frame (I-frame)     & DCT coefficients + intra modes \\
+            \hline
+            Inter compression & Exploit temporal redundancy & Frame + reference frames & Motion vectors + residuals \\
+            \hline
+            Entropy coding    & Lossless statistical coding & Quantized coefficients   & Compressed H.264 bitstream \\
+            \hline
+            NAL formation     & Structure bitstream         & Compressed bitstream     & SPS, PPS, and slice NAL units \\
+            \hline
+            RTP packetization & Prepare for transport       & NAL units                & RTP/UDP datagrams \\
+            \hline
+        \end{tabular}%
+    }
+\end{table}
 
 \section{Current state of video streaming}
 \subsection{Video streaming in video calls}

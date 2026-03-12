@@ -3,18 +3,18 @@ left to right direction
 [*] --> appsrc
 appsrc: Input from application memory
 appsrc --> rtpjitterbuffer
-rtpjitterbuffer: Reorder RTP packets when they are out of order
+rtpjitterbuffer: Reorder RTP packets\nwhen they are out of order
 rtpjitterbuffer --> rtmp2tdepay
 rtmp2tdepay: RTP depayloader for RTMP
 rtmp2tdepay --> tsdemux
 tsdemux: Demux MPEG-TS stream
-tsdemux --> h264parse
+tsdemux -right-> h264parse
 h264parse: Parse H.264 stream
-h264parse --> vaapih264dec
+h264parse -up-> vaapih264dec
 vaapih264dec: Hardware H.264 decoding
-vaapih264dec --> videoconvert
+vaapih264dec -up-> videoconvert
 videoconvert: Convert video format
-videoconvert --> autovideosink
+videoconvert -up-> autovideosink
 autovideosink: Output to screen
-autovideosink --> [*]
+autovideosink -up-> [*]
 @enduml

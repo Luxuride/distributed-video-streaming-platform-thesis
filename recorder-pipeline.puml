@@ -1,6 +1,7 @@
 @startuml
+left to right direction
 [*] --> pipewiresrc
-pipewiresrc: Capture video from PipeWire
+pipewiresrc: Capture video\nfrom PipeWire
 pipewiresrc --> videorate
 videorate: Make framerate constant
 videorate --> videoconvert
@@ -8,18 +9,18 @@ videoconvert: Convert video format
 videoconvert --> timeoverlay
 timeoverlay: Debug time in video
 timeoverlay --> vaapipostproc
-vaapipostproc: Convert video to VAAPI format
+vaapipostproc: Convert video to\nVAAPI format
 vaapipostproc --> vaapih264enc
 vaapih264enc: Hardware H.264 encoding
-vaapih264enc --> h264parse
+vaapih264enc -right-> h264parse
 h264parse: Parse H.264 stream
-h264parse --> mpegtsmux
+h264parse -up-> mpegtsmux
 mpegtsmux: Mux into MPEG-TS
-mpegtsmux --> rtmp2tpay
+mpegtsmux -up-> rtmp2tpay
 rtmp2tpay: RTP payloader for RTMP
-rtmp2tpay --> queue
+rtmp2tpay -up-> queue
 queue: Buffering queue
-queue --> appsink
+queue -up-> appsink
 appsink: Output to application sink
-appsink --> [*]
+appsink -up-> [*]
 @enduml
