@@ -370,14 +370,82 @@ Each node generates a cryptographic peer identity (public/private keypair). This
 The current prototype does not implement a full authorization policy (e.g., allowlists, role-based access, signed stream ownership claims). It implements authenticated transport primitives and message validation hooks that can be extended in future iterations.
 
 \section{Current implementation}
-My implementation is split into my testing binary I am using to glue all the parts together and then library crates for screen recording, decoding and transport layer.
+The implementation is organized as a Rust workspace consisting of four library crates and two executable binaries. The library crates handle distinct concerns --- screen capture, rendering, \ac{P2P} network transport, and file-based video reading --- while the binaries integrate them for live use and automated testing respectively.
 
-First implementation used mpegts format for video stream, however they were causing gossipsub stream to be overwhelmed with huge volume of data as mpegts packets are only 188 bytes in size. This overwhelmed gossipsub and caused the stream to halt.
+An early prototype used bare MPEG-TS streams, where each MPEG-TS packet has a fixed size of 188 bytes. Forwarding one network packet per MPEG-TS packet produced an extremely high packet rate that saturated the Gossipsub message queue and caused the stream to stall. The fix was to multiplex several MPEG-TS packets into a single larger RTP datagram: \texttt{mpegtsmux} with \texttt{alignment=7} groups seven 188-byte MPEG-TS packets into one 1316-byte RTP payload, reducing the packet rate by a factor of seven. The file-based testing pipeline goes further and adopts direct H.264-in-RTP payloading (\texttt{rtph264pay}) with a configurable MTU of 4096 bytes, eliminating the MPEG-TS layer entirely.
 
-To solve this issue I have switched to RTP packets which size I can control.
+\subsection{Workspace and crate structure}
+The Cargo workspace contains five members. Table~\ref{tab:crate-overview} lists each member's role and key external dependencies.
+
+\begin{table}[h]
+    \centering
+    \caption{Workspace crate overview}
+    \label{tab:crate-overview}
+    \resizebox{\textwidth}{!}{%
+        \begin{tabular}{|l|l|l|}
+            \hline
+            \textbf{Crate} & \textbf{Role} & \textbf{Key dependencies} \\
+            \hline
+            \texttt{libraries/recorder}     & Live Wayland screen capture $\rightarrow$ RTP output   & \texttt{ashpd}, \texttt{gstreamer} \\
+            \hline
+            \texttt{libraries/renderer}     & RTP H.264 input $\rightarrow$ decoded video display     & \texttt{gstreamer}, \texttt{gst-app} \\
+            \hline
+            \texttt{libraries/network}      & \ac{P2P} transport backends                             & \texttt{libp2p}, \texttt{serde\_cbor}, \texttt{tokio} \\
+            \hline
+            \texttt{libraries/video-reader} & File-based RTP source for testing                       & \texttt{gstreamer}, \texttt{tokio} \\
+            \hline
+            \texttt{stream\_test}           & Testing and orchestration binary                        & all above, \texttt{clap}, \texttt{csv} \\
+            \hline
+        \end{tabular}%
+    }
+\end{table}
+
+All crates share a Tokio async runtime. The root binary (\texttt{p2p-stream}) integrates the recorder and renderer for interactive live use, while \texttt{stream\_test} drives the repeatable performance experiments described in the following chapter.
+
+\subsection{Shared data structures and trait interface}
+\label{sec:chunk-trait}
+All transport variants carry video data as instances of \texttt{VideoStreamChunk}, defined in \texttt{libraries/network/src/protocol.rs}:
+
+\begin{verbatim}
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct VideoStreamChunk {
+    #[serde(with = "serde_bytes")]
+    pub chunk: Vec<u8>,
+    pub timestamp: SystemTime,
+    pub index: u64,
+}
+\end{verbatim}
+
+The three fields serve distinct purposes. \texttt{chunk} carries the raw RTP payload bytes; the \texttt{serde\_bytes} attribute instructs the CBOR serializer to encode it as a compact byte array rather than as a sequence of integers, which is important for throughput. \texttt{timestamp} records the wall-clock time at which the chunk was created on the producer; the analyzer subtracts this from its local arrival time to derive per-packet latency. \texttt{index} is a monotonically increasing counter used to detect lost packets (gaps in the sequence) and out-of-order delivery (arrivals where \texttt{index} is less than the highest seen so far).
+
+Serialization between peers uses CBOR via the \texttt{serde\_cbor} crate. CBOR is a compact binary encoding that handles raw byte arrays natively and requires no schema, making it straightforward to extend the structure without a versioning step.
+
+The \texttt{P2PSwarm} trait forms the interface boundary between media-handling and transport code:
+
+\begin{verbatim}
+#[async_trait]
+pub trait P2PSwarm: Send + Sync {
+    fn inbound_rx(&self) -> &Receiver<VideoStreamChunk>;
+    async fn send_message(&mut self, chunk: VideoStreamChunk);
+}
+\end{verbatim}
+
+The trait exposes exactly two operations: read access to an \texttt{async\_channel} receiver that delivers inbound chunks, and an async method to enqueue an outbound chunk. Because all media components interact with the network only through this interface, the transport backend can be selected at runtime without any change to capture, rendering, or analysis code.
+
 \subsection{Screen recording crate}
-For screen recording I am using ashpd's wayland-capture library. It provides simple interface for capturing screen content on wayland compositors supporting the screen-capture portal. This portal is already widely supported by most wayland compositors including major compositors like GNOME's Mutter and KDE's KWin.
-Using the library I receive pipewire file descriptor which I then provide to GStreamer's pipewire source element to get video frames into GStreamer pipeline.
+\label{sec:recorder-crate}
+Live screen capture is implemented in \texttt{libraries/recorder} using the \texttt{ashpd} crate, which provides a Rust interface to the XDG Desktop Portal screen-cast service. The portal is the standard Wayland mechanism for delegating monitor and window selection and user permission prompts to the compositor; it is supported by all major Wayland compositors including GNOME Mutter and KDE KWin.
+
+The capture initialization sequence is as follows:
+\begin{enumerate}
+    \item \texttt{Screencast::new()} --- opens a D-Bus proxy to the screen-cast portal.
+    \item \texttt{create\_session()} --- creates a portal session object.
+    \item \texttt{select\_sources()} --- presents a source picker to the user with cursor embedding and support for both monitors and individual application windows.
+    \item \texttt{start()} --- begins capture and returns a stream descriptor containing the PipeWire node ID.
+    \item \texttt{open\_pipe\_wire\_remote()} --- returns an \texttt{OwnedFd} (PipeWire file descriptor) for the session.
+\end{enumerate}
+
+The file descriptor and node ID are passed directly into the GStreamer pipeline.
 
 \begin{figure}[h]
     \centering
@@ -385,35 +453,131 @@ Using the library I receive pipewire file descriptor which I then provide to GSt
     \caption{Recorder pipeline}
 \end{figure}
 
-The Recorder Pipeline displays the flow of data from the PipeWire source to the final encoded video stream. It starts with capturing video frames from the PipeWire source, processes them through various elements like videorate, videoconvert, and x264enc for encoding, and finally packages them into RTP packets for transmission.
-
-There are also edge cases for when hardware encoding is unavailable, in which case software encoding is used instead. The final output is an RTP stream that can be sent over the network. The benefit of encoding into RTP packets is their consistent size, which prevents sending large packets that could clog the transport layer. The output of the pipeline is then sent into the memory of host program to be then used in the transport layer.
+The GStreamer recorder pipeline elements and their relevant parameters are:
+\begin{itemize}
+    \item \textbf{\texttt{pipewiresrc}} with \texttt{fd} and \texttt{path} set to the portal-provided file descriptor and PipeWire node ID --- ingests raw frames from PipeWire at the source capture rate.
+    \item \textbf{\texttt{queue leaky=downstream}} --- a bounded queue that discards its oldest pending buffers when the downstream pipeline cannot keep up. Without this element, backpressure from a congested transport layer would propagate upstream and stall the compositor's screen capture.
+    \item \textbf{\texttt{videorate}}, \textbf{\texttt{videoconvert}} --- normalize the frame rate to a constant target and convert the pixel format to one acceptable to the encoder.
+    \item \textbf{\texttt{timeoverlay}} --- renders a wall-clock timestamp into each frame, useful for visual end-to-end latency verification.
+    \item \textbf{H.264 encoding, VA-API path:} \texttt{vaapipostproc} converts the frame to a VA-API surface; \texttt{vaapih264enc quality-level=6 bitrate=1000 keyframe-period=0} encodes it via hardware. A \texttt{keyframe-period} of zero instructs the hardware encoder to insert I-frames adaptively rather than at a fixed interval.
+    \item \textbf{H.264 encoding, software fallback:} if VA-API elements are unavailable at runtime, the pipeline substitutes an \texttt{identity} pass-through for the post-processor and \texttt{x264enc} (with \texttt{tune=zerolatency}, \texttt{speed-preset=ultrafast}, \texttt{bitrate=500}, and \texttt{keyframe-period=30}) for the encoder. The \texttt{zerolatency} tune disables B-frame look-ahead and internal output buffering, minimizing encoding latency at some cost to compression efficiency.
+    \item \textbf{\texttt{h264parse config-interval=1}} --- instructs the parser to inject SPS and PPS parameter-set NAL units at every key-frame boundary, allowing a newly joining consumer or one recovering from packet loss to resynchronize immediately without waiting for the next natural key-frame.
+    \item \textbf{\texttt{mpegtsmux alignment=7}} --- multiplexes the H.264 elementary stream into MPEG-TS and groups seven 188-byte MPEG-TS packets per output buffer, yielding 1316-byte payloads.
+    \item \textbf{\texttt{rtpmp2tpay pt=33}} --- wraps each MPEG-TS payload in an RTP datagram using payload type 33, the IANA-registered type for MPEG-TS over RTP.
+    \item \textbf{\texttt{appsink max-buffers=1 drop=true}} --- exposes RTP samples to application code. A buffer limit of one combined with \texttt{drop=true} discards any sample that arrives while the previous one has not yet been consumed, preventing unbounded memory growth under transport congestion.
+\end{itemize}
 
 \subsection{Rendering crate}
-For decoding I am also using GStreamer. The decoding pipeline is much simpler than the encoding pipeline as it only needs to decode the incoming RTP packets back into raw video frames for display.
+\label{sec:renderer-crate}
+Incoming RTP H.264 payloads are decoded and displayed by the \texttt{GstRenderer} struct in \texttt{libraries/renderer}. The renderer is built around the RTP H.264 format produced by the file-based test source (\texttt{rtph264pay pt=96}) and processes chunks through the following pipeline:
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=1\textwidth]{out/renderer-pipeline/renderer-pipeline.png}
-    \caption{Recorder pipeline}
+    \caption{Renderer pipeline}
 \end{figure}
 
-The decoding pipeline consists of RTP depayloader, H264 decoder, videoconvert, and autovideosink elements. The RTP depayloader extracts the encoded video data from the RTP packets, which is then decoded by the H264 decoder. The videoconvert element ensures that the video format is compatible with the display sink, which is handled by autovideosink.
+\begin{itemize}
+    \item \textbf{\texttt{appsrc}} --- configured with RTP H.264 caps (\texttt{encoding-name=H264}, \texttt{payload=96}, \texttt{clock-rate=90000}), \texttt{is-live=true}, \texttt{do-timestamp=false}, and \texttt{format=Time}. Declaring the caps before the first buffer arrives allows GStreamer to negotiate the downstream pipeline topology immediately.
+    \item \textbf{\texttt{rtpjitterbuffer latency=5000}} --- accumulates incoming RTP packets for up to 5000 milliseconds and reorders them by sequence number before passing them downstream. The large window absorbs worst-case reordering from Gossipsub's multi-hop mesh, trading initial latency for stable decoding order.
+    \item \textbf{\texttt{rtph264depay}}, \textbf{\texttt{h264parse}} --- strip the RTP framing and reassemble NAL units into a continuous H.264 bytestream.
+    \item \textbf{H.264 decoding, fallback chain:} \texttt{vaapih264dec low-latency=true} (hardware, VA-API) is tried first; \texttt{v4l2h264dec} (hardware, V4L2) second; \texttt{avdec\_h264} (software, libavcodec) third. The \texttt{low-latency} property on the VA-API decoder disables its internal frame reordering buffer, reducing decoder-introduced latency.
+    \item \textbf{\texttt{vaapipostproc}} (optional) --- inserted when available to perform colorspace conversion on the VA-API surface before the software path.
+    \item \textbf{\texttt{videoconvert}}, \textbf{\texttt{queue}}, \textbf{\texttt{autovideosink sync=false}} --- \texttt{sync=false} instructs GStreamer to display each decoded frame immediately upon arrival rather than waiting for the presentation clock. For a live \ac{P2P} stream, minimizing end-to-end latency takes priority over smooth frame pacing.
+\end{itemize}
 
 \subsection{Transport layer crate}
-There are two implementations of the transport layer. The first one uses only Gossipsub for sending video data, while the second uses solely stream to send data between peers.
+\label{sec:network-crate}
+The \texttt{libraries/network} crate provides two concrete implementations of the \texttt{P2PSwarm} trait. Both share the same underlying stack: QUIC transport over UDP listening on all interfaces at a random ephemeral port (\texttt{/ip4/0.0.0.0/udp/0/quic-v1}), and mDNS for automatic peer discovery on local networks. Each node generates a fresh Ed25519 keypair at startup, giving it a unique but ephemeral cryptographic identity for the duration of the session.
+
 \subsubsection{Gossipsub}
-This implementation uses Gossipsub protocol to send video data as messages between peers. The video data is split into smaller chunks to fit within the message size limits of Gossipsub. Each chunk is then sent as a separate message to the peers in the network.
+The Gossipsub backend configures strict per-message authentication:
 
-Expected downsides of this approach are increased latency, potential packet loss, and out-of-order delivery due to the nature of Gossipsub's message dissemination.
+\begin{verbatim}
+let gossipsub_config = gossipsub::ConfigBuilder::default()
+    .validation_mode(gossipsub::ValidationMode::Strict)
+    .validate_messages()
+    .build()?;
+let gs = gossipsub::Behaviour::new(
+    MessageAuthenticity::Signed(local_key.clone()),
+    gossipsub_config,
+)?;
+\end{verbatim}
 
-The upside of this approach is mesh network topology, which increases resilience and decentralization of the network.
+\texttt{ValidationMode::Strict} combined with \texttt{MessageAuthenticity::Signed} requires every Gossipsub message to carry a valid Ed25519 signature from its originating peer before it is forwarded through the mesh. Each inbound message is validated and the outcome is reported back to the swarm: valid, fresh chunks receive \texttt{MessageAcceptance::Accept} and are forwarded; invalid or stale ones receive \texttt{MessageAcceptance::Reject} and are dropped immediately without further propagation.
+
+A 5-second TTL is applied to every accepted chunk. After CBOR deserialization, the implementation computes the chunk's age and rejects it if too old:
+
+\begin{verbatim}
+static TTL: Duration = Duration::from_secs(5);
+// ...
+let age = SystemTime::now()
+    .duration_since(chunk.timestamp)
+    .unwrap();
+if age > TTL {
+    // Reject — do not forward through the mesh
+}
+\end{verbatim}
+
+This prevents stale video frames from continuing to circulate after their playback window has closed, reducing unnecessary load on the mesh.
+
+Peers are managed through mDNS lifecycle events: on \texttt{mdns::Event::Discovered}, each new peer is dialed and added to the Gossipsub mesh via \texttt{add\_explicit\_peer}; on \texttt{mdns::Event::Expired}, it is removed via \texttt{remove\_explicit\_peer}. A shared, thread-safe peer set (\texttt{HashSet<PeerId>} guarded by an \texttt{Arc<RwLock>}) is kept current on every connection event.
+
 \subsubsection{Stream}
-This implementation uses libp2p's stream protocol to establish direct connections between peers for video data transmission. A stream is created between the sender and receiver, allowing for continuous data flow. This approach is expected to provide lower latency and more reliable delivery compared to Gossipsub, as streams are designed for direct peer-to-peer communication.
+The Stream backend uses \texttt{libp2p\_stream} with a custom versioned protocol identifier:
 
-The downside of this approach is the need for direct connections between peers, which may limit scalability and decentralization compared to Gossipsub's mesh network.
+\begin{verbatim}
+const STREAM_PROTOCOL: StreamProtocol
+    = StreamProtocol::new("/stream");
+\end{verbatim}
 
-As this approach does not provide mesh network topology, but rather relies on the person producing the stream to connect to all consumers directly, it is used as a baseline for performance comparison.
+On the receiving side, a dedicated Tokio task listens for incoming streams on the \texttt{/stream} protocol, spawning a sub-task per connection. Each sub-task reads the full payload with \texttt{read\_to\_end}, deserializes it from CBOR into a \texttt{VideoStreamChunk}, and forwards the result to the inbound channel.
+
+On the sending side, each \texttt{send\_message} call serializes the chunk into a CBOR byte vector once, then opens a new outbound stream to every peer in the set and writes the same byte vector via \texttt{write\_all}. Serializing once and reusing the byte vector for all destinations avoids redundant encoding work as the consumer count increases.
+
+The same mDNS autodiscovery logic and shared peer set bookkeeping used in the Gossipsub backend are reused unchanged. The Stream backend does not apply a TTL filter; staleness checking is left to the receiving application.
+
+\subsection{Testing binary}
+\label{sec:test-binary}
+The \texttt{stream\_test} binary is the primary tool for controlled experiments. It accepts two orthogonal command-line arguments via \texttt{clap}:
+
+\begin{itemize}
+    \item \textbf{\texttt{--protocol}} --- selects the transport backend: \texttt{gossipsub}, \texttt{stream}, or \texttt{hybrid}.
+    \item \textbf{\texttt{--role}} --- selects the operational role: \texttt{manager}, \texttt{producer}, \texttt{analyzer}, or \texttt{renderer}.
+\end{itemize}
+
+The four roles operate as follows:
+\begin{itemize}
+    \item \textbf{Manager} --- spawns two child processes of the same binary: one as \texttt{producer} and one as \texttt{analyzer}, both with the same \texttt{--protocol} flag. It waits for both children to exit or handles Ctrl+C by sending \texttt{SIGINT} to each child before joining them, ensuring clean shutdown of all media pipelines and transport tasks.
+    \item \textbf{Producer} --- instantiates a \texttt{VideoReader} (described below) and the chosen transport swarm, then continuously sends every \texttt{VideoStreamChunk} produced by the video pipeline through \texttt{send\_message} until the source reaches end-of-stream.
+    \item \textbf{Analyzer} --- subscribes to the inbound channel of the chosen swarm and records each received chunk as an \texttt{AnalysisItem}. After five seconds of inactivity, it writes all collected items to \texttt{Output.csv} using the \texttt{csv} crate:
+\begin{verbatim}
+#[derive(Serialize)]
+pub struct AnalysisItem {
+    creation_time: u128,
+    arrival_time: u128,
+    index: u64,
+    size: u32,
+}
+\end{verbatim}
+    \texttt{creation\_time} and \texttt{arrival\_time} are UNIX timestamps in milliseconds; their difference gives per-packet one-way latency. \texttt{index} allows detection of lost and out-of-order packets. \texttt{size} is the chunk payload length plus 24 bytes for the serialized \texttt{timestamp} and \texttt{index} metadata.
+    \item \textbf{Renderer} --- receives inbound chunks and pushes each raw byte payload into \texttt{GstRenderer}, producing a live decoded video window for visual inspection.
+\end{itemize}
+
+\subsubsection{Video reader pipeline}
+\label{sec:video-reader-pipeline}
+The \texttt{VideoReader} in \texttt{libraries/video-reader} reads a pre-recorded MP4 file specified by the \texttt{VIDEO\_SOURCE} environment variable and emits it as a sequence of RTP H.264 \texttt{VideoStreamChunk} values at the file's original encoded frame rate. Its GStreamer pipeline is designed to produce output in the same RTP H.264 format as a live capture session, keeping test results directly comparable. The pipeline stages are:
+
+\begin{enumerate}
+    \item \texttt{filesrc} $\rightarrow$ \texttt{qtdemux} --- reads and demultiplexes the MP4 container; the H.264 elementary stream is exposed on a dynamic pad.
+    \item \texttt{h264parse} --- normalizes the H.264 bytestream.
+    \item \textbf{Decode:} \texttt{vaapih264dec} (hardware, VA-API) with fallback to \texttt{avdec\_h264} (software). Converting to raw frames is required for the subsequent re-encoding step.
+    \item \texttt{timeoverlay} --- embeds a wall-clock timestamp for visual end-to-end latency verification.
+    \item \textbf{Re-encode:} \texttt{vaapih264enc quality-level=6 bitrate=500} with fallback to \texttt{x264enc tune=zerolatency speed-preset=ultrafast bitrate=500 keyframe-period=30}. Re-encoding produces a fresh H.264 stream with the same encoder settings as the live recorder, ensuring format and bitrate compatibility across test scenarios.
+    \item \texttt{h264parse config-interval=1} --- injects inline SPS/PPS parameter sets.
+    \item \texttt{rtph264pay mtu=4096 pt=96} --- packetizes NAL units into RTP datagrams with payload type 96 and an MTU of $2^{12}$ = 4096 bytes. The large MTU produces substantially fewer packets per second than the 1316-byte MPEG-TS payloads of the recorder, reducing serialization and dispatch overhead in the transport layer.
+    \item \texttt{appsink max-buffers=1 drop=true} --- exposes samples to application code with the same back-pressure policy as the recorder.
+\end{enumerate}
 
 \section{Testing of stability and performance}
 \subsection{Reusable source}
