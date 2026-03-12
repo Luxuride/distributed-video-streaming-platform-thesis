@@ -48,6 +48,7 @@ latexmk -pdf main
 - Bibliography style is `iso690` — entries go in `text-02-literatura/text-02-literatura.bib`
 - Cite with `\cite{citekey}`, e.g. `\cite{schollmeierDefinitionPeertopeerNetworking2001}`
 - BibTeX keys follow pattern: `authorNameShortTitleYear`
+ - Use citations wherever possible. If new sources are needed, search for them and note them, but expect the user to add them to Zotero and re-export the `.bib` file.
 
 ### Cross-references
 - Use `\label{sec:abr}` on sections/figures, reference with `\ref{sec:abr}` or `\S\ref{sec:abr}`
