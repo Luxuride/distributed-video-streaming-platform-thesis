@@ -303,24 +303,71 @@ There is also a structural conflict between scalability and latency. Mesh-style 
 
 
 
-\section{Implementation of my video streaming solution}
+\section{Implementation of developed video streaming solution}
 \subsection{Choice of programming language}
-I have chosen Rust programming language because of my familiarity with programming in the chosen language but alse because of it's speed. Fast programming language is needed for critical systems like video streaming.
+The prototype is implemented in Rust. Besides personal familiarity, Rust was selected for technical reasons that are directly relevant to real-time media systems: memory safety without need garbage collection, strong type system, and predictable performance. High volume packet transport requires high performance, and variable memory allocations and the language gives us guarantee of freeing unused memory as soon as it is no longer needed.
+
+Another important reason is multi-threading safety. The implementation runs concurrent capture, transport, rendering, and analysis tasks, and Rust enforces thread-safety rules at compile time through ownership, borrowing, and the \texttt{Send}/\texttt{Sync} trait system. This significantly reduces risk of data races in shared state. In practice, shared resources are passed through explicit synchronization primitives (for example \texttt{Arc<Mutex<...>>}) or message channels, so synchronization is visible in code and easier to audit.
+
+Rust also provides mature asynchronous tooling (
+\texttt{tokio}) and ecosystem crates required by this thesis, namely libp2p for networking and GStreamer bindings for media processing. This makes it possible to keep capture, transport, and rendering in one language while preserving low-level control over buffers, serialization, and timing metadata.
+
+\subsection{Implementation architecture}
+The implementation repository is organized as a Rust workspace with reusable library crates and executable binaries. The key design goal is separation of concerns:
+\begin{itemize}
+    \item \textbf{Media capture / source layer} --- produces RTP payloads from either live screen capture or a deterministic file source used in testing.
+    \item \textbf{Transport layer} --- abstracts 
+    \ac{P2P} communication behind a common trait so multiple transport strategies can be evaluated with the same producer and consumer logic.
+    \item \textbf{Rendering / sink layer} --- accepts incoming RTP payloads and decodes them to a local video sink.
+    \item \textbf{Testing orchestration layer} --- runs producer, renderer, and analyzer roles for repeatable experiments and CSV export.
+\end{itemize}
+
+At the transport boundary, packets are represented by a shared structure (\texttt{VideoStreamChunk}) containing serialized media bytes, creation timestamp, and monotonic sequence index. This metadata enables the measurement methodology described in Chapter 7 (latency, packet loss, reordering, and throughput).
 \subsection{Screen Recording}
-For screen recording I have chosen to only implement wayland screen capture, as that is the platform I am developing on and it also abstracts any need for handling window and screen choice. That is handled on the OS side.
-I am using 
+Screen capture is implemented for Wayland using the 
+\texttt{ashpd} interface to the XDG desktop portal. This approach delegates monitor/window selection and user permissions to the compositor and portal service.
+
+After the portal session is created, the application obtains a PipeWire file descriptor and selected stream node identifier. These are injected into the GStreamer pipeline through \texttt{pipewiresrc}, so capture frames can be processed with standard media elements.
+
+The recorder pipeline performs rate normalization and encoding before handing payloads to the networking layer:
+\begin{itemize}
+    \item \texttt{pipewiresrc} $\rightarrow$ \texttt{videorate} $\rightarrow$ \texttt{videoconvert} for acquisition and normalization,
+    \item \texttt{timeoverlay} for visible timing/debug annotation,
+    \item hardware-first H.264 encoding (VA-API) with automatic fallback to software \texttt{x264enc},
+    \item parser/mux/payloader stages that produce RTP payloads consumed via \texttt{appsink}.
+\end{itemize}
+
+The implementation uses low-latency settings such as bounded sink buffers and frame dropping when downstream is overloaded, preventing unbounded queue growth during transport congestion.
 \subsection{Encoding}
-There are 2 main encoding/decoding libraries. FFmpeg and GStreamer. I have chosen GStreamer because of it's pipeline based approach which allows for easy construction of complex media processing workflows. It is also highly modular and extensible, with a wide range of plugins available for various media formats and processing tasks.
+Two dominant open-source media stacks are FFmpeg and GStreamer. For this thesis, GStreamer was chosen because its graph-based pipeline model maps naturally to a modular experimental architecture where individual stages can be replaced without rewriting the full application.
+
+In practice, this enables hardware/software fallback at runtime (for both encoder and decoder), explicit insertion of RTP-related elements, and direct application integration through \texttt{appsink}/\texttt{appsrc}. The same design is used in both recorder and renderer crates, which simplifies debugging and keeps the media path explicit.
+
+The corresponding rendering pipeline accepts RTP H.264 payloads on \texttt{appsrc}, passes them through jitter buffering and depayloading, decodes with hardware-first fallback, converts the video format, and displays frames using \texttt{autovideosink}.
 \subsection{Network Layer}
-For network layer I have chosen libp2p library. Libp2p is modular network stack that provides various protocols and transports for building \ac{P2P} applications. It is widely used in decentralized applications like IPFS \cite{Libp2pIPFSDocs} and Ethereum 2.0 \cite{Libp2pEthereumMerge}.
+The transport layer is built on libp2p, a modular 
+\ac{P2P} stack used in production decentralized systems.
+The implementation uses QUIC transport and mDNS peer discovery in local test networks, while higher-level dissemination logic is varied per protocol implementation.
+
+All transport variants implement a common trait interface (
+\texttt{P2PSwarm}) with two operations: receive inbound chunks and enqueue outbound chunks. This abstraction allows producer/renderer/analyzer components to stay unchanged while only the transport strategy is replaced.
+
+Libp2p was selected because it provides identity, encrypted channels, peer discovery, stream multiplexing, and protocol composition in one ecosystem 
+\cite{Libp2pIPFSDocs,Libp2pEthereumMerge}.
 \subsubsection{Gossipsub}
-Gossipsub is a pub-sub protocol built on top of libp2p. It allows peers to subscribe to topics and publish messages to those topics. Gossipsub uses a mesh network topology, where each peer maintains connections to a subset of other peers in the network. This allows for efficient message dissemination and resilience against peer failures.
+The first transport variant uses Gossipsub publish/subscribe. Video chunks are serialized and published into a topic-based mesh. Receivers decode messages back into chunk structures and apply freshness filtering before acceptance. In the current codebase, stale chunks are explicitly rejected after a short time-to-live window, which reduces propagation of outdated real-time data.
+
+The expected strength of this variant is resilience: data can propagate even when direct links between producer and all viewers are not available. The expected cost is higher latency and possible reordering caused by multi-hop dissemination.
 \subsubsection{Stream}
-Libp2p's stream protocol allows for direct peer-to-peer communication between two peers. It establishes a direct connection between the sender and receiver, allowing for continuous data flow. This approach is expected to provide lower latency and more reliable delivery compared to Gossipsub, as streams are designed for direct peer-to-peer communication. In my implementation it is supposed to be used as a baseline for performance comparison, as it does not provide mesh network topology, but rather relies on the person producing the stream to connect to all consumers directly.
+The second variant uses direct libp2p streams over a dedicated stream protocol identifier. Outbound chunks are serialized once and sent directly to currently connected peers. Inbound stream payloads are decoded immediately and forwarded to the media pipeline.
+
+This strategy minimizes overlay complexity and serves as a baseline for latency-oriented comparison. Its limitation is scalability in one-to-many scenarios, because the producer must maintain direct outgoing transmission to every consumer.
 \subsubsection{Security}
-Libp2p offers encrypted communication between peers out of the box using Noise Protocol Framework or TLS. Libp2p also supports QUIC transport protocol, which provides built-in encryption. \cite{SecurityConsiderations}
+Security is provided by libp2p secure channels and peer identity. Communication is authenticated and encrypted at the transport/session layer (Noise/TLS, depending on transport configuration), and QUIC provides additional modern transport properties useful for real-time traffic. These defaults reduce implementation risk compared to building custom cryptographic channels in application code. \cite{SecurityConsiderations,WhatAreSecure}
 \subsubsection{Authentication}
-Gossipsub supports peer authentication using public-key cryptography. Each peer has a unique identity based on a public/private key pair. When a peer joins the network, it shares its public key with other peers. This allows peers to verify the authenticity of messages received from other peers.
+Each node generates a cryptographic peer identity (public/private keypair). This identity is used by libp2p during connection establishment and, in the Gossipsub variant, for signed message authenticity. As a result, receivers can attribute accepted messages to concrete peer identities and apply protocol-level validation decisions.
+
+The current prototype does not implement a full authorization policy (e.g., allowlists, role-based access, signed stream ownership claims). It implements authenticated transport primitives and message validation hooks that can be extended in future iterations.
 
 \section{Current implementation}
 My implementation is split into my testing binary I am using to glue all the parts together and then library crates for screen recording, decoding and transport layer.

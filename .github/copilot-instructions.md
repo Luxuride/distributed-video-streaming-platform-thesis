@@ -4,6 +4,9 @@
 
 This is a **LaTeX bachelor's thesis (BP)** for UHK (Hradec Králové) FIM faculty, written in English. The thesis topic is implementing a distributed P2P video streaming platform in Rust using libp2p, GStreamer, and Wayland screen capture.
 
+The thesis is built upon this implementation project:
+- https://github.com/Luxuride/p2p-stream
+
 ## File Structure
 
 | File | Purpose |
