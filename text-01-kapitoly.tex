@@ -363,11 +363,11 @@ The second variant uses direct libp2p streams over a dedicated stream protocol i
 
 This strategy minimizes overlay complexity and serves as a baseline for latency-oriented comparison. Its limitation is scalability in one-to-many scenarios, because the producer must maintain direct outgoing transmission to every consumer.
 \subsubsection{Security}
-Security is provided by libp2p secure channels and peer identity. Communication is authenticated and encrypted at the transport/session layer (Noise/TLS, depending on transport configuration), and QUIC provides additional modern transport properties useful for real-time traffic. These defaults reduce implementation risk compared to building custom cryptographic channels in application code. \cite{SecurityConsiderations,WhatAreSecure}
+Security in the prototype is based on libp2p secure channels and QUIC transport security. In QUIC, transport security is provided by TLS~1.3, which gives confidentiality, integrity protection, and peer authentication during connection establishment; RFC~9001 also notes that, in the absence of packet loss, new connections can usually be established and secured within a single round trip, which is relevant for real-time media delivery. In practice, this means the application does not implement its own key exchange or packet-protection scheme, reducing the risk of cryptographic design and implementation errors. At the same time, secure transport protects the channel between peers, not the higher-level policy of who should be allowed to publish, receive, or forward a stream. \cite{thomsonUsingTLSSecure2021,SecurityConsiderations,WhatAreSecure}
 \subsubsection{Authentication}
-Each node generates a cryptographic peer identity (public/private keypair). This identity is used by libp2p during connection establishment and, in the Gossipsub variant, for signed message authenticity. As a result, receivers can attribute accepted messages to concrete peer identities and apply protocol-level validation decisions.
+Each node generates a cryptographic peer identity (public/private keypair). This identity is used by libp2p during connection establishment to authenticate the remote peer and, in the Gossipsub variant, to sign published messages so that receivers can verify message origin before accepting or propagating data. This is an authentication mechanism rather than a complete authorization policy: authentication answers which peer established the connection or sent the message, while authorization decides which authenticated peers are allowed to publish, subscribe, or relay a stream. \cite{SecurityConsiderations,WhatAreSecure}
 
-The current prototype does not implement a full authorization policy (e.g., allowlists, role-based access, signed stream ownership claims). It implements authenticated transport primitives and message validation hooks that can be extended in future iterations.
+The current prototype does not implement a full authorization policy (e.g., allowlists, role-based access, signed stream ownership claims). It provides authenticated transport primitives and validation hooks that can be extended in future iterations with explicit admission control or peer reputation mechanisms.
 
 \section{Current implementation}
 The implementation is organized as a Rust workspace consisting of four library crates and two executable binaries. The library crates handle distinct concerns --- screen capture, rendering, \ac{P2P} network transport, and file-based video reading --- while the binaries integrate them for live use and automated testing respectively.
@@ -487,7 +487,7 @@ Incoming RTP H.264 payloads are decoded and displayed by the \texttt{GstRenderer
 \end{itemize}
 
 \subsection{Transport layer crate}
-\label{sec:network-crate}
+\label{sec:network_crate}
 The \texttt{libraries/network} crate provides two concrete implementations of the \texttt{P2PSwarm} trait. Both share the same underlying stack: QUIC transport over UDP listening on all interfaces at a random ephemeral port (\texttt{/ip4/0.0.0.0/udp/0/quic-v1}), and mDNS for automatic peer discovery on local networks. Each node generates a fresh Ed25519 keypair at startup, giving it a unique but ephemeral cryptographic identity for the duration of the session.
 
 \subsubsection{Gossipsub}
