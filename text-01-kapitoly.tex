@@ -1,43 +1,43 @@
 \section{Introduction}
 This thesis explores decentralized live video streaming using \ac{P2P} networking. The primary objective is to design and implement a functional prototype and evaluate its performance and stability under controlled conditions. The motivation is to address known limitations of centralized delivery models, including infrastructure cost concentration, operational single points of failure, and scaling constraints.
 
-Most production streaming systems currently rely on centralized origins and \ac{CDN}s to deliver media. Although this model provides strong operational control and broad compatibility, large provider-side outages show that central dependencies can still impact service availability at significant scale.
+Most production streaming systems currently rely on centralized origins and \ac{CDN}s to deliver media. Although this model provides strong operational control and broad compatibility, provider-side outages demonstrate that central dependencies can still impact service availability at significant scale.\cite{ServiceHealthNov,peroniEndtoEndPipelinePerspective2025}
 
-The thesis therefore examines whether \ac{P2P} transport can provide a practical complement for live distribution. It evaluates both expected benefits (resource sharing, resilience, and potential cost reduction) and expected trade-offs (latency sensitivity, quality instability under churn, and security/governance requirements).
+The thesis therefore examines whether \ac{P2P} transport can provide a practical complement for live distribution. It evaluates both expected benefits (resource sharing, resilience, and potential cost reduction) and expected trade-offs (latency sensitivity, quality instability under churn, and security/governance requirements).\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012,SecurityConsiderations}
 
 The scope is live video streaming with emphasis on the transport layer.
 \section{Background}
 \subsection{Peer-to-Peer}
 
 Peer-to-peer (
-\ac{P2P}) networking is communication model where participating nodes (peers) can directly exchange data and services without relying exclusively on a permanently available central server. A widely used formalization defines \ac{P2P} systems through direct resource sharing between autonomous participants and distinguishes them from traditional client--server systems according to role distribution and control centralization.
+\ac{P2P}) networking is communication model where participating nodes (peers) can directly exchange data and services without relying exclusively on a permanently available central server. In practical architecture discussions, \ac{P2P} systems are characterized by direct resource sharing between autonomous participants and reduced reliance on centralized delivery components.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012}
 
 From architecture perspective, \ac{P2P} systems are typically described as either pure or hybrid. In pure \ac{P2P}, peers provide both control and data-plane functions in decentralized manner. In hybrid \ac{P2P}, selected centralized components are preserved for tasks such as discovery, bootstrap, or coordination, while most payload distribution is delegated to peers. This classification is important in practice because many real systems are designed as hybrids to combine operational control with horizontal scalability.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012}
 
 The main advantages of \ac{P2P} include improved scalability through aggregate upload capacity of many peers, reduced dependency on single infrastructure provider, and potential cost reduction for large-scale content distribution. However, these benefits are accompanied by trade-offs: peer churn, asymmetric residential connectivity, heterogeneous device capabilities, and more complex trust and abuse resistance mechanisms compared to centralized delivery.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012,SecurityConsiderations}
 
-For video distribution, \ac{P2P} is commonly combined with \ac{CDN} infrastructure in hybrid designs. Literature shows this approach can reduce provider bandwidth costs while preserving service stability by using the \ac{CDN} as fallback when peer capacity is insufficient.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} This hybrid approach is also reflected in modern implementations and frameworks, where transport, peer discovery, and secure communication primitives are exposed by reusable protocol stacks (for example libp2p) and browser-oriented distribution libraries.\cite{Libp2pIPFSDocs,Libp2pEthereumMerge,NovageP2pmedialoader2025}
+For video distribution, \ac{P2P} is commonly combined with \ac{CDN} infrastructure in hybrid designs. Literature shows this approach can reduce provider bandwidth costs while preserving service stability by using the \ac{CDN} as fallback when peer capacity is insufficient.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} This hybrid approach is also reflected in modern implementations and frameworks, where transport, peer discovery, and secure communication primitives are exposed by reusable protocol stacks (for example libp2p) and browser-oriented distribution libraries.\cite{Libp2pIPFSDocs,NovageP2pmedialoader2025}
 
 \subsection{Video Streaming}
-Video streaming is a method of delivering video data over a network as a continuous flow, allowing playback without downloading the entire file in advance.
+Video streaming is a method of delivering video data over a network as a continuous flow, allowing playback without downloading the entire file in advance.\cite{apostolopoulosVideoStreamingConcepts,peroniEndtoEndPipelinePerspective2025}
 
-The term covers both "on‑demand" services (pre‑recorded content fetched by the client) and "live" broadcasts where the stream is generated and consumed simultaneously.  In practice the distinction blurs: on‑demand systems still deliver chunks progressively, and live systems may buffer a few seconds of content to allow for network variability.  Historically streaming relied on specialised protocols such as RTSP/RTMP, but in the last decade the industry has converged on HTTP‑based delivery because of ubiquitous firewall/NAT traversal and existing CDN infrastructures.
+The term covers both "on‑demand" services (pre‑recorded content fetched by the client) and "live" broadcasts where the stream is generated and consumed simultaneously. In practice the distinction blurs: on‑demand systems still deliver chunks progressively, and live systems may buffer a few seconds of content to tolerate network variability. In current large-scale deployments, HTTP-based delivery (for example HLS and MPEG-DASH) is common because it aligns with existing web and CDN infrastructure.\cite{pantosHTTPLiveStreaming2017,mpegStandards,peroniEndtoEndPipelinePerspective2025}
 
-Streaming differs from simple progressive download because the receiver decodes and presents frames as they arrive; in adaptive systems, the delivered bitrate is adjusted according to network conditions (see \S\ref{sec:abr}).
+Streaming differs from simple progressive download because the receiver decodes and presents frames as they arrive; in adaptive systems, the delivered bitrate is adjusted according to network conditions (see \S\ref{sec:abr}).\cite{apostolopoulosVideoStreamingConcepts,peroniEndtoEndPipelinePerspective2025}
 
 \subsubsection{Adaptive Bitrate Streaming}
 \label{sec:abr}
-\ac{ABR} streaming is the mechanism by which a player dynamically switches between multiple encoded representations of a video according to available bandwidth, buffer occupancy, and device capabilities. Without \ac{ABR}, a single high-quality stream stalls whenever the network cannot sustain the selected rate, while a low-bitrate stream underuses available capacity on better connections. Early \ac{ABR} algorithms were primarily rate-based, buffer-based, or hybrid; modern systems increasingly incorporate learning-based optimization using network-trace and \ac{QoE} datasets. \ac{ABR} logic is typically implemented client-side and depends on manifests listing available representations and segment locations. Poor \ac{ABR} decisions are a major contributor to rebuffering events, which are important influence factors in \ac{QoE} models.
+\ac{ABR} streaming is the mechanism by which a player dynamically switches between multiple encoded representations of a video according to available bandwidth, buffer occupancy, and device capabilities. Without \ac{ABR}, a single high-quality stream stalls whenever the network cannot sustain the selected rate, while a low-bitrate stream underuses available capacity on better connections. \ac{ABR} logic is typically implemented client-side and depends on manifests listing available representations and segment locations. Early classes of \ac{ABR} algorithms are commonly described as rate-based, buffer-based, or hybrid, while recent work also studies learning-based optimization using network traces and \ac{QoE} data.\cite{peroniEndtoEndPipelinePerspective2025}
 
 \subsubsection{Streaming Protocols and Formats}
 Video streaming is not a single protocol but a family of delivery schemes. The most common today are:
 \begin{itemize}
-    \item \textbf{HTTP Live Streaming (HLS)} – developed by Apple and defined in RFC 8216, HLS uses an index playlist (.m3u8) containing URLs of media segments; segments are typically MPEG‑TS or fMP4 files fetched over HTTP/TCP (and increasingly HTTP/QUIC) \cite{pantos_http_2017}. Players periodically reload the playlist to discover new segments.
-    \item \textbf{MPEG‑DASH} – an ISO standard similar to HLS that uses MPD manifests and natively supports fMP4; delivery is also based on HTTP over TCP or QUIC \cite{noauthor_standards_nodate}. Standardization encouraged decoupling of container format and delivery transport.
-    \item \textbf{RTMP/RTSP} – older protocols historically used for low-latency live workflows; RTMP carries FLV packets over persistent TCP, while RTSP commonly negotiates \ac{RTP}/UDP media transport. These protocols still appear in contribution links, but browser-facing usage has declined.
-    \item \textbf{WebRTC} – designed for real-time communication, WebRTC uses secure real-time media transport over UDP-based paths and provides built-in congestion-control and retransmission behavior. In current browser ecosystems, it remains the dominant option for interactive sub-second latency use cases \cite{mcgrew_datagram_2010,noauthor_webrtc_nodate}.
+    \item \textbf{HTTP Live Streaming (HLS)} – developed by Apple and defined in RFC 8216, HLS uses an index playlist (.m3u8) containing URLs of media segments; segments are typically MPEG‑TS or fMP4 files fetched over HTTP/TCP (and increasingly HTTP/QUIC) \cite{pantosHTTPLiveStreaming2017}. Players periodically reload the playlist to discover new segments.
+    \item \textbf{MPEG‑DASH} – an ISO standard similar to HLS that uses MPD manifests and natively supports fMP4; delivery is also based on HTTP over TCP or QUIC \cite{mpegStandards,peroniEndtoEndPipelinePerspective2025}. Standardization encouraged decoupling of container format and delivery transport.
+    \item \textbf{RTMP/RTSP} – protocols used in older and contribution-focused live workflows. RTSP is standardized as an application-layer control protocol for real-time media delivery and commonly coordinates RTP-based transport.\cite{schulzrinneRealTimeStreamingProtocol2016}
+    \item \textbf{WebRTC} – designed for real-time communication, WebRTC uses secure real-time media transport over UDP-based paths and provides built-in congestion-control and retransmission behavior. In current browser ecosystems, it is a widely used option for interactive sub-second latency use cases \cite{mcrewDTLSExtension2010,webRTCRealtimeCommunication,peroniEndtoEndPipelinePerspective2025}.
 \end{itemize}
-Each protocol imposes different requirements on the underlying transport layer: HTTP-based approaches inherit in-order delivery and congestion behavior from TCP/QUIC, while \ac{RTP}/UDP-based systems expose packet loss, jitter, and reordering more directly to the application. These characteristics are central when designing \ac{P2P} transport because the alternative path must preserve acceptable playback behavior under the same constraints.
+Each protocol imposes different requirements on the underlying transport layer: HTTP-based approaches inherit in-order delivery and congestion behavior from TCP/QUIC, while \ac{RTP}/UDP-based systems expose packet loss, jitter, and reordering more directly to the application. These characteristics are central when designing \ac{P2P} transport because the alternative path must preserve acceptable playback behavior under the same constraints.\cite{pantosHTTPLiveStreaming2017,schulzrinneRTPTransportProtocol2003,webRTCRealtimeCommunication}
 
 
 \subsubsection{Video Streaming Pipeline}
@@ -56,7 +56,7 @@ The distribution stage handles video delivery from the media server to a user de
 
 This thesis primarily focuses on the distribution stage of the streaming pipeline, specifically on the transport layer between producer and consumers. \ac{P2P} mechanisms are evaluated as alternatives to centralized distribution in this stage. Encoding and decoding aspects are also addressed because practical transport viability depends on media packetization format, decoder tolerance, and buffering behavior.
 
-Modern distribution pipelines also generate manifests (playlists) and implement adaptive‑bitrate (ABR) logic in the player, which selects among multiple encoded representations based on observed throughput and buffer state (see \S\ref{sec:abr}). Manifest protocols such as HLS and MPEG‑DASH are transported over HTTP, riding on top of TCP or QUIC, which means that any P2P replacement needs to interoperate with or replicate these behaviours.
+Modern distribution pipelines also generate manifests (playlists) and implement adaptive‑bitrate (ABR) logic in the player, which selects among multiple encoded representations based on observed throughput and buffer state (see \S\ref{sec:abr}). Manifest protocols such as HLS and MPEG‑DASH are transported over HTTP, riding on top of TCP or QUIC, which means that any P2P replacement needs to interoperate with or replicate these behaviours.\cite{pantosHTTPLiveStreaming2017,mpegStandards,peroniEndtoEndPipelinePerspective2025}
 
 \begin{quote}
 The basic idea of video streaming is to split the video
@@ -72,24 +72,25 @@ From a transport perspective, streaming can be represented by three logical role
     \item Consumer --- receives and renders the stream.
 \end{itemize}
 These roles are used later to compare transport implementations without changing surrounding media logic.
+\cite{apostolopoulosVideoStreamingConcepts}
 
 \subsubsection{Static video streaming}
 Static video streaming refers to delivery of pre-recorded content stored on a server and requested by clients on demand.
 
-This model supports efficient caching and lower startup latency because content can be replicated to edge \ac{CDN} locations closer to users.
+This model supports efficient caching and lower startup latency because content can be replicated to edge \ac{CDN} locations closer to users.\cite{peroniEndtoEndPipelinePerspective2025}
 
 
 \subsubsection{Live video streaming}
 Live video streaming refers to real-time capture and transmission, where media is produced and consumed continuously rather than served as a completed file.
 
-According to Cloudflare \cite{WhatVideoCDN}, \ac{CDN} infrastructure is also used for live distribution at scale, but end-to-end latency is typically higher than in local direct paths because of ingest, processing, and distribution stages.
+In large-scale deployments, \ac{CDN} infrastructure is also used for live distribution, but end-to-end latency is typically higher than in local direct paths because of ingest, processing, and distribution stages.\cite{peroniEndtoEndPipelinePerspective2025}
 \subsubsection{\ac{P2P} video streaming}
 \ac{P2P} video streaming distributes media across peers in a decentralized overlay. In this model, a peer can consume stream data and forward it to other peers, reducing direct load on the original producer and potentially improving scalability.
 
-The main disadvantages are greater sensitivity to churn, variable path quality, and possible latency increases caused by multi-hop forwarding. Security and trust are also more complex because peers are not inherently trusted media sources.
+The main disadvantages are greater sensitivity to churn, variable path quality, and possible latency increases caused by multi-hop forwarding. Security and trust are also more complex because peers are not inherently trusted media sources.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012,SecurityConsiderations}
 
 \subsection{Basic Problems with video streaming}
-Core transport problems in video streaming include limited bandwidth, delay jitter, and packet loss rate \cite{apostolopoulosVideoStreamingConcepts}. Mesh-like \ac{P2P} overlays can additionally increase out-of-order delivery due to multi-path forwarding and asynchronous peer scheduling.
+Core transport problems in video streaming include limited bandwidth, delay jitter, and packet loss rate \cite{apostolopoulosVideoStreamingConcepts}. Overlay forwarding across multiple peers can additionally increase delay variation and out-of-order arrival in practice due to multi-path forwarding and asynchronous peer scheduling.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012}
 
 \subsubsection{Bandwidth}
 \begin{quote}
@@ -108,7 +109,7 @@ frames at a constant rate, and any late frames resulting from the delay jitter
 can produce problems in the reconstructed video, e.g. jerks in the video.
 \end{quote}~\cite{apostolopoulosVideoStreamingConcepts}
 
-This effect is often more pronounced in mesh-like \ac{P2P} overlays. Packets can arrive out of order and must be reordered before decoding. If packets arrive too late for their playback deadline, they are effectively unusable for real-time rendering. Reordering buffers (jitter buffers) mitigate this issue but increase end-to-end latency.
+In practice, this effect is often more pronounced in mesh-like \ac{P2P} overlays. Packets can arrive out of order and must be reordered before decoding. If packets arrive too late for their playback deadline, they are effectively unusable for real-time rendering. Reordering buffers (jitter buffers) mitigate this issue but increase end-to-end latency.\cite{schulzrinneRTPTransportProtocol2003,xuAnalysisCDNP2P2006}
 
 \subsubsection{Loss rate}
 \begin{quote}
@@ -134,12 +135,12 @@ Common stream sources include cameras and computer screens. In raw form, these s
 
 The preceding calculation quantifies raw stream size for sources such as screen capture. The stream therefore must be encoded into a substantially more efficient representation before transport.
 
-A video codec addresses this by exploiting spatial and temporal redundancy, reducing entropy and therefore reducing the total bitrate required for transmission.
+A video codec addresses this by exploiting spatial and temporal redundancy, reducing entropy and therefore reducing the total bitrate required for transmission.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
-Encoding starts from raw captured frames (for example camera or screen frames), compresses them using codec-specific prediction and transform steps, and produces a compact bitstream while preserving target visual quality. The encoded stream is then packaged into a transport or container format that carries timing and synchronization metadata for playback.
+Encoding starts from raw captured frames (for example camera or screen frames), compresses them using codec-specific prediction and transform steps, and produces a compact bitstream while preserving target visual quality. The encoded stream is then packaged into a transport or container format that carries timing and synchronization metadata for playback.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
 \subsection{Video codec}
-A video codec is software (or hardware logic) that compresses and decompresses digital video. The term "codec" is a portmanteau of "coder-decoder" (or "compressor-decompressor"). Codecs are essential for reducing bitrate and storage requirements while maintaining acceptable visual quality.
+A video codec is software (or hardware logic) that compresses and decompresses digital video. The term "codec" is a portmanteau of "coder-decoder" (or "compressor-decompressor"). Codecs are essential for reducing bitrate and storage requirements while maintaining acceptable visual quality.\cite{WebVideoCodec2025}
 
 All practical video codecs optimize the representation of video data and thereby reduce stream entropy.
 \begin{quote}
@@ -147,7 +148,7 @@ As is the case with any encoder, there are two basic groups of factors affecting
 \end{quote}~\cite{WebVideoCodec2025}
 
 \break
-Smaller output sizes usually require either more aggressive lossy compression, higher computational cost, or both. Codec selection is therefore a trade-off between quality, bitrate, and processing complexity.
+Smaller output sizes usually require either more aggressive lossy compression, higher computational cost, or both. Codec selection is therefore a trade-off between quality, bitrate, and processing complexity.\cite{WebVideoCodec2025,apostolopoulosVideoStreamingConcepts}
 
 Table \ref{tab:codec-comparison} compares commonly used video codecs and their characteristics.
 
@@ -177,7 +178,7 @@ Table \ref{tab:codec-comparison} compares commonly used video codecs and their c
 \subsection{Muxers}
 After the video and audio have been separately compressed by their respective codecs, they need to be combined into a single, synchronized package for delivery. This process is called multiplexing, or muxing.
 
-A muxer interleaves the compressed video and audio streams (along with any other data, like subtitles or chapter markers) into a single file or stream, known as a container format. The container file includes timing information and metadata that tells the consumer's video player how to synchronize the different streams so that the audio perfectly matches the video playback.
+A muxer interleaves the compressed video and audio streams (along with any other data, like subtitles or chapter markers) into a single file or stream, known as a container format. The container file includes timing information and metadata that tells the consumer's video player how to synchronize the different streams so that the audio perfectly matches the video playback.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
 \subsection{Encoding pipeline}
 \label{sec:encoding-pipeline}
@@ -199,7 +200,7 @@ An \textit{I-frame} (intra-coded frame) is encoded entirely from its own content
 
 Intra-frame compression exploits \textit{spatial redundancy}: adjacent pixels in a natural image are highly correlated, and a block of pixels can be predicted from its neighbors with small residual error. The process proceeds as follows:
 \begin{enumerate}
-    \item The frame is partitioned into macroblocks of 16$\times$16 pixels (H.264) or larger variable-size coding tree units (H.265, AV1).\cite{jesup_rtp_2011,WebVideoCodec2025}
+    \item The frame is partitioned into macroblocks of 16$\times$16 pixels (H.264) or larger variable-size coding tree units (H.265, AV1).\cite{jesupRTPPayloadFormatH2642011,WebVideoCodec2025}
     \item \textit{Intra prediction} estimates each block by extrapolating from already-encoded neighboring blocks within the same frame, using one of several directional prediction modes. Only the difference (residual) between the prediction and the actual block is passed to the next step.\cite{apostolopoulosVideoStreamingConcepts}
     \item A \textit{Discrete Cosine Transform} (DCT) converts each residual block from the spatial domain to the frequency domain, concentrating most of the signal energy into a small number of low-frequency coefficients while high-frequency coefficients remain near zero.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
     \item \textit{Quantization} rounds each frequency coefficient to a configurable step size. High-frequency components — which represent fine texture detail that is largely invisible at normal viewing distances — are discarded with the most aggressive rounding. This is the primary lossy step in the pipeline; the quantization parameter (QP) or constant-rate factor (CRF) directly controls the trade-off between output bitrate and visual quality.\cite{WebVideoCodec2025}
@@ -220,28 +221,28 @@ The periodic insertion of I-frames is governed by the \textit{Group of Pictures}
 \subsubsection{Entropy coding}
 After quantization, the resulting integers (DCT coefficients, motion vectors, and codec syntax elements) still exhibit statistical structure: many coefficients are zero, and non-zero values cluster near the DC component. Entropy coding removes this redundancy losslessly, mapping frequently occurring patterns to shorter bit sequences.\cite{apostolopoulosVideoStreamingConcepts} H.264 supports two entropy coders:
 \begin{itemize}
-    \item \textbf{CAVLC} (Context-Adaptive Variable-Length Coding) --- lower computational complexity, used in the H.264 Baseline and Constrained Baseline profiles.\cite{jesup_rtp_2011}
-    \item \textbf{CABAC} (Context-Adaptive Binary Arithmetic Coding) --- approximately 10--15\% better compression than CAVLC for the same visual quality, used in the Main and High profiles at the cost of higher encoder and decoder complexity.\cite{WebVideoCodec2025,jesup_rtp_2011}
+    \item \textbf{CAVLC} (Context-Adaptive Variable-Length Coding) --- lower computational complexity, used in the H.264 Baseline and Constrained Baseline profiles.\cite{jesupRTPPayloadFormatH2642011}
+    \item \textbf{CABAC} (Context-Adaptive Binary Arithmetic Coding) --- approximately 10--15\% better compression than CAVLC for the same visual quality, used in the Main and High profiles at the cost of higher encoder and decoder complexity.\cite{WebVideoCodec2025,jesupRTPPayloadFormatH2642011}
 \end{itemize}
 The output of entropy coding is the final compressed H.264 bitstream.
 
 \subsubsection{Network Abstraction Layer}
-The compressed bitstream is organized into \textit{NAL units} (Network Abstraction Layer units, defined in RFC~6184 for RTP transport\cite{jesup_rtp_2011}), which are self-delimiting data units designed to be carried over diverse network environments without knowledge of their contents:
+The compressed bitstream is organized into \textit{NAL units} (Network Abstraction Layer units, defined in RFC~6184 for RTP transport\cite{jesupRTPPayloadFormatH2642011}), which are self-delimiting data units designed to be carried over diverse network environments without knowledge of their contents:
 \begin{itemize}
-    \item \textbf{SPS} (Sequence Parameter Set) --- carries codec-level configuration: profile, level, resolution, frame rate, and decoder buffer requirements. A decoder must receive at least one SPS before it can decode any picture data.\cite{jesup_rtp_2011}
-    \item \textbf{PPS} (Picture Parameter Set) --- carries per-picture encoding parameters (e.g., entropy coder selection, deblocking filter settings) referenced by slice headers.\cite{jesup_rtp_2011}
-    \item \textbf{Slice NAL units} --- carry the compressed picture data, organized into one or more slices per frame. A slice is a self-contained unit of rows of macroblocks that can be decoded independently of other slices.\cite{jesup_rtp_2011}
+    \item \textbf{SPS} (Sequence Parameter Set) --- carries codec-level configuration: profile, level, resolution, frame rate, and decoder buffer requirements. A decoder must receive at least one SPS before it can decode any picture data.\cite{jesupRTPPayloadFormatH2642011}
+    \item \textbf{PPS} (Picture Parameter Set) --- carries per-picture encoding parameters (e.g., entropy coder selection, deblocking filter settings) referenced by slice headers.\cite{jesupRTPPayloadFormatH2642011}
+    \item \textbf{Slice NAL units} --- carry the compressed picture data, organized into one or more slices per frame. A slice is a self-contained unit of rows of macroblocks that can be decoded independently of other slices.\cite{jesupRTPPayloadFormatH2642011}
 \end{itemize}
-NAL units are serialized in one of two byte-stream formats: \textit{Annex B} (start-code prefixed, standard for broadcast and file storage) or \textit{AVCC} (length-prefixed, used inside MP4/MOV containers).\cite{jesup_rtp_2011}
+NAL units are serialized in one of two byte-stream formats: \textit{Annex B} (start-code prefixed, standard for broadcast and file storage) or \textit{AVCC} (length-prefixed, used inside MP4/MOV containers).\cite{jesupRTPPayloadFormatH2642011}
 
 \subsubsection{RTP packetization}
-For real-time network delivery, NAL units are wrapped into RTP (Real-time Transport Protocol) packets as specified in RFC~6184\cite{jesup_rtp_2011} using the RTP header format defined in RFC~3550\cite{schulzrinne_rtp_2003}:
+For real-time network delivery, NAL units are wrapped into RTP (Real-time Transport Protocol) packets as specified in RFC~6184\cite{jesupRTPPayloadFormatH2642011} using the RTP header format defined in RFC~3550\cite{schulzrinneRTPTransportProtocol2003}:
 \begin{itemize}
-    \item \textbf{Fragmentation} --- A NAL unit larger than the path MTU (typically around 1400 bytes on Ethernet paths to avoid IP-level fragmentation) is split into \textit{Fragmentation Units} (FU-A), each sized to fit in a single IP datagram.\cite{jesup_rtp_2011}
-    \item \textbf{Sequence number} --- A monotonically increasing 16-bit counter in each RTP packet allows the receiver to detect missing packets and restore arrival order, both of which are required before the H.264 decoder can assemble a complete frame.\cite{schulzrinne_rtp_2003}
-    \item \textbf{Timestamp} --- A 32-bit timestamp based on a 90~kHz clock encodes the presentation time of the frame carried by the packet, enabling the receiver to schedule frames for display at the correct moment and to detect clock drift.\cite{jesup_rtp_2011,schulzrinne_rtp_2003}
-    \item \textbf{SSRC} (Synchronization Source Identifier) --- uniquely identifies the media source, allowing a receiver to demultiplex multiple streams arriving on the same socket.\cite{schulzrinne_rtp_2003}
-    \item \textbf{Marker bit} --- set on the last RTP packet of each frame, signaling to the receiver that it may assemble all collected fragments and submit the complete frame to the decoder.\cite{jesup_rtp_2011,schulzrinne_rtp_2003}
+    \item \textbf{Fragmentation} --- A NAL unit larger than the path MTU (typically around 1400 bytes on Ethernet paths to avoid IP-level fragmentation) is split into \textit{Fragmentation Units} (FU-A), each sized to fit in a single IP datagram.\cite{jesupRTPPayloadFormatH2642011}
+    \item \textbf{Sequence number} --- A monotonically increasing 16-bit counter in each RTP packet allows the receiver to detect missing packets and restore arrival order, both of which are required before the H.264 decoder can assemble a complete frame.\cite{schulzrinneRTPTransportProtocol2003}
+    \item \textbf{Timestamp} --- A 32-bit timestamp based on a 90~kHz clock encodes the presentation time of the frame carried by the packet, enabling the receiver to schedule frames for display at the correct moment and to detect clock drift.\cite{jesupRTPPayloadFormatH2642011,schulzrinneRTPTransportProtocol2003}
+    \item \textbf{SSRC} (Synchronization Source Identifier) --- uniquely identifies the media source, allowing a receiver to demultiplex multiple streams arriving on the same socket.\cite{schulzrinneRTPTransportProtocol2003}
+    \item \textbf{Marker bit} --- set on the last RTP packet of each frame, signaling to the receiver that it may assemble all collected fragments and submit the complete frame to the decoder.\cite{jesupRTPPayloadFormatH2642011,schulzrinneRTPTransportProtocol2003}
 \end{itemize}
 The resulting RTP datagrams are handed off to the transport layer for delivery to consumers.
 
@@ -277,13 +278,13 @@ Table~\ref{tab:encoding-pipeline-stages} summarizes the complete encoding pipeli
 
 \section{Current state of video streaming}
 \subsection{Video streaming in video calls}
-Video calls are a common use case for real-time video streaming, but they represent a different optimization problem than one-to-many live broadcasting. In a video call, the primary objective is very low end-to-end latency and stable bidirectional interaction between a relatively small number of participants. For this reason, modern systems commonly rely on centralized infrastructure that coordinates session establishment, assists with network address translation traversal, and often relays or selectively forwards media streams between participants. Browser-based real-time communication is today strongly associated with WebRTC, which standardizes media exchange and security mechanisms for interactive communication on the web.\cite{noauthor_webrtc_nodate,mcgrew_datagram_2010}
+Video calls are a common use case for real-time video streaming, but they represent a different optimization problem than one-to-many live broadcasting. In a video call, the primary objective is very low end-to-end latency and stable bidirectional interaction between a relatively small number of participants. For this reason, modern systems commonly rely on centralized infrastructure that coordinates session establishment, assists with network address translation traversal, and often relays or selectively forwards media streams between participants. Browser-based real-time communication is today strongly associated with WebRTC, which standardizes media exchange and security mechanisms for interactive communication on the web.\cite{webRTCRealtimeCommunication,mcrewDTLSExtension2010,peroniEndtoEndPipelinePerspective2025}
 
 Although direct peer-to-peer communication can be used for very small groups, the fully connected topology scales poorly because each participant must upload a separate stream to multiple receivers. As the number of participants grows, both aggregate upload requirements and coordination complexity increase rapidly. Centralized mediation therefore remains the dominant architectural choice for video conferencing because it provides predictable quality, simpler access control, recording, moderation, and easier operation under heterogeneous client and network conditions.\cite{peroniEndtoEndPipelinePerspective2025,huangLiveStreamingIts2023a}
 \subsection{Video streaming in live streaming}
-Large-scale live streaming platforms such as Twitch or YouTube Live solve a different problem: one producer providing content to many consumers. In this scenario, the dominant architecture is still centralized ingest followed by processing and global distribution through \ac{CDN} infrastructure. The source stream is received by an origin service, frequently transcoded into multiple resolutions, segmented into chunks, and then replicated to edge servers close to viewers. This model is operationally expensive, but it offers strong control over quality, observability, and overall stability.\cite{WhatLiveStreaming,WhatVideoCDN,peroniEndtoEndPipelinePerspective2025}
+Large-scale live streaming platforms such as Twitch or YouTube Live solve a different problem: one producer providing content to many consumers. In this scenario, the dominant architecture is still centralized ingest followed by processing and global distribution through \ac{CDN} infrastructure. The source stream is received by an origin service, frequently transcoded into multiple resolutions, segmented into chunks, and then replicated to edge servers close to viewers. This model is operationally expensive, but it offers strong control over quality, observability, and overall stability.\cite{peroniEndtoEndPipelinePerspective2025,huangLiveStreamingIts2023a}
 
-The protocols most commonly used in production platforms, especially HLS and MPEG-DASH, are built around HTTP delivery of media segments. This makes them highly compatible with browsers, caches, enterprise networks, and existing \ac{CDN} deployments. The trade-off is latency: segment-based delivery is robust and scalable, but usually operates with several seconds of delay unless additional low-latency extensions are employed. When lower latency is required, platforms often introduce specialized transports such as WebRTC, but doing so usually increases infrastructure cost and operational complexity.\cite{pantos_http_2017,noauthor_standards_nodate,noauthor_webrtc_nodate}
+The protocols most commonly used in production platforms, especially HLS and MPEG-DASH, are built around HTTP delivery of media segments. This makes them highly compatible with browsers, caches, enterprise networks, and existing \ac{CDN} deployments. The trade-off is latency: segment-based delivery is robust and scalable, but usually operates with several seconds of delay unless additional low-latency extensions are employed. When lower latency is required, platforms often introduce specialized transports such as WebRTC, but doing so usually increases infrastructure cost and operational complexity.\cite{pantosHTTPLiveStreaming2017,mpegStandards,webRTCRealtimeCommunication}
 \subsubsection{Possibility of censorship}
 An important consequence of centralized live streaming is that technical delivery, moderation, and platform governance are concentrated in a small number of operators. Content creators therefore depend not only on the availability of the provider's infrastructure, but also on the provider's business rules, moderation policies, and regional restrictions. Temporary outages of major cloud or platform providers also demonstrate that centralized dependencies can affect availability on a wide scale.\cite{huangLiveStreamingIts2023a,ServiceHealthNov}
 
@@ -293,12 +294,12 @@ Existing \ac{P2P} solutions rarely attempt to replace the entire streaming stack
 
 P2P Media Loader is a representative example of this design. It integrates peer-assisted distribution into browser-based players, but it does not remove the role of the origin server or HTTP delivery path. Instead, peers exchange chunks when possible and the player falls back to conventional delivery when peer data is unavailable or late. This design choice is significant: it shows that current production-oriented \ac{P2P} streaming systems prioritize compatibility and robustness over strict decentralization.\cite{NovageP2pmedialoader2025}
 
-The broader libp2p ecosystem demonstrates that decentralized transport primitives, peer identity, encryption, and stream multiplexing are already available as reusable building blocks. What is still largely missing is a mature, general-purpose architecture for low-latency live video distribution that combines these primitives with media-specific requirements such as timing guarantees, packet reordering tolerance, and efficient fan-out. This gap motivates the implementation work in this thesis.\cite{Libp2pIPFSDocs,Libp2pEthereumMerge,SecurityConsiderations}
+The broader libp2p ecosystem demonstrates that decentralized transport primitives, peer identity, encryption, and stream multiplexing are already available as reusable building blocks. What is still largely missing is a mature, general-purpose architecture for low-latency live video distribution that combines these primitives with media-specific requirements such as timing guarantees, packet reordering tolerance, and efficient fan-out. This gap motivates the implementation work in this thesis.\cite{Libp2pIPFSDocs,SecurityConsiderations}
 
 \subsection{Why fully decentralized live streaming is still uncommon}
 Despite the conceptual appeal of \ac{P2P} delivery, fully decentralized live video streaming remains uncommon in mainstream deployments because live media is unusually sensitive to transport instability. Peer churn changes available paths over time, residential uplinks are often asymmetric and limited, and heterogeneous devices contribute highly variable encoding, decoding, and forwarding capacity. In a live scenario, these effects accumulate immediately as delay, jitter, packet loss, or reduced picture quality at the viewer.\cite{apostolopoulosVideoStreamingConcepts,xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012}
 
-There is also a structural conflict between scalability and latency. Mesh-style dissemination improves resilience because content can traverse multiple peers, but every additional forwarding hop can increase queueing delay and reorder packets. Conversely, direct sender-to-receiver paths minimize delay but require the producer to maintain more outgoing connections and upload more duplicate traffic. This trade-off is one of the central architectural tensions in decentralized live streaming, and it directly informs the comparison between Gossipsub and direct libp2p streams in the practical part of this thesis.
+There is also a structural conflict between scalability and latency. Mesh-style dissemination improves resilience because content can traverse multiple peers, but every additional forwarding hop can increase queueing delay and reorder packets. Conversely, direct sender-to-receiver paths minimize delay but require the producer to maintain more outgoing connections and upload more duplicate traffic. This trade-off is one of the central architectural tensions in decentralized live streaming, and it directly informs the comparison between Gossipsub and direct libp2p streams in the practical part of this thesis.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012,apostolopoulosVideoStreamingConcepts}
 
 
 
@@ -352,7 +353,7 @@ All transport variants implement a common trait interface (
 \texttt{P2PSwarm}) with two operations: receive inbound chunks and enqueue outbound chunks. This abstraction allows producer/renderer/analyzer components to stay unchanged while only the transport strategy is replaced.
 
 Libp2p was selected because it provides identity, encrypted channels, peer discovery, stream multiplexing, and protocol composition in one ecosystem 
-\cite{Libp2pIPFSDocs,Libp2pEthereumMerge}.
+\cite{Libp2pIPFSDocs,SecurityConsiderations}.
 \subsubsection{Gossipsub}
 The first transport variant uses Gossipsub publish/subscribe. Video chunks are serialized and published into a topic-based mesh. Receivers decode messages back into chunk structures and apply freshness filtering before acceptance. In the current codebase, stale chunks are explicitly rejected after a short time-to-live window, which reduces propagation of outdated real-time data.
 
