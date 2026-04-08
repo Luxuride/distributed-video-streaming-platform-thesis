@@ -101,6 +101,7 @@ drop in video quality. If the sender transmits slower than the available
 bandwidth then the receiver produces sub-optimal video quality.
 \end{quote}~\cite{apostolopoulosVideoStreamingConcepts}
 \subsubsection{Delay jitter}
+\label{sec:delay-jitter}
 \begin{quote}
 The end-to-end delay that a packet experiences may fluctuate from packet to
 packet. This variation in end-to-end delay is referred to as the delay jitter.
@@ -246,36 +247,6 @@ For real-time network delivery, NAL units are wrapped into RTP (Real-time Transp
 \end{itemize}
 The resulting RTP datagrams are handed off to the transport layer for delivery to consumers.
 
-\subsubsection{Pipeline summary}
-Table~\ref{tab:encoding-pipeline-stages} summarizes the complete encoding pipeline, mapping each processing stage to its function, inputs, and outputs.
-
-\begin{table}[htbp]
-    \centering
-    \caption{Encoding pipeline stages from raw frames to network-ready RTP packets.}
-    \label{tab:encoding-pipeline-stages}
-    \resizebox{\textwidth}{!}{%
-        \begin{tabular}{|l|l|l|l|}
-            \hline
-            \textbf{Stage} & \textbf{Function} & \textbf{Input} & \textbf{Output} \\
-            \hline
-            Raw acquisition   & Capture source frames       & Camera / screen buffer   & Uncompressed frames (BGRA, NV12) \\
-            \hline
-            Pre-processing    & Normalize for encoder       & Uncompressed frames      & Fixed-rate YUV 4:2:0 frames \\
-            \hline
-            Intra compression & Exploit spatial redundancy  & Full frame (I-frame)     & DCT coefficients + intra modes \\
-            \hline
-            Inter compression & Exploit temporal redundancy & Frame + reference frames & Motion vectors + residuals \\
-            \hline
-            Entropy coding    & Lossless statistical coding & Quantized coefficients   & Compressed H.264 bitstream \\
-            \hline
-            NAL formation     & Structure bitstream         & Compressed bitstream     & SPS, PPS, and slice NAL units \\
-            \hline
-            RTP packetization & Prepare for transport       & NAL units                & RTP/UDP datagrams \\
-            \hline
-        \end{tabular}%
-    }
-\end{table}
-
 \section{Current state of video streaming}
 \subsection{Video streaming in video calls}
 Video calls are a common use case for real-time video streaming, but they represent a different optimization problem than one-to-many live broadcasting. In a video call, the primary objective is very low end-to-end latency and stable bidirectional interaction between a relatively small number of participants. For this reason, modern systems commonly rely on centralized infrastructure that coordinates session establishment, assists with network address translation traversal, and often relays or selectively forwards media streams between participants. Browser-based real-time communication is today strongly associated with WebRTC, which standardizes media exchange and security mechanisms for interactive communication on the web.\cite{webRTCRealtimeCommunication,mcrewDTLSExtension2010,peroniEndtoEndPipelinePerspective2025}
@@ -355,10 +326,12 @@ All transport variants implement a common trait interface (
 Libp2p was selected because it provides identity, encrypted channels, peer discovery, stream multiplexing, and protocol composition in one ecosystem 
 \cite{Libp2pIPFSDocs,SecurityConsiderations}.
 \subsubsection{Gossipsub}
+\label{sec:gossipsub-transport}
 The first transport variant uses Gossipsub publish/subscribe. Video chunks are serialized and published into a topic-based mesh. Receivers decode messages back into chunk structures and apply freshness filtering before acceptance. In the current codebase, stale chunks are explicitly rejected after a short time-to-live window, which reduces propagation of outdated real-time data.
 
 The expected strength of this variant is resilience: data can propagate even when direct links between producer and all viewers are not available. The expected cost is higher latency and possible reordering caused by multi-hop dissemination.
 \subsubsection{Stream}
+\label{sec:stream-transport}
 The second variant uses direct libp2p streams over a dedicated stream protocol identifier. Outbound chunks are serialized once and sent directly to currently connected peers. Inbound stream payloads are decoded immediately and forwarded to the media pipeline.
 
 This strategy minimizes overlay complexity and serves as a baseline for latency-oriented comparison. Its limitation is scalability in one-to-many scenarios, because the producer must maintain direct outgoing transmission to every consumer.
@@ -579,32 +552,34 @@ The \texttt{VideoReader} in \texttt{libraries/video-reader} reads a pre-recorded
     \item \texttt{appsink max-buffers=1 drop=true} --- exposes samples to application code with the same back-pressure policy as the recorder.
 \end{enumerate}
 
-\section{Testing of stability and performance}
-\subsection{Reusable source}
-To facilitate consistent and repeatable testing, a file-based video source was implemented that uses a pre-recorded video file instead of live screen capture. This provides a controlled environment in which the input stream remains constant across runs. The approach is essential for reliable measurement of latency, packet loss, and throughput because it removes variability caused by changing live screen content.
+\section{Analysis Methodology}
+This section describes the systematic approach used to measure and evaluate transport behavior. The methodology comprises five components: the standardized video test source, the factorial test matrix design, the data collection workflow, metric computation from raw packet data, and visualization strategy for comparative interpretation.
 
-The selected source asset is Big Buck Bunny, which is commonly used for testing and benchmarking video-processing systems because it is royalty-free and openly available. \cite{BigBuckBunny}
-\subsection{Testing metadata}
-To monitor and analyze transport behavior, metadata is attached to each transmitted video packet. This metadata includes:
+\subsection{Test Setup and Data Source}
+To ensure repeatable and representative measurements, all experiments use Big Buck Bunny, a widely recognized open-source test video commonly used for video streaming research and benchmarking. Big Buck Bunny provides a royalty-free, standardized video stream with consistent motion complexity and codec characteristics across all repeated runs. Using a file-based video source instead of live screen capture eliminates variability caused by changing content, allowing transport behavior to be isolated from capture-side effects.
+
+The video is played through the \texttt{VideoReader} pipeline (described in \S\ref{sec:video-reader-pipeline}), which emits the same RTP H.264 format as the live recorder capture path. This ensures that test results faithfully represent the codec characteristics and packetization behavior of a real live streaming scenario.
+
+\subsection{Test Matrix Design}
+The experimental evaluation employs a factorial test matrix structure to systematically isolate the effects of protocol choice, load, and packet size constraints:
+
 \begin{itemize}
-    \item Packet creation timestamp --- used to measure one-way transfer time from sender to receiver.
-    \item Packet sequence number --- used to identify packet loss and out-of-order delivery.
+    \item \textbf{Protocols:} Two transport backends are compared: direct libp2p Streams (point-to-point, \S\ref{sec:stream-transport}) and Gossipsub (mesh-based, \S\ref{sec:gossipsub-transport}).
+    \item \textbf{Bitrates:} Four source bitrates are tested: 500 kbps, 2500 kbps, 5000 kbps, and 10000 kbps. These represent a range from low-quality smooth playback to high-quality stalls-prone conditions on constrained links.
+    \item \textbf{Packet size (MTU):} Two packet sizes are tested: 1200 bytes (Internet-compatible baseline reflecting typical path MTU constraints) and 4096 bytes (jumbo-frame environments supporting larger payloads end-to-end).
+    \item \textbf{Repetitions:} Ten runs per condition ensure statistical confidence in measurements and capture run-to-run variability in transport behavior.
 \end{itemize}
-\subsection{Latency testing}
-Latency is measured as the time difference between packet creation and packet arrival at the consumer. Averaging this value across packets yields a session-level latency estimate. This metric captures transport responsiveness and directly affects perceived playback interactivity.
-\subsection{Packet loss testing}
-Packet loss is determined from missing sequence numbers in received traffic. The loss rate is calculated as the ratio of missing packets to total transmitted packets. This metric reflects transport reliability and strongly affects visual quality and playback continuity.
-\subsection{Packet order variability}
-Packet order variability is evaluated from sequence progression at the receiver. Out-of-order delivery indicates reordering pressure and may introduce additional buffering delay before decoding and rendering.
-\subsection{Late packet testing}
-Late packets are identified by comparing the arrival time of each packet against a predefined threshold based on the expected playback time. If a packet arrives after its scheduled playback time, it is considered late. Late packets are discarded as they cannot be used for real-time playback.
-The late packet rate is calculated as the ratio of late packets to the total number of packets received. This metric is important for understanding how well the streaming application can maintain smooth playback, as late packets can lead to buffering and interruptions in the video stream.
-\subsection{Throughput testing}
-Throughput is measured as the amount of successfully received data over a defined time interval. Using packet size and arrival timing, average data rate is computed in bits per second (bps). This metric indicates how effectively the transport layer uses available network capacity.
-Throughput behavior is evaluated across multiple source bitrates and interpreted jointly with latency and loss to characterize load sensitivity.
 
-\subsection{Analysis data}
-A dedicated receiver implementation omits rendering and only collects testing metadata into a CSV file for subsequent analysis. Each received packet is logged with creation timestamp, sequence number, arrival time, and size. This dataset supports computation of latency, loss, ordering, and throughput metrics.
+This yields a complete matrix of $2 \times 4 \times 2 \times 10 = 80$ experimental runs. The test sequence is orchestrated by a shell script (\texttt{run\_matrix.sh}) that iterates through all combinations and collects results into an organized directory structure.
+
+The selection of bitrates reflects practical deployment scenarios: 500 kbps is typical for mobile or bandwidth-constrained networks; 2500 kbps and 5000 kbps cover standard adaptive bitrate ladder segments; and 10000 kbps represents the upper bound of this transport evaluation, where mesh-based protocols are expected to show increased sensitivity to queueing and scheduling overhead.
+
+The MTU choice is particularly significant. MTU 1200 is chosen as the conservative baseline because it aligns with Internet-standard assumptions and avoids fragmentation across heterogeneous networks. MTU 4096 represents an optimized deployment scenario where jumbo frames are available end-to-end; results at this MTU reveal protocol behavior when packetization overhead is minimized.
+
+\subsection{Data Collection Workflow}
+Each experimental run employs the role-based \texttt{stream\_test} binary architecture described in \S\ref{sec:test-binary}. The manager process spawns two child processes—a producer and an analyzer—both with the same \texttt{--protocol} parameter. The producer instantiates the chosen transport swarm and streams Big Buck Bunny through the \texttt{VideoReader} pipeline (\S\ref{sec:video-reader-pipeline}), wrapping each RTP packet in a \texttt{VideoStreamChunk} with creation timestamp and sequence index. The analyzer subscribes to the inbound channel and logs each received packet as an \texttt{AnalysisItem} record to CSV.
+
+Each \texttt{AnalysisItem} record contains four fields:
 \begin{verbatim}
 #[derive(Serialize)]
 pub struct AnalysisItem {
@@ -614,11 +589,70 @@ pub struct AnalysisItem {
     size: u32,
 }
 \end{verbatim}
+The \texttt{creation\_time} and \texttt{arrival\_time} fields (UNIX timestamps in milliseconds) enable computation of one-way packet latency. The \texttt{index} field (packet sequence number) allows detection of lost and out-of-order packets. The \texttt{size} field (chunk payload plus 24 bytes of serialized metadata) reflects the data volume processed by the transport layer.
+
+Both processes run on the same host with shared mDNS peer discovery (no external synchronization service required). One-way latency is computed as the difference between arrival and creation timestamps (assuming host-local clock synchronization). Packet loss is inferred from missing sequence numbers, and reordering is detected by comparing observed sequence order against the monotonically increasing index.
+
+\subsection{Metric Computation Pipeline}
+Raw CSV data from each of the 80 runs is processed by a three-stage R-based analysis pipeline:
+
+\begin{enumerate}
+    \item \textbf{Per-run aggregation:} For each run's CSV, the pipeline computes run-level summary statistics including mean delay, delay percentiles (p50, p95, p99), jitter (mean and p95 of inter-packet delay deltas), packet loss rate, packet reordering statistics, throughput (goodput), and a composite stability score. These per-run metrics are written to CSV rows.
+    
+    \item \textbf{Grouping and averaging:} Per-run metrics are then grouped by (protocol, bitrate, MTU) combination. For each group, aggregate statistics are computed: mean and standard deviation of each metric across the ten runs in that group.
+    
+    \item \textbf{Event extraction:} Supplementary analysis identifies specific events (e.g., delay spikes exceeding a threshold, consecutive out-of-order packets) and exports event-level data for detailed investigation.
+\end{enumerate}
+
+The output of this pipeline includes:
+\begin{itemize}
+    \item \texttt{per\_run\_metrics.csv}: One row per experimental run with all computed metrics.
+    \item \texttt{grouped\_metrics.csv}: One row per (protocol, bitrate, MTU) combination with aggregate statistics.
+    \item Event CSVs and supporting data for detailed analysis and visualization.
+\end{itemize}
+
+\subsection{Metric Definitions}
+The following metrics are computed from raw packet sequences:
+
+\begin{itemize}
+    \item \textbf{One-way latency (delay):} Defined as $\text{arrival\_time} - \text{creation\_time}$ for each packet, measured in milliseconds. Aggregated statistics include mean, median (p50), 95th percentile (p95), 99th percentile (p99), and coefficient of variation (CV). The p95 and p99 percentiles capture tail latency, which is particularly relevant for real-time streaming because even occasional high-latency packets can disrupt playback.
+    
+    \item \textbf{Jitter:} Computed as the absolute difference in consecutive packet delays. Mean jitter and p95 jitter are reported. High jitter indicates bursty or irregular delivery patterns, which can stress receiver buffering logic.
+    
+    \item \textbf{Packet loss:} Inferred from gaps in the sequence number stream. Defined as (missing indices) / (maximum observed index - minimum observed index). Expressed as a percentage.
+    
+    \item \textbf{Packet reordering rate:} Count of packets received out of sequence as a percentage of total received packets. A packet is out-of-order if its index is less than some previously received index.
+    
+    \item \textbf{Reorder depth:} For each out-of-order packet, the distance (in positions) the packet moved relative to its correct position. Reported as mean, max, and p95 reorder depth. High reorder depth indicates severe scrambling and requires larger receiver jitter buffers to compensate (see \S\ref{sec:delay-jitter} for discussion of reordering buffers in real-time media).
+    
+    \item \textbf{Goodput (throughput):} Total bytes successfully received divided by total elapsed time, expressed in Mbps. Reflects the effective data rate delivered to the application and accounts for any overhead or packet loss.
+    
+    \item \textbf{Stability score:} A composite metric defined as $100 - (50 \times \text{delay\_CV} + 50 \times \text{inter\_arrival\_CV})$, scaled to a 0-100 range. This metric combines delay variability and inter-arrival variability to give a single indicator of delivery smoothness. Scores near 100 indicate highly stable delivery; scores near 0 indicate high variability.
+    
+    \item \textbf{Stutter events and late packet rate:} Identified as gaps in inter-packet arrival time exceeding a threshold (default 120 ms). Each event is logged with duration and frequency, capturing moments when the receiver must wait longer than expected for the next packet. Packets arriving after their playback deadline are treated as late and effectively unusable for real-time rendering; the late packet rate is reported as the ratio of late packets to total received packets.
+\end{itemize}
+
+\subsection{Visualization Strategy}
+Analysis results are presented through a hierarchically organized set of visualizations:
+
+\begin{itemize}
+    \item \textbf{Organization:} Plots are grouped by metric type (delay, packet loss, reordering, throughput, stability) and further split by MTU and bitrate conditions, allowing readers to focus on specific comparisons.
+    
+    \item \textbf{Color and marker conventions:} Stream protocol results are shown in blue; Gossipsub results in red. This consistent color scheme facilitates quick visual comparison across all plots.
+    
+    \item \textbf{Scale variants:} Both linear and logarithmic scales are provided for certain metrics (especially delay and jitter) to reveal both absolute magnitudes and proportional differences. Linear scales are effective for near-zero values and absolute measurement; log scales compress wide ranges and highlight relative protocol differences.
+    
+    \item \textbf{Statistical annotations:} Plots include metadata such as the number of runs per condition ($n = 10$ runs/condition) in titles, supporting transparent reporting of measurement confidence.
+    
+    \item \textbf{Boxplots for variability:} Key metrics (delay percentiles, reorder depth, stability scores) are shown as boxplots across the ten runs per condition, allowing inspection of run-to-run variability and identification of outliers.
+\end{itemize}
+
+This methodology is applied to ten runs per condition using Big Buck Bunny as the consistent video source. Results from the grouped metrics and visualizations are presented in the following Analysis section, organized by MTU profile and deployment perspective to address practical deployment questions.
+
 \section{Analysis}
 This section evaluates measured transport behavior using aggregated results from ten runs per condition and the generated plots in the 
 \texttt{analysis/plots} directory. The interpretation focuses on three deployment perspectives: (1) MTU 1200 versus MTU 4096, (2) protocol comparison under MTU 1200 as the Internet-compatible baseline, and (3) a shorter MTU 4096 perspective for jumbo-frame capable environments.
 
-\subsubsection{Overview}
 The analysis is structured around delay, packet ordering, and stability. Each subsection therefore focuses on one deployment question and then summarizes the operational implication.
 \pagebreak
 \subsection{MTU 1200 versus MTU 4096}
