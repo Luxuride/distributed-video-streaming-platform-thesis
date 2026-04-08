@@ -447,7 +447,7 @@ The capture initialization sequence is as follows:
 
 The file descriptor and node ID are passed directly into the GStreamer pipeline.
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{out/recorder-pipeline/recorder-pipeline.png}
     \caption{Recorder pipeline}
@@ -471,7 +471,7 @@ The GStreamer recorder pipeline elements and their relevant parameters are:
 \label{sec:renderer-crate}
 Incoming RTP H.264 payloads are decoded and displayed by the \texttt{GstRenderer} struct in \texttt{libraries/renderer}. The renderer is built around the RTP H.264 format produced by the file-based test source (\texttt{rtph264pay pt=96}) and processes chunks through the following pipeline:
 
-\begin{figure}[h]
+\begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{out/renderer-pipeline/renderer-pipeline.png}
     \caption{Renderer pipeline}
@@ -618,6 +618,136 @@ pub struct AnalysisItem {
 \subsection{Testing environment}
 To run the tests, I have created three virtual machines using QEMU/KVM. Each virtual machine is running Fedora Silverblue 43. I have also created 2 virtual network interfaces, where 2 of the machines are connected to one of the interfaces while the other machine is connected to both interfaces. This allows me to verify functionality of the mesh network topology in Gossipsub implementation.
 \section{Analysis}
+This section evaluates measured transport behavior using aggregated results from ten runs per condition and the generated plots in the 
+\texttt{analysis/plots} directory. The interpretation focuses on three deployment perspectives: (1) MTU 1200 versus MTU 4096, (2) protocol comparison under MTU 1200 as the Internet-compatible baseline, and (3) a shorter MTU 4096 perspective for jumbo-frame capable environments.
+
+\subsubsection{Overview}
+The analysis is structured around delay, packet ordering, and stability. Each subsection therefore focuses on one deployment question and then summarizes the operational implication.
+\pagebreak
+\subsection{MTU 1200 versus MTU 4096}
+\subsubsection{Delay behavior}
+At a high level, MTU 4096 provides better transport efficiency and lower delay variability, especially for Gossipsub at higher bitrates. However, MTU 1200 remains the practical baseline for Internet transport due to path MTU constraints and fragmentation risk across heterogeneous networks.
+
+For Stream, both MTUs are stable, but MTU 4096 still improves latency. At 10000 kbps, Stream mean one-way delay decreases from 33.08 ms (MTU 1200) to 8.35 ms (MTU 4096), while p95 delay decreases from 123.7 ms to 31.0 ms. Gossipsub shows a much stronger MTU dependency: at 10000 kbps, mean delay drops from 347.95 ms (MTU 1200) to 33.42 ms (MTU 4096), and p95 delay from 1159.8 ms to 94.1 ms.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{analysis/plots/mtu/compare_delay_p95_by_mtu_5000kbps.png}
+    \caption{p95 one-way delay by protocol at 5000 kbps, compared between MTU 1200 and MTU 4096.}
+    \label{fig:analysis-mtu-delay-p95-5000}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{analysis/plots/mtu/compare_delay_p95_by_mtu_10000kbps.png}
+    \caption{p95 one-way delay by protocol at 10000 kbps, compared between MTU 1200 and MTU 4096.}
+    \label{fig:analysis-mtu-delay-p95-10000}
+\end{figure}
+
+\subsubsection{Reordering and stability}
+Reordering behavior confirms the same trend. For Gossipsub at 10000 kbps, misordered packet rate is 71.70\% with MTU 1200 versus 14.46\% with MTU 4096. Stream remains near-zero in both cases. This indicates that larger packetization units reduce ordering turbulence and scheduling overhead in mesh forwarding.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{analysis/plots/mtu/compare_misordered_bytes_rate_by_mtu_10000kbps.png}
+    \caption{Misordered byte rate at 10000 kbps for MTU 1200 versus MTU 4096.}
+    \label{fig:analysis-mtu-misordered-rate-10000}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{analysis/plots/mtu/compare_stability_score_by_mtu_10000kbps.png}
+    \caption{Composite stability score at 10000 kbps for MTU 1200 versus MTU 4096.}
+    \label{fig:analysis-mtu-stability-10000}
+\end{figure}
+
+The practical consequence is that MTU 4096 is preferred where the network supports jumbo-like payloads end-to-end, but MTU 1200 must remain the default profile for general Internet operation.
+
+\subsection{MTU 1200: Stream versus Gossipsub}
+\subsubsection{Delay behavior}
+Under MTU 1200, Stream is consistently low-latency and stable across all tested bitrates, while Gossipsub degrades significantly with bitrate growth. This subsection therefore represents the most relevant real-world comparison.
+
+At 500 kbps, Gossipsub already has higher delay than Stream (mean 18.36 ms vs. 3.43 ms; p95 42.6 ms vs. 11.2 ms). At 2500 kbps, the gap widens (mean 40.19 ms vs. 10.91 ms; p95 122.2 ms vs. 45.9 ms). At 5000 kbps, Gossipsub reaches mean 58.24 ms and p95 175.3 ms, while Stream remains at mean 16.95 ms and p95 69.9 ms.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{analysis/plots/bitrate/mtu_1200/compare_delay_p95_by_bitrate.png}
+    \caption{p95 one-way delay by bitrate for MTU 1200, comparing Stream and Gossipsub.}
+    \label{fig:analysis-1200-delay-p95-bitrate}
+\end{figure}
+\pagebreak
+At 10000 kbps, Gossipsub behavior changes from degraded to unstable: mean delay rises to 347.95 ms, p95 to 1159.8 ms, and maximum delay reaches 5428.9 ms. In the same condition, Stream remains at mean 33.08 ms, p95 123.7 ms, and maximum 499.8 ms.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{analysis/plots/delay/mtu_1200/delay_spike_boxplot.png}
+    \caption{Delay spike distribution for MTU 1200 conditions.}
+    \label{fig:analysis-1200-delay-spike-boxplot}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{analysis/plots/delay/bitrate/mtu_1200/delay_p95_by_bitrate_boxplot_gossipsub.png}
+    \caption{Run-to-run p95 delay spread for Gossipsub at MTU 1200 by bitrate.}
+    \label{fig:analysis-1200-gossipsub-delay-boxplot}
+\end{figure}
+
+\subsubsection{Packet ordering}
+Packet ordering metrics show the same escalation. Gossipsub misordered packet rate grows from 18.11\% at 500 kbps to 47.54\% at 5000 kbps and 71.70\% at 10000 kbps. Stream remains effectively 0\% across all tested bitrates.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{analysis/plots/bitrate/mtu_1200/compare_misorder_rate_by_bitrate.png}
+    \caption{Misordered packet rate by bitrate for MTU 1200, comparing Stream and Gossipsub.}
+    \label{fig:analysis-1200-misorder-rate-bitrate}
+\end{figure}
+\pagebreak
+\subsubsection{Stability and recommendation}
+The composite stability score from the analysis scripts is included as a supplementary aggregate indicator. In MTU 1200 results, the score for Stream remains at 0 across tested bitrates, while Gossipsub changes from 14.95 (500 kbps) to 0.17 (2500 kbps), 0.04 (5000 kbps), and 0.00 (10000 kbps), indicating that this metric compresses high-load conditions toward its lower bound.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{analysis/plots/bitrate/mtu_1200/compare_stability_score_by_bitrate.png}
+    \caption{Composite stability score by bitrate for MTU 1200.}
+    \label{fig:analysis-1200-stability-bitrate}
+\end{figure}
+
+For practical operation on MTU 1200 paths, results suggest a conservative recommendation: when using Gossipsub for media transport, keep bitrate around 5000 kbps or below. The transition to 10000 kbps causes large delay spikes and much worse ordering behavior, which would visibly degrade interactive playback quality.
+\pagebreak
+\subsection{MTU 4096 in jumbo-frame environments}
+\subsubsection{Delay behavior}
+When MTU 4096 is available end-to-end, both protocols improve, but the relative protocol ranking remains unchanged: Stream is still more stable and lower latency than Gossipsub.
+
+At 10000 kbps and MTU 4096, Stream mean delay is 8.35 ms (p95 31.0 ms), while Gossipsub reaches 33.42 ms (p95 94.1 ms). Compared to MTU 1200, this is a substantial Gossipsub improvement and removes the extreme long-tail spikes observed previously.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{analysis/plots/bitrate/mtu_4096/compare_delay_p95_by_bitrate.png}
+    \caption{p95 one-way delay by bitrate for MTU 4096, comparing Stream and Gossipsub.}
+    \label{fig:analysis-4096-delay-p95-bitrate}
+\end{figure}
+\pagebreak
+\subsubsection{Packet ordering}
+Reordering also improves versus MTU 1200, although Gossipsub still exhibits nontrivial disorder at high bitrate (14.46\% misordered packets at 10000 kbps), whereas Stream remains near-zero.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{analysis/plots/bitrate/mtu_4096/compare_misorder_rate_by_bitrate.png}
+    \caption{Misordered packet rate by bitrate for MTU 4096, comparing Stream and Gossipsub.}
+    \label{fig:analysis-4096-misorder-rate-bitrate}
+\end{figure}
+
+\subsection{Analysis conclusion}
+The measurements lead to four clear conclusions.
+
+First, MTU 4096 is technically superior for this transport workload, especially for Gossipsub under high bitrate, because it reduces packet processing pressure and significantly improves delay and ordering metrics.
+
+Second, MTU 1200 must still be treated as the primary deployment target for Internet transport. Therefore, protocol decisions should be guided primarily by MTU 1200 results.
+
+Third, under MTU 1200, Stream provides consistently low latency, negligible reordering, and robust behavior up to 10000 kbps. Gossipsub is viable at lower rates but degrades substantially with load; the 10000 kbps profile shows strong instability symptoms.
+
+Fourth, for practical operation with Gossipsub on Internet-compatible MTU 1200 paths, a bitrate cap near 5000 kbps is recommended to avoid the severe delay spikes and reordering penalties observed at 10000 kbps.
+
 \section{Future work}
 \subsection{Hybrid Transport Architectures}
 Subsequent research could explore more complex transport layer implementations that combine the benefits of both Gossipsub and stream protocols. The gossipsub could be used as signaling layer to discover video chunks on the network, while stream protocol could be used for direct peer-to-peer transmission of video data. This hybrid approach could potentially provide the scalability and resilience of Gossipsub while also achieving the low latency and reliable delivery of stream protocol.
