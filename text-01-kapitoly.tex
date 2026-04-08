@@ -614,8 +614,6 @@ pub struct AnalysisItem {
     size: u32,
 }
 \end{verbatim}
-\subsection{Testing environment}
-Tests were executed on three QEMU/KVM virtual machines running Fedora Silverblue 43. Two virtual network interfaces were configured so that two machines were attached to one interface and one machine was attached to both interfaces. This topology enabled verification of mesh-style forwarding behavior in the Gossipsub implementation.
 \section{Analysis}
 This section evaluates measured transport behavior using aggregated results from ten runs per condition and the generated plots in the 
 \texttt{analysis/plots} directory. The interpretation focuses on three deployment perspectives: (1) MTU 1200 versus MTU 4096, (2) protocol comparison under MTU 1200 as the Internet-compatible baseline, and (3) a shorter MTU 4096 perspective for jumbo-frame capable environments.
