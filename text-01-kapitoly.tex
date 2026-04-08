@@ -627,7 +627,7 @@ The following metrics are computed from raw packet sequences:
     
     \item \textbf{Goodput (throughput):} Total bytes successfully received divided by total elapsed time, expressed in Mbps. Reflects the effective data rate delivered to the application and accounts for any overhead or packet loss.
     
-    \item \textbf{Stability score:} A composite metric defined as $100 - (50 \times \text{delay\_CV} + 50 \times \text{inter\_arrival\_CV})$, scaled to a 0-100 range. This metric combines delay variability and inter-arrival variability to give a single indicator of delivery smoothness. Scores near 100 indicate highly stable delivery; scores near 0 indicate high variability.
+    \item \textbf{Stability score:} A composite score on a 0--100 scale computed as $100 - \bigl(0.5 \cdot \min(100, 100 \cdot \text{delay\_CV}) + 0.5 \cdot \min(100, 100 \cdot \text{inter\_arrival\_CV})\bigr)$, then clamped at zero. It combines the coefficient of variation of delay and inter-arrival time with equal weights, so higher scores indicate smoother and more stable delivery while lower scores indicate more variable transport behavior.
     
     \item \textbf{Stutter events and late packet rate:} Identified as gaps in inter-packet arrival time exceeding a threshold (default 120 ms). Each event is logged with duration and frequency, capturing moments when the receiver must wait longer than expected for the next packet. Packets arriving after their playback deadline are treated as late and effectively unusable for real-time rendering; the late packet rate is reported as the ratio of late packets to total received packets.
 \end{itemize}
@@ -734,7 +734,7 @@ Packet ordering metrics show the same escalation. Gossipsub misordered packet ra
 \end{figure}
 \pagebreak
 \subsubsection{Stability and recommendation}
-The composite stability score from the analysis scripts is included as a supplementary aggregate indicator. In MTU 1200 results, the score for Stream remains at 0 across tested bitrates, while Gossipsub changes from 14.95 (500 kbps) to 0.17 (2500 kbps), 0.04 (5000 kbps), and 0.00 (10000 kbps), indicating that this metric compresses high-load conditions toward its lower bound.
+The composite stability score from the analysis scripts is included as a supplementary aggregate indicator. In MTU 1200 results, Stream stays in the high 80s at 500--5000 kbps and still averages 75.17 at 10000 kbps, while Gossipsub falls from 86.64 at 500 kbps to 75.88 at 2500 kbps, 67.07 at 5000 kbps, and 45.75 at 10000 kbps.
 
 \begin{figure}[H]
     \centering
@@ -768,16 +768,18 @@ Reordering also improves versus MTU 1200, although Gossipsub still exhibits nont
     \label{fig:analysis-4096-misorder-rate-bitrate}
 \end{figure}
 
+The stability score mirrors the same pattern: at 10000 kbps, Stream averages 90.05 under MTU 4096, while Gossipsub rises to 81.12. Jumbo frames therefore improve stability substantially, but they do not remove the advantage of direct Stream delivery.
+
 \subsection{Analysis conclusion}
 The measurements lead to four clear conclusions.
 
-First, MTU 4096 is technically superior for this transport workload, especially for Gossipsub under high bitrate, because it reduces packet processing pressure and significantly improves delay and ordering metrics.
+First, MTU 4096 is technically superior for this transport workload, especially for Gossipsub under high bitrate, because it reduces packet processing pressure and significantly improves delay, ordering, and stability metrics.
 
 Second, MTU 1200 must still be treated as the primary deployment target for Internet transport. Therefore, protocol decisions should be guided primarily by MTU 1200 results.
 
-Third, under MTU 1200, Stream provides consistently low latency, negligible reordering, and robust behavior up to 10000 kbps. Gossipsub is viable at lower rates but degrades substantially with load; the 10000 kbps profile shows strong instability symptoms.
+Third, under MTU 1200, Stream provides consistently low latency, negligible reordering, and higher stability scores across all tested bitrates. Gossipsub is viable at lower rates but its stability score falls sharply as bitrate increases, with the 10000 kbps profile showing the weakest behavior.
 
-Fourth, for practical operation with Gossipsub on Internet-compatible MTU 1200 paths, a bitrate cap near 5000 kbps is recommended to avoid the severe delay spikes and reordering penalties observed at 10000 kbps.
+Fourth, for practical operation with Gossipsub on Internet-compatible MTU 1200 paths, a bitrate cap near 5000 kbps remains a sensible upper bound to avoid the large delay spikes, reordering penalties, and stability degradation observed at 10000 kbps.
 
 \section{Future work}
 \subsection{Hybrid Transport Architectures}
