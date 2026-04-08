@@ -50,7 +50,7 @@
 % can not be placed in the template file.
 
   \usepackage{color}
-  \usepackage[unicode,colorlinks,hyperindex,plainpages=false,urlcolor=black,linkcolor=black,citecolor=black]{hyperref}
+  \usepackage[unicode,colorlinks,hyperindex,plainpages=false,hypertexnames=false,urlcolor=black,linkcolor=black,citecolor=black]{hyperref}
   \definecolor{links}{rgb}{0,0,0}
   \definecolor{anchors}{rgb}{0,0,0}
   \def\AnchorColor{anchors}
@@ -115,13 +115,14 @@
 \clubpenalty=10000
 \widowpenalty=10000
 
-\include{text-03-zkratky}
+\input{text-03-zkratky}
 
 % začátek dokumentu
 \begin{document}
   % Vysazeni titulnich stran / Typesetting of the title pages
   % ----------------------------------------------
   \maketitle
+  \pagenumbering{gobble}
   % Obsah
   % ----------------------------------------------
   \setlength{\parskip}{0pt}
@@ -159,7 +160,8 @@
 
   % Text prace / Thesis text
   % ----------------------------------------------
-  \setcounter{page}{0}
+  \cleardoublepage
+  \pagenumbering{arabic}
   \input{text-01-kapitoly}
 
   \iftwoside

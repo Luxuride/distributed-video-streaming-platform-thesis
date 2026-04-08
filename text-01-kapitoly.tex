@@ -152,7 +152,7 @@ Smaller video sizes often require more destructive approach to reducing entropy 
 
 Table \ref{tab:codec-comparison} compares commonly used video codecs and their characteristics.
 
-\begin{table}[h]
+\begin{table}[htbp]
     \centering
     \caption{Comparison of commonly used video codecs \cite{WebVideoCodec2025}}
     \label{tab:codec-comparison}
@@ -249,7 +249,7 @@ The resulting RTP datagrams are handed off to the transport layer for delivery t
 \subsubsection{Pipeline summary}
 Table~\ref{tab:encoding-pipeline-stages} summarizes the complete encoding pipeline, mapping each processing stage to its function, inputs, and outputs.
 
-\begin{table}[h]
+\begin{table}[htbp]
     \centering
     \caption{Encoding pipeline stages from raw frames to network-ready RTP packets.}
     \label{tab:encoding-pipeline-stages}
@@ -377,7 +377,7 @@ An early prototype used bare MPEG-TS streams, where each MPEG-TS packet has a fi
 \subsection{Workspace and crate structure}
 The Cargo workspace contains five members. Table~\ref{tab:crate-overview} lists each member's role and key external dependencies.
 
-\begin{table}[h]
+\begin{table}[htbp]
     \centering
     \caption{Workspace crate overview}
     \label{tab:crate-overview}
