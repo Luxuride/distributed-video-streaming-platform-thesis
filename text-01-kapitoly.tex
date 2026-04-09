@@ -289,7 +289,7 @@ There is also a structural conflict between scalability and latency. Mesh-style 
 
 \section{Implementation of developed video streaming solution}
 \subsection{Choice of programming language}
-The prototype is implemented in Rust. Besides personal familiarity, Rust was selected for technical reasons that are directly relevant to real-time media systems: memory safety without need garbage collection, strong type system, and predictable performance. High volume packet transport requires high performance, and variable memory allocations and the language gives us guarantee of freeing unused memory as soon as it is no longer needed.
+The prototype is implemented in Rust. Besides personal familiarity, Rust was selected for technical reasons that are directly relevant to real-time media systems: memory safety without need for garbage collection, strong type system, and predictable performance. High volume packet transport requires high performance, and variable memory allocations and the language gives us guarantee of freeing unused memory as soon as it is no longer needed.
 
 Another important reason is multi-threading safety. The implementation runs concurrent capture, transport, rendering, and analysis tasks, and Rust enforces thread-safety rules at compile time through ownership, borrowing, and the \texttt{Send}/\texttt{Sync} trait system. This significantly reduces risk of data races in shared state. In practice, shared resources are passed through explicit synchronization primitives (for example \texttt{Arc<Mutex<...>>}) or message channels, so synchronization is visible in code and easier to audit.
 
