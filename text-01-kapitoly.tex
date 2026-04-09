@@ -667,7 +667,6 @@ This section evaluates measured transport behavior using aggregated results from
 \texttt{analysis/plots} directory. The interpretation focuses on three deployment perspectives: (1) MTU 1200 versus MTU 4096, (2) protocol comparison under MTU 1200 as the Internet-compatible baseline, and (3) a shorter MTU 4096 perspective for jumbo-frame capable environments.
 
 The analysis is structured around delay, packet ordering, and stability. Each subsection therefore focuses on one deployment question and then summarizes the operational implication.
-\pagebreak
 \subsection{MTU 1200 versus MTU 4096}
 \subsubsection{Delay behavior}
 At a high level, MTU 4096 provides better transport efficiency and lower delay variability, especially for Gossipsub at higher bitrates. However, MTU 1200 remains the practical baseline for Internet transport due to path MTU constraints and fragmentation risk across heterogeneous networks.
@@ -719,7 +718,6 @@ At 500 kbps, Gossipsub already has higher delay than Stream (mean 18.36 ms vs. 3
     \caption{p95 one-way delay by bitrate for MTU 1200, comparing Stream and Gossipsub.}
     \label{fig:analysis-1200-delay-p95-bitrate}
 \end{figure}
-\pagebreak
 At 10000 kbps, Gossipsub behavior changes from degraded to unstable: mean delay rises to 347.95 ms, p95 to 1159.8 ms, and maximum delay reaches 5428.9 ms. In the same condition, Stream remains at mean 33.08 ms, p95 123.7 ms, and maximum 499.8 ms.
 
 \begin{figure}[H]
@@ -745,7 +743,6 @@ Packet ordering metrics show the same escalation. Gossipsub misordered packet ra
     \caption{Misordered packet rate by bitrate for MTU 1200, comparing Stream and Gossipsub.}
     \label{fig:analysis-1200-misorder-rate-bitrate}
 \end{figure}
-\pagebreak
 \subsubsection{Stability and recommendation}
 The composite stability score from the analysis scripts is included as a supplementary aggregate indicator. In MTU 1200 results, Stream stays in the high 80s at 500--5000 kbps and still averages 75.17 at 10000 kbps, while Gossipsub falls from 86.64 at 500 kbps to 75.88 at 2500 kbps, 67.07 at 5000 kbps, and 45.75 at 10000 kbps.
 
@@ -757,7 +754,6 @@ The composite stability score from the analysis scripts is included as a supplem
 \end{figure}
 
 For practical operation on MTU 1200 paths, results suggest a conservative recommendation: when using Gossipsub for media transport, keep bitrate around 5000 kbps or below. The transition to 10000 kbps causes large delay spikes and much worse ordering behavior, which would visibly degrade interactive playback quality.
-\pagebreak
 \subsection{MTU 4096 in jumbo-frame environments}
 \subsubsection{Delay behavior}
 When MTU 4096 is available end-to-end, both protocols improve, but the relative protocol ranking remains unchanged: Stream is still more stable and lower latency than Gossipsub.
@@ -770,7 +766,6 @@ At 10000 kbps and MTU 4096, Stream mean delay is 8.35 ms (p95 31.0 ms), while Go
     \caption{p95 one-way delay by bitrate for MTU 4096, comparing Stream and Gossipsub.}
     \label{fig:analysis-4096-delay-p95-bitrate}
 \end{figure}
-\pagebreak
 \subsubsection{Packet ordering}
 Reordering also improves versus MTU 1200, although Gossipsub still exhibits nontrivial disorder at high bitrate (14.46\% misordered packets at 10000 kbps), whereas Stream remains near-zero.
 
