@@ -67,6 +67,8 @@ decode and playback the video as these parts are received, without having to
 wait for the entire video to be delivered.
 \end{quote}~\cite{apostolopoulosVideoStreamingConcepts}
 
+This definition is important for the thesis because it highlights the timing dependence of streaming delivery. Unlike file transfer, where correctness alone is sufficient, video streaming must preserve playback order and arrival timing well enough for the receiver to decode and present frames continuously. In the context of this work, that means the transport layer must deliver successive RTP chunks quickly enough that the renderer can keep its buffer filled without accumulating excessive latency. If packets arrive too late or too irregularly, the receiver can no longer sustain smooth playback even if no data is permanently lost.
+
 From a transport perspective, streaming can be represented by three logical roles:
 \begin{itemize}
     \item Producer --- generates the media stream.
@@ -92,7 +94,7 @@ In large-scale deployments, \ac{CDN} infrastructure is also used for live distri
 The main disadvantages are greater sensitivity to churn, variable path quality, and possible latency increases caused by multi-hop forwarding. Security and trust are also more complex because peers are not inherently trusted media sources.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012,SecurityConsiderations}
 
 \subsection{Basic Problems with video streaming}
-Core transport problems in video streaming include limited bandwidth, delay jitter, and packet loss rate \cite{apostolopoulosVideoStreamingConcepts}. Overlay forwarding across multiple peers can additionally increase delay variation and out-of-order arrival in practice due to multi-path forwarding and asynchronous peer scheduling.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012}
+Core transport problems in video streaming include limited bandwidth, delay jitter, and packet loss rate~\cite{apostolopoulosVideoStreamingConcepts}. Overlay forwarding across multiple peers can additionally increase delay variation and out-of-order arrival in practice due to multi-path forwarding and asynchronous peer scheduling.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012}
 
 \subsubsection{Bandwidth}
 \begin{quote}
@@ -102,6 +104,9 @@ bandwidth then congestion occurs, packets are lost, and there is a severe
 drop in video quality. If the sender transmits slower than the available
 bandwidth then the receiver produces sub-optimal video quality.
 \end{quote}~\cite{apostolopoulosVideoStreamingConcepts}
+
+Bandwidth is handled by controlling the encoding bitrate, packetization size, and transport strategy so that the produced stream stays within what the path can carry. When the available bandwidth is insufficient, congestion increases queueing delay, packet loss, and packet reordering, which directly affects playback smoothness and decoder stability. When the chosen bitrate is too low, the stream remains stable but visual quality and link utilization are reduced. The experimental results therefore show bandwidth as a factor that influences delay, ordering behavior, loss rate, and the overall stability score of the transport.
+
 \subsubsection{Delay jitter}
 \label{sec:delay-jitter}
 \begin{quote}
@@ -125,6 +130,8 @@ can have a very destructive effect on the reconstructed video quality. To
 combat the effect of losses, a video streaming system is designed with error
 control.
 \end{quote}~\cite{apostolopoulosVideoStreamingConcepts}
+
+In this thesis, loss is handled by keeping the transport payloads small enough to avoid unnecessary fragmentation, by using sequence numbers to detect missing packets, and by applying protocol-level freshness and recovery mechanisms where possible. The live recorder path also inserts parameter sets regularly so that a consumer can resynchronize after dropped data, while the receiver side uses buffering and parsing logic to recover valid frames when the stream remains usable. Loss affects the measured results mainly through packet-loss rate, reordering behavior, visible playback stability, and the likelihood that late or incomplete frames must be discarded before decoding.
 
 \section{Handling video streams}
 Common stream sources include cameras and computer screens. In raw form, these sources produce data volumes that are impractical for direct network transport.
