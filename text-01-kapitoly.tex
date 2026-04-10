@@ -806,6 +806,9 @@ From a systems perspective, the thesis demonstrates that decentralized media del
 The thesis objective is therefore considered fulfilled: a functional distributed streaming prototype was implemented, instrumented, and tested, and the evaluation produced actionable conclusions about transport suitability in realistic operating conditions. The presented results contribute practical guidance for selecting peer-to-peer transport mechanisms in Rust-based live video applications and provide a concrete baseline for subsequent research and engineering refinement.
 
 \section{Future work}
+
+This thesis demonstrated that \ac{P2P} video streaming is feasible with contemporary Rust tooling and libp2p frameworks, and identified protocol selection as a critical factor in achieving acceptable latency and delivery consistency. However, the prototype operates under controlled laboratory conditions with a small number of peers and carefully isolated variables. Practical deployment requires further research into operational scale, architectural integration, and enhanced functionality. The following sections outline promising directions that build upon this work to address real-world deployment challenges and extend the system toward production-ready distributed media systems.
+
 \subsection{Hybrid Transport Architectures}
 Subsequent research can explore hybrid transport designs that combine Gossipsub and direct stream protocols. Gossipsub can be used primarily as a signaling/discovery layer, while direct streams carry the media payload between selected peers. This architecture may retain mesh resilience while improving end-to-end latency and delivery predictability.
 \subsection{Large scale stress testing}
