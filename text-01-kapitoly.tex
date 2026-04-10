@@ -103,6 +103,8 @@ bandwidth then congestion occurs, packets are lost, and there is a severe
 drop in video quality. If the sender transmits slower than the available
 bandwidth then the receiver produces sub-optimal video quality.
 \end{quote}
+
+This thesis addresses bandwidth management through two different transport architectures: direct libp2p Streams (\S\ref{sec:stream-transport}) and mesh-based Gossipsub (\S\ref{sec:gossipsub-transport}). Both approaches must handle variable available bandwidth while maintaining acceptable latency and delivery reliability. The evaluation framework tests these architectures across different bitrate and packet-size conditions, described in \S\ref{sec:test-matrix}.
 \subsubsection{Delay jitter}
 \label{sec:delay-jitter}
 According to \cite{apostolopoulosVideoStreamingConcepts}:
@@ -128,6 +130,10 @@ can have a very destructive effect on the reconstructed video quality. To
 combat the effect of losses, a video streaming system is designed with error
 control.
 \end{quote}
+
+In this thesis, loss behavior is measured at the transport level by analyzing gaps in the monotonic packet index carried in each \texttt{VideoStreamChunk} (see \S\ref{sec:chunk-trait}). The metrics and methodology are documented in \S\ref{sec:metric-definitions}.
+
+The implementation applies practical loss-mitigation choices at multiple levels. Low-latency encoder settings are described in \S\ref{sec:gstreamer-recorder}, periodic SPS/PPS insertion (\texttt{h264parse config-interval=1}) supports faster decoder resynchronization after loss, and bounded queues prefer dropping stale buffers over unbounded latency growth. These architectural choices reflect a real-time priority: graceful degradation under loss is preferred over delayed playback of outdated frames.
 
 \section{Handling video streams}
 Common stream sources include cameras and computer screens. In raw form, these sources produce data volumes that are impractical for direct network transport.
@@ -430,6 +436,7 @@ The file descriptor and node ID are passed directly into the GStreamer pipeline.
     \caption{Recorder pipeline}
 \end{figure}
 
+\label{sec:gstreamer-recorder}
 The GStreamer recorder pipeline elements and their relevant parameters are:
 \begin{itemize}
     \item \textbf{\texttt{pipewiresrc}} with \texttt{fd} and \texttt{path} set to the portal-provided file descriptor and PipeWire node ID --- ingests raw frames from PipeWire at the source capture rate.
@@ -565,6 +572,7 @@ All experiments use Big Buck Bunny to ensure repeatable and representative measu
 The video is played through the \texttt{VideoReader} pipeline (described in \S\ref{sec:video-reader-pipeline}), which emits the same RTP H.264 format as the live recorder capture path. This ensures that test results faithfully represent the codec characteristics and packetization behavior of a real live streaming scenario.
 
 \subsection{Test Matrix Design}
+\label{sec:test-matrix}
 The experimental evaluation employs a factorial test matrix structure to systematically isolate the effects of protocol choice, load, and packet size constraints:
 
 \begin{itemize}
@@ -616,6 +624,7 @@ The output of this pipeline includes:
 \end{itemize}
 
 \subsection{Metric Definitions}
+\label{sec:metric-definitions}
 The following metrics are computed from raw packet sequences:
 
 \begin{itemize}
@@ -659,6 +668,7 @@ This section evaluates measured transport behavior using aggregated results from
 
 The analysis is structured around delay, packet ordering, and stability. Each subsection therefore focuses on one deployment question and then summarizes the operational implication.
 \subsection{MTU 1200 versus MTU 4096}
+\label{sec:analysis-mtu-1200-comparison}
 \subsubsection{Delay behavior}
 At a high level, MTU 4096 provides better transport efficiency and lower delay variability, especially for Gossipsub at higher bitrates. However, MTU 1200 remains the practical baseline for Internet transport due to path MTU constraints and fragmentation risk across heterogeneous networks.
 
@@ -746,6 +756,7 @@ The composite stability score from the analysis scripts is included as a supplem
 
 For practical operation on MTU 1200 paths, results suggest a conservative recommendation: when using Gossipsub for media transport, keep bitrate around 5000 kbps or below. The transition to 10000 kbps causes large delay spikes and much worse ordering behavior, which would visibly degrade interactive playback quality.
 \subsection{MTU 4096 in jumbo-frame environments}
+\label{sec:analysis-mtu-4096}
 \subsubsection{Delay behavior}
 When MTU 4096 is available end-to-end, both protocols improve, but the relative protocol ranking remains unchanged: Stream is still more stable and lower latency than Gossipsub.
 
@@ -770,6 +781,7 @@ Reordering also improves versus MTU 1200, although Gossipsub still exhibits nont
 The stability score mirrors the same pattern: at 10000 kbps, Stream averages 90.05 under MTU 4096, while Gossipsub rises to 81.12. Jumbo frames therefore improve stability substantially, but they do not remove the advantage of direct Stream delivery.
 
 \subsection{Analysis conclusion}
+\label{sec:analysis-conclusion}
 The measurements lead to four clear conclusions.
 
 First, MTU 4096 is technically superior for this transport workload, especially for Gossipsub under high bitrate, because it reduces packet processing pressure and significantly improves delay, ordering, and stability metrics.
