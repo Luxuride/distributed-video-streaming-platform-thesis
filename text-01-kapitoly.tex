@@ -58,7 +58,7 @@ Peroni et al. describe the end-to-end streaming pipeline as a sequence of ingest
 
 In the context of this thesis, the most relevant part of that pipeline is the distribution stage, specifically the transport layer between producer and consumers. \ac{P2P} mechanisms are evaluated as alternatives to centralized distribution in this stage. Encoding and decoding aspects are also addressed because practical transport viability depends on media packetization format, decoder tolerance, and buffering behavior.
 
-Modern distribution pipelines also generate manifests (playlists) and implement adaptive-bitrate (ABR) logic in the player, which selects among multiple encoded representations based on observed throughput and buffer state (see \S\ref{sec:abr}).\cite{peroniEndtoEndPipelinePerspective2025} Manifest protocols such as HLS and MPEG-DASH are transported over HTTP, riding on top of TCP or QUIC, which means that any P2P replacement needs to interoperate with or replicate these behaviours.\cite{pantos_http_2017,noauthor_standards_nodate}
+Modern distribution pipelines also generate manifests (playlists) and implement adaptive bitrate (ABR) logic in the player. The player then selects among multiple encoded representations based on observed throughput and buffer state (see \S\ref{sec:abr}).\cite{peroniEndtoEndPipelinePerspective2025} Manifest protocols such as HLS and MPEG-DASH are transported over HTTP, on top of TCP or QUIC. Any P2P replacement therefore needs to interoperate with or replicate these behaviours.\cite{pantos_http_2017,noauthor_standards_nodate}
 
 According to \cite{apostolopoulosVideoStreamingConcepts}:
 \begin{quote}
@@ -146,7 +146,7 @@ A video codec addresses this by exploiting spatial and temporal redundancy, redu
 Encoding starts from raw captured frames (for example camera or screen frames), compresses them using codec-specific prediction and transform steps, and produces a compact bitstream while preserving target visual quality. The encoded stream is then packaged into a transport or container format that carries timing and synchronization metadata for playback.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
 \subsection{Video codec}
-A video codec is software (or hardware logic) that compresses and decompresses digital video. The term "codec" is a portmanteau of "coder-decoder" (or "compressor-decompressor"). Codecs are essential for reducing bitrate and storage requirements while maintaining acceptable visual quality.\cite{WebVideoCodec2025}
+A video codec is software (or hardware logic) that compresses and decompresses digital video. The term "codec" is a portmanteau of "coder and decoder" (or "compressor and decompressor"). Codecs are essential for reducing bitrate and storage requirements while maintaining acceptable visual quality.\cite{WebVideoCodec2025}
 
 All practical video codecs optimize the representation of video data and thereby reduce stream entropy. According to \cite{WebVideoCodec2025}:
 \begin{quote}
@@ -217,7 +217,7 @@ The quantized coefficients together with the chosen prediction modes constitute 
 After the first I-frame, subsequent frames are encoded as \textit{P-frames} (predictive) or \textit{B-frames} (bi-directionally predicted). These exploit \textit{temporal redundancy}: consecutive frames in video of natural scenes are nearly identical because most content moves slowly relative to the frame rate.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
 \begin{itemize}
-    \item \textbf{Motion estimation} --- For each macroblock in the current frame the encoder searches a reference frame (an already-encoded earlier frame, or for B-frames both an earlier and a later frame) for the best-matching block within a search window. The displacement between the current and reference block positions is stored as a compact \textit{motion vector}.\cite{apostolopoulosVideoStreamingConcepts}
+    \item \textbf{Motion estimation} --- For each macroblock in the current frame, the encoder searches a reference frame for the best-matching block within a search window. For B-frames, both an earlier and a later frame may be used as references. The displacement between the current and reference block positions is stored as a compact \textit{motion vector}.\cite{apostolopoulosVideoStreamingConcepts}
     \item \textbf{Motion compensation} --- The encoder fetches the predicted block from the reference frame using the motion vector and subtracts it from the actual block, yielding a small \textit{residual}. Only this residual — not the full block content — is passed through DCT and quantization, achieving dramatically higher compression than intra coding alone.\cite{apostolopoulosVideoStreamingConcepts}
     \item \textbf{B-frames} require the encoder to buffer future frames before the current frame can be encoded, introducing additional latency proportional to the look-ahead window. For this reason B-frames are often disabled in real-time streaming encoders where minimizing end-to-end latency takes priority over maximum compression efficiency.\cite{apostolopoulosVideoStreamingConcepts}
 \end{itemize}
@@ -298,7 +298,7 @@ The implementation repository is organized as a Rust workspace with reusable lib
     \item \textbf{Testing orchestration layer} --- runs producer, renderer, and analyzer roles for repeatable experiments and CSV export.
 \end{itemize}
 
-At the transport boundary, packets are represented by a shared structure (\texttt{VideoStreamChunk}) containing serialized media bytes, creation timestamp, and monotonic sequence index. This metadata enables the measurement methodology described in Chapter 7 (latency, packet loss, reordering, and throughput). The implementation evaluates two packetization contexts: a live recorder path using \ac{RTP} over MPEG-TS payloading and a file-based test path using direct H.264-in-\ac{RTP} payloading. This distinction is stated explicitly to separate live-capture integration constraints from controlled transport benchmarking.
+At the transport boundary, each packet is represented by a shared structure called VideoStreamChunk. It contains serialized media bytes, creation timestamp, and monotonic sequence index. This metadata enables the measurement methodology described in Chapter 7 (latency, packet loss, reordering, and throughput). The implementation evaluates two packetization contexts: a live recorder path using \ac{RTP} over MPEG-TS payloading, and a file-based test path using direct H.264-in-\ac{RTP} payloading. This distinction is stated explicitly to separate live-capture integration constraints from controlled transport benchmarking.
 \subsection{Screen Recording}
 Screen capture is implemented for Wayland using the 
 \texttt{ashpd} interface to the XDG desktop portal. This approach delegates monitor/window selection and user permissions to the compositor and portal service.
@@ -438,7 +438,7 @@ The GStreamer recorder pipeline elements and their relevant parameters are:
     \item \textbf{\texttt{timeoverlay}} --- renders a wall-clock timestamp into each frame, useful for visual end-to-end latency verification.
     \item \textbf{H.264 encoding, VA-API path:} \texttt{vaapipostproc} converts the frame to a VA-API surface; \texttt{vaapih264enc quality-level=6 bitrate=1000 keyframe-period=0} encodes it via hardware. A \texttt{keyframe-period} of zero instructs the hardware encoder to insert I-frames adaptively rather than at a fixed interval.
     \item \textbf{H.264 encoding, software fallback:} if VA-API elements are unavailable at runtime, the pipeline substitutes an \texttt{identity} pass-through for the post-processor and \texttt{x264enc} (with \texttt{tune=zerolatency}, \texttt{speed-preset=ultrafast}, \texttt{bitrate=500}, and \texttt{keyframe-period=30}) for the encoder. The \texttt{zerolatency} tune disables B-frame look-ahead and internal output buffering, minimizing encoding latency at some cost to compression efficiency.
-    \item \textbf{\texttt{h264parse config-interval=1}} --- instructs the parser to inject SPS and PPS parameter-set NAL units at every key-frame boundary, allowing a newly joining consumer or one recovering from packet loss to resynchronize immediately without waiting for the next natural key-frame.
+    \item \textbf{\texttt{h264parse}} with \texttt{config-interval=1} --- instructs the parser to inject SPS and PPS parameter-set NAL units at every key-frame boundary. This allows a newly joining consumer, or one recovering from packet loss, to resynchronize immediately without waiting for the next natural key-frame.
     \item \textbf{\texttt{mpegtsmux alignment=7}} --- multiplexes the H.264 elementary stream into MPEG-TS and groups seven 188-byte MPEG-TS packets per output buffer, yielding 1316-byte payloads.
     \item \textbf{\texttt{rtpmp2tpay pt=33}} --- wraps each MPEG-TS payload in an RTP datagram using payload type 33, the IANA-registered type for MPEG-TS over RTP.
     \item \textbf{\texttt{appsink max-buffers=1 drop=true}} --- exposes RTP samples to application code. A buffer limit of one combined with \texttt{drop=true} discards any sample that arrives while the previous one has not yet been consumed, preventing unbounded memory growth under transport congestion.
@@ -455,12 +455,12 @@ Incoming RTP H.264 payloads are decoded and displayed by the \texttt{GstRenderer
 \end{figure}
 
 \begin{itemize}
-    \item \textbf{\texttt{appsrc}} --- configured with RTP H.264 caps (\texttt{encoding-name=H264}, \texttt{payload=96}, \texttt{clock-rate=90000}), \texttt{is-live=true}, \texttt{do-timestamp=false}, and \texttt{format=Time}. Declaring the caps before the first buffer arrives allows GStreamer to negotiate the downstream pipeline topology immediately.
+    \item \textbf{\texttt{appsrc}} --- configured with RTP H.264 caps (\texttt{encoding-name=H264}, \texttt{payload=96}, and \texttt{clock-rate=90000}) plus \texttt{is-live=true}, \texttt{do-timestamp=false}, and \texttt{format=Time}. Declaring the caps before the first buffer arrives allows GStreamer to negotiate the downstream pipeline topology immediately.
     \item \textbf{\texttt{rtpjitterbuffer latency=5000}} --- accumulates incoming RTP packets for up to 5000 milliseconds and reorders them by sequence number before passing them downstream. The large window absorbs worst-case reordering from Gossipsub's multi-hop mesh, trading initial latency for stable decoding order.
     \item \textbf{\texttt{rtph264depay}}, \textbf{\texttt{h264parse}} --- strip the RTP framing and reassemble NAL units into a continuous H.264 bytestream.
     \item \textbf{H.264 decoding, fallback chain:} \texttt{vaapih264dec low-latency=true} (hardware, VA-API) is tried first; \texttt{v4l2h264dec} (hardware, V4L2) second; \texttt{avdec\_h264} (software, libavcodec) third. The \texttt{low-latency} property on the VA-API decoder disables its internal frame reordering buffer, reducing decoder-introduced latency.
     \item \textbf{\texttt{vaapipostproc}} (optional) --- inserted when available to perform colorspace conversion on the VA-API surface before the software path.
-    \item \textbf{\texttt{videoconvert}}, \textbf{\texttt{queue}}, \textbf{\texttt{autovideosink sync=false}} --- \texttt{sync=false} instructs GStreamer to display each decoded frame immediately upon arrival rather than waiting for the presentation clock. For a live \ac{P2P} stream, minimizing end-to-end latency takes priority over smooth frame pacing.
+    \item \textbf{\texttt{videoconvert}}, \textbf{\texttt{queue}}, and \textbf{\texttt{autovideosink}} with \texttt{sync=false} --- \texttt{sync=false} instructs GStreamer to display each decoded frame immediately upon arrival, instead of waiting for the presentation clock. For a live \ac{P2P} stream, minimizing end-to-end latency takes priority over smooth frame pacing.
 \end{itemize}
 
 \subsection{Transport layer crate}
@@ -538,7 +538,7 @@ pub struct AnalysisItem {
 }
 \end{verbatim}
     \texttt{creation\_time} and \texttt{arrival\_time} are UNIX timestamps in milliseconds; their difference gives per-packet one-way latency. \texttt{index} allows detection of lost and out-of-order packets. \texttt{size} is the chunk payload length plus 24 bytes for the serialized \texttt{timestamp} and \texttt{index} metadata.
-    \item \textbf{Renderer} --- receives inbound chunks and pushes each raw byte payload into \texttt{GstRenderer}, producing a live decoded video window for visual inspection.
+    \item \textbf{Renderer} --- receives inbound chunks and pushes each raw byte payload to the renderer backend (\texttt{GstRenderer}). This produces a live decoded video window for visual inspection.
 \end{itemize}
 
 \subsubsection{Video reader pipeline}
@@ -550,7 +550,7 @@ The \texttt{VideoReader} in \texttt{libraries/video-reader} reads a pre-recorded
     \item \texttt{h264parse} --- normalizes the H.264 bytestream.
     \item \textbf{Decode:} \texttt{vaapih264dec} (hardware, VA-API) with fallback to \texttt{avdec\_h264} (software). Converting to raw frames is required for the subsequent re-encoding step.
     \item \texttt{timeoverlay} --- embeds a wall-clock timestamp for visual end-to-end latency verification.
-    \item \textbf{Re-encode:} \texttt{vaapih264enc quality-level=6 bitrate=500} with fallback to \texttt{x264enc tune=zerolatency speed-preset=ultrafast bitrate=500 keyframe-period=30}. Re-encoding produces a fresh H.264 stream with the same encoder settings as the live recorder, ensuring format and bitrate compatibility across test scenarios.
+    \item \textbf{Re-encode:} preferred path: \texttt{vaapih264enc} with quality level 6 and bitrate 500. Fallback path: \texttt{x264enc} configured for zerolatency, ultrafast preset, bitrate 500, and keyframe period 30. Re-encoding produces a fresh H.264 stream with the same encoder settings as the live recorder, ensuring format and bitrate compatibility across test scenarios.
     \item \texttt{h264parse config-interval=1} --- injects inline SPS/PPS parameter sets.
     \item \texttt{rtph264pay mtu=4096 pt=96} --- packetizes NAL units into RTP datagrams with payload type 96 and an MTU of $2^{12}$ = 4096 bytes. The large MTU produces substantially fewer packets per second than the 1316-byte MPEG-TS payloads of the recorder, reducing serialization and dispatch overhead in the transport layer.
     \item \texttt{appsink max-buffers=1 drop=true} --- exposes samples to application code with the same back-pressure policy as the recorder.
@@ -560,7 +560,7 @@ The \texttt{VideoReader} in \texttt{libraries/video-reader} reads a pre-recorded
 This section describes the systematic approach used to measure and evaluate transport behavior. The methodology comprises five components: the standardized video test source, the factorial test matrix design, the data collection workflow, metric computation from raw packet data, and visualization strategy for comparative interpretation.
 
 \subsection{Test Setup and Data Source}
-To ensure repeatable and representative measurements, all experiments use Big Buck Bunny, a widely recognized open-source test video commonly used for video streaming research and benchmarking. Big Buck Bunny provides a royalty-free, standardized video stream with consistent motion complexity and codec characteristics across all repeated runs. Using a file-based video source instead of live screen capture eliminates variability caused by changing content, allowing transport behavior to be isolated from capture-side effects.
+All experiments use Big Buck Bunny to ensure repeatable and representative measurements. It is a widely recognized open-source test video for streaming research and benchmarking. Big Buck Bunny provides a royalty-free, standardized stream with consistent motion complexity and codec characteristics across repeated runs. Using a file-based source instead of live screen capture eliminates variability caused by changing content, allowing transport behavior to be isolated from capture-side effects.
 
 The video is played through the \texttt{VideoReader} pipeline (described in \S\ref{sec:video-reader-pipeline}), which emits the same RTP H.264 format as the live recorder capture path. This ensures that test results faithfully represent the codec characteristics and packetization behavior of a real live streaming scenario.
 
@@ -581,7 +581,7 @@ The selection of bitrates reflects practical deployment scenarios: 500 kbps is t
 The MTU choice is particularly significant. MTU 1200 is chosen as the conservative baseline because it aligns with Internet-standard assumptions and avoids fragmentation across heterogeneous networks. MTU 4096 represents an optimized deployment scenario where jumbo frames are available end-to-end; results at this MTU reveal protocol behavior when packetization overhead is minimized.
 
 \subsection{Data Collection Workflow}
-Each experimental run employs the role-based \texttt{stream\_test} binary architecture described in \S\ref{sec:test-binary}. The manager process spawns two child processes—a producer and an analyzer—both with the same \texttt{--protocol} parameter. The producer instantiates the chosen transport swarm and streams Big Buck Bunny through the \texttt{VideoReader} pipeline (\S\ref{sec:video-reader-pipeline}), wrapping each RTP packet in a \texttt{VideoStreamChunk} with creation timestamp and sequence index. The analyzer subscribes to the inbound channel and logs each received packet as an \texttt{AnalysisItem} record to CSV.
+Each experimental run employs the role-based \texttt{stream\_test} binary architecture described in \S\ref{sec:test-binary}. The manager process spawns two child processes, a producer and an analyzer, both with the same \texttt{--protocol} parameter. The producer instantiates the chosen transport swarm and streams Big Buck Bunny through the \texttt{VideoReader} pipeline (\S\ref{sec:video-reader-pipeline}). Each RTP packet is wrapped in a \texttt{VideoStream\-Chunk} with creation timestamp and sequence index. The analyzer subscribes to the inbound channel and logs each received packet as an \texttt{AnalysisItem} record to CSV.
 
 Each \texttt{AnalysisItem} record contains four fields:
 \begin{verbatim}
