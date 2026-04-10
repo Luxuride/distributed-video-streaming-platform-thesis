@@ -54,20 +54,9 @@ Each protocol imposes different requirements on the underlying transport layer: 
 
 
 \subsubsection{Video Streaming Pipeline}
-According to \cite{peroniEndtoEndPipelinePerspective2025}, the following quote explains the end-to-end video streaming pipeline, which covers the entire process from video capture to playback on the user's device.
-\begin{quote}
-The end-to-end streaming pipeline starts at the ingestion stage with the capture of raw video by a camera-equipped device, with a codec applying spatial and temporal compression to the raw footage for reducing the video size, and subsequent upload of the encoded video over the Internet to a media server.
+Peroni et al. describe the end-to-end streaming pipeline as a sequence of ingestion, processing, and distribution stages, where video is captured and encoded, transformed on the media server, and then delivered to the viewer through a player that adapts to network conditions and device capabilities \cite{peroniEndtoEndPipelinePerspective2025}.
 
-(\dots)
-
-The processing stage, which primarily involves internal operations within the media server, handles the storage and transformation of ingested video. Transformation tasks, such as video segmentation and transcoding, enable the pipeline to manage heterogeneity in network connectivity and device capabilities. Video segmentation divides the video into smaller chunks, while transcoding converts these chunks into multiple representations with different resolutions, bitrates, and frame rates.
-
-(\dots)
-
-The distribution stage handles video delivery from the media server to a user device, which decodes and plays back the content. In addition to ISPs providing network connectivity, this stage involves CDNs that disseminate video from their edge servers to user devices with low latency and high QoE. To address the heterogeneity of user devices and variable network conditions, a media player on the user device runs an ABR algorithm. Among the components of the end-to-end pipeline, ABR, QoE, and CDN aspects attract the most research efforts. QoE models express users’ subjective experience as a function of measurable influence factors (IFs) like stall duration and video quality. They rely on subjective testing and user experience design. Network engineering ensures low latency and high bitrate, which QoE models account for directly or through other IFs. Data science enhances their predictive power with learning-based techniques.
-\end{quote}
-
-This thesis primarily focuses on the distribution stage of the streaming pipeline, specifically on the transport layer between producer and consumers. \ac{P2P} mechanisms are evaluated as alternatives to centralized distribution in this stage. Encoding and decoding aspects are also addressed because practical transport viability depends on media packetization format, decoder tolerance, and buffering behavior.
+In the context of this thesis, the most relevant part of that pipeline is the distribution stage, specifically the transport layer between producer and consumers. \ac{P2P} mechanisms are evaluated as alternatives to centralized distribution in this stage. Encoding and decoding aspects are also addressed because practical transport viability depends on media packetization format, decoder tolerance, and buffering behavior.
 
 Modern distribution pipelines also generate manifests (playlists) and implement adaptive-bitrate (ABR) logic in the player, which selects among multiple encoded representations based on observed throughput and buffer state (see \S\ref{sec:abr}).\cite{peroniEndtoEndPipelinePerspective2025} Manifest protocols such as HLS and MPEG-DASH are transported over HTTP, riding on top of TCP or QUIC, which means that any P2P replacement needs to interoperate with or replicate these behaviours.\cite{pantos_http_2017,noauthor_standards_nodate}
 
