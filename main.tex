@@ -242,36 +242,12 @@
  \appendixpage
   
   % Přílohy / Appendices
-  \IfFileExists{attachments/p2p-stream.zip}{%
-    \section*{Source Code Attachment}
-    \label{sec:attachment-source}
-    This archive contains the thesis-related source tree snapshot used for the implementation and the accompanying repository materials.
+  \IfFileExists{attachments.zip}{%
+    \section*{Combined Attachments Archive}
+    \label{sec:attachments-combined}
+    This archive contains supplementary materials generated for this thesis build: source snapshot and analysis outputs.
     \par\smallskip
-    \href{attachments/p2p-stream.zip}{p2p-stream.zip}%
-  }{}
-
-  \IfFileExists{attachments/analysis.zip}{%
-    \section*{Analysis Attachment}
-    \label{sec:attachment-analysis}
-    This archive contains the analysis directory with generated plots, metrics, and supporting evaluation outputs.
-    \par\smallskip
-    \href{attachments/analysis.zip}{analysis.zip}%
-  }{}
-
-  \IfFileExists{attachments/p2p-stream-linux.zip}{%
-    \section*{Linux Binary Attachment}
-    \label{sec:attachment-linux-binary}
-    This artifact is the Linux binary produced by the upstream \texttt{p2p-stream} pipeline for the same commit as the checked-in submodule.
-    \par\smallskip
-    \href{attachments/p2p-stream-linux.zip}{p2p-stream-linux.zip}%
-  }{}
-
-  \IfFileExists{attachments/p2p-stream-linux-appimage.zip}{%
-    \section*{AppImage Attachment}
-    \label{sec:attachment-appimage}
-    This artifact is the packaged AppImage produced by the upstream \texttt{p2p-stream} pipeline for the same commit as the checked-in submodule, and it includes the required encoder GStreamer libraries.
-    \par\smallskip
-    \href{attachments/p2p-stream-linux-appimage.zip}{p2p-stream-linux-appimage.zip}%
+    \href{attachments.zip}{attachments.zip}%
   }{}
   
 \end{document}
