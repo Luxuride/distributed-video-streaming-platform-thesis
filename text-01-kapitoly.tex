@@ -215,20 +215,20 @@ The resulting RTP datagrams are handed off to the transport layer for delivery t
 
 \subsection{GStreamer and FFmpeg}
 \label{sec:gstreamer-ffmpeg-theory}
-GStreamer and FFmpeg are programs that provide the media-processing pipeline functionality needed to implement the encoding and decoding workflows described above.\cite{gstreamerTutorials2026,ffmpegDocumentation2026}
+GStreamer and FFmpeg are software frameworks that implement the media-processing workflows described above.\cite{gstreamerTutorials2026,ffmpegDocumentation2026}
 
 \subsubsection{GStreamer}
-GStreamer documents its core model as a graph of processing elements connected through pads, where application pipelines are assembled from reusable components rather than from one fixed processing chain, and it is designed to be extensible through plugins that let applications combine source, filter, encoder, packetizer, and sink elements according to system requirements.\cite{gstreamerTutorials2026}
+GStreamer documents its core model as a graph of processing elements connected through pads, and it is designed to be extensible through plugins that let applications assemble pipelines from reusable components.\cite{gstreamerTutorials2026}
 
 In practice, this component-level composition is relevant for real-time experimentation because individual stages can be replaced without redesigning the full media path, which supports controlled evaluation of transport and buffering strategies in live delivery pipelines.\cite{peroniEndtoEndPipelinePerspective2025}
 
 \subsubsection{FFmpeg}
-FFmpeg presents a comprehensive multimedia toolchain that can decode, encode, transcode, mux, demux, stream, and filter media across many container and codec formats.\cite{ffmpegDocumentation2026} The FFmpeg processing model is documented as a pipeline where packets flow through demuxers, optional decoders and filtergraphs, encoders, and muxers.\cite{ffmpegDocumentation2026}
+FFmpeg provides a comprehensive multimedia toolchain with command-line tools and libraries for encoding, decoding, filtering, and muxing media.\cite{ffmpegDocumentation2026}
 
 Besides command-line usage, FFmpeg exposes a set of developer libraries (for example, \texttt{libavcodec}, \texttt{libavformat}, and \texttt{libavfilter}) that applications can integrate when they need lower-level control over media workflows.\cite{ffmpegDocumentation2026}
 
 \subsubsection{Comparison and relevance}
-At the architectural level, the two frameworks expose different primary control surfaces: GStreamer emphasizes explicit graph composition inside application pipelines, while FFmpeg documentation emphasizes stream-oriented processing chains and tool-driven orchestration around demuxing, filtering, encoding, and muxing.\cite{ffmpegDocumentation2026}
+At the architectural level, the two frameworks expose different primary control surfaces: GStreamer emphasizes explicit graph composition inside application pipelines, while FFmpeg emphasizes command-line tools and reusable libraries.\cite{gstreamerTutorials2026,ffmpegDocumentation2026}
 
 For live streaming research, this difference mainly affects how easily a prototype can isolate and replace one stage (for example, encoder, packetizer, or sink) while keeping the rest of the path stable, which is important for attributing observed latency or loss behavior to the intended experimental variable.\cite{peroniEndtoEndPipelinePerspective2025,apostolopoulosVideoStreamingConcepts}
 
