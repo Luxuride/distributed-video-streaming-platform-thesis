@@ -43,14 +43,9 @@ Streaming differs from simple progressive download because the receiver decodes 
 \ac{ABR} streaming is the mechanism by which a player dynamically switches between multiple encoded representations of a video according to available bandwidth, buffer occupancy, and device capabilities. Without \ac{ABR}, a single high-quality stream stalls whenever the network cannot sustain the selected rate, while a low-bitrate stream underuses available capacity on better connections. \ac{ABR} logic is typically implemented client-side and depends on manifests listing available representations and segment locations. Early classes of \ac{ABR} algorithms are commonly described as rate-based, buffer-based, or hybrid, while recent work also studies learning-based optimization using network traces and \ac{QoE} data.\cite{peroniEndtoEndPipelinePerspective2025}
 
 \subsubsection{Streaming Protocols and Formats}
-Video streaming is not a single protocol but a family of delivery mechanisms. The most common today are:
-\begin{itemize}
-    \item \textbf{HTTP Live Streaming (HLS)} --- developed by Apple and defined in RFC 8216, HLS uses an index playlist (.m3u8) containing URLs of media segments; segments are typically MPEG-TS or fMP4 files fetched over HTTP/TCP (and increasingly HTTP/QUIC) \cite{pantos_http_2017}. Players periodically reload the playlist to discover new segments.
-    \item \textbf{MPEG-DASH} --- an ISO standard similar to HLS that uses MPD manifests and natively supports fMP4; delivery is also based on HTTP over TCP or QUIC \cite{noauthor_standards_nodate,peroniEndtoEndPipelinePerspective2025}. Standardization encouraged decoupling of container format and delivery transport.
-    \item \textbf{RTMP/RTSP} --- protocols used in older and contribution-focused live workflows. RTSP is standardized as an application-layer control protocol for real-time media delivery and commonly coordinates RTP-based transport.\cite{schulzrinne_real-time_2016}
-    \item \textbf{WebRTC} --- designed for real-time communication, WebRTC uses secure real-time media transport over UDP-based paths and provides built-in congestion-control and retransmission behavior \cite{mcgrew_datagram_2010,noauthor_webrtc_nodate}. In current browser ecosystems, it is a widely used option for interactive sub-second latency use cases \cite{peroniEndtoEndPipelinePerspective2025}.
-\end{itemize}
-Each protocol imposes different requirements on the underlying transport layer: HTTP-based approaches inherit in-order delivery and congestion behavior from TCP/QUIC, while \ac{RTP}/UDP-based systems expose packet loss, jitter, and reordering more directly to the application.\cite{pantos_http_2017,schulzrinne_rtp_2003} These characteristics are central when designing \ac{P2P} transport because the alternative path must preserve acceptable playback behavior under the same constraints.
+Video streaming is not a single protocol but a family of delivery mechanisms. In mainstream deployments, HLS and MPEG-DASH dominate HTTP-based distribution, while RTSP and WebRTC are used in real-time and interactive scenarios.\cite{pantos_http_2017,noauthor_standards_nodate,schulzrinne_real-time_2016,noauthor_webrtc_nodate,peroniEndtoEndPipelinePerspective2025}
+
+These protocol families impose different transport expectations. HTTP-based systems inherit in-order behavior from TCP or QUIC, whereas \ac{RTP}/UDP-style delivery exposes packet loss, jitter, and reordering more directly at the application boundary.\cite{pantos_http_2017,schulzrinne_rtp_2003} This distinction is central when evaluating \ac{P2P} transport for live media.
 
 
 \subsubsection{Video Streaming Pipeline}
@@ -75,12 +70,6 @@ From a transport perspective, streaming can be represented by three logical role
     \item Consumer --- receives and renders the stream.
 \end{itemize}
 These roles are used later to compare transport implementations without changing surrounding media logic.\cite{apostolopoulosVideoStreamingConcepts}
-
-\subsubsection{Static video streaming}
-Static video streaming refers to delivery of pre-recorded content stored on a server and requested by clients on demand.
-
-This model supports efficient caching and lower startup latency because content can be replicated to edge \ac{CDN} locations closer to users.\cite{peroniEndtoEndPipelinePerspective2025}
-
 
 \subsubsection{Live video streaming}
 Live video streaming refers to real-time capture and transmission, where media is produced and consumed continuously rather than served as a completed file.
@@ -154,43 +143,10 @@ Encoding starts from raw captured frames (for example camera or screen frames), 
 \subsection{Video codec}
 A video codec is software (or hardware logic) that compresses and decompresses digital video. The term "codec" is a portmanteau of "coder and decoder" (or "compressor and decompressor"). Codecs are essential for reducing bitrate and storage requirements while maintaining acceptable visual quality.\cite{WebVideoCodec2025}
 
-All practical video codecs optimize the representation of video data and thereby reduce stream entropy. According to \cite{WebVideoCodec2025}:
-\begin{quote}
-As is the case with any encoder, there are two basic groups of factors affecting the size and quality of the encoded video: specifics about the source video's format and contents, and the characteristics and configuration of the codec used while encoding the video.
-\end{quote}
-
-\break
-Smaller output sizes usually require either more aggressive lossy compression, higher computational cost, or both. Codec selection is therefore a trade-off between quality, bitrate, and processing complexity.\cite{WebVideoCodec2025,apostolopoulosVideoStreamingConcepts}
-
-Table \ref{tab:codec-comparison} compares commonly used video codecs and their characteristics.
-
-\begin{table}[htbp]
-    \centering
-    \caption{Comparison of commonly used video codecs \cite{WebVideoCodec2025}}
-    \label{tab:codec-comparison}
-    \resizebox{\textwidth}{!}{%
-        \begin{tabular}{|l|l|l|l|l|}
-            \hline
-            \textbf{Codec} & \textbf{Compression} & \textbf{Encoding Speed} & \textbf{HW Support} & \textbf{Licensing} \\
-            \hline
-            AV1  & Often higher efficiency than H264 (content-dependent) & Slow   & Limited      & Royalty-free, open \\
-            \hline
-            H264 & Baseline              & Fast   & Full         & Proprietary \\
-            \hline
-            H265 & Often higher efficiency than H264 (content-dependent) & Slow   & Mostly full  & Proprietary \\
-            \hline
-            VP8  & Similar to H264       & Fast   & Full         & Royalty-free, open \\
-            \hline
-            VP9  & Often higher efficiency than H264 (content-dependent) & Normal & Full         & Royalty-free, open \\
-            \hline
-        \end{tabular}%
-    }
-\end{table}
+Codec selection is a practical trade-off between quality, bitrate efficiency, computational cost, hardware support, and licensing constraints.\cite{WebVideoCodec2025,apostolopoulosVideoStreamingConcepts} Although newer codecs can deliver better compression in some workloads, this thesis focuses on H.264 because it offers broad hardware acceleration support, mature tooling, and predictable interoperability across the used pipeline components.
 
 \subsection{Muxers}
-After the video and audio have been separately compressed by their respective codecs, they need to be combined into a single, synchronized package for delivery. This process is called multiplexing, or muxing.
-
-A muxer interleaves the compressed video and audio streams (along with any other data, like subtitles or chapter markers) into a single file or stream, known as a container format. The container file includes timing information and metadata that tells the consumer's video player how to synchronize the different streams so that the audio perfectly matches the video playback.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
+After compression, media streams are multiplexed into a synchronized container or transport stream. The muxer interleaves encoded data and timing metadata so the receiver can reconstruct correct playback order.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
 \subsection{Encoding pipeline}
 \label{sec:encoding-pipeline}
@@ -210,33 +166,17 @@ Before the compressed encoder can accept frames, several normalization steps ada
 \subsubsection{Intra-frame compression}
 An \textit{I-frame} (intra-coded frame) is encoded entirely from its own content, without reference to any other frame. It is therefore fully self-contained and can be decoded independently — a property essential for random access, stream join, and error recovery.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
-Intra-frame compression exploits \textit{spatial redundancy}: adjacent pixels in a natural image are highly correlated, and a block of pixels can be predicted from its neighbors with small residual error. The process proceeds as follows:
-\begin{enumerate}
-    \item The frame is partitioned into macroblocks of 16$\times$16 pixels (H.264) or larger variable-size coding tree units (H.265, AV1).\cite{jesup_rtp_2011,WebVideoCodec2025}
-    \item \textit{Intra prediction} estimates each block by extrapolating from already-encoded neighboring blocks within the same frame, using one of several directional prediction modes. Only the difference (residual) between the prediction and the actual block is passed to the next step.\cite{apostolopoulosVideoStreamingConcepts}
-    \item A \textit{Discrete Cosine Transform} (DCT) converts each residual block from the spatial domain to the frequency domain, concentrating most of the signal energy into a small number of low-frequency coefficients while high-frequency coefficients remain near zero.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
-    \item \textit{Quantization} rounds each frequency coefficient to a configurable step size. High-frequency components — which represent fine texture detail that is largely invisible at normal viewing distances — are discarded with the most aggressive rounding. This is the primary lossy step in the pipeline; the quantization parameter (QP) or constant-rate factor (CRF) directly controls the trade-off between output bitrate and visual quality.\cite{WebVideoCodec2025}
-\end{enumerate}
-The quantized coefficients together with the chosen prediction modes constitute the compressed I-frame data.
+Intra-frame compression exploits spatial redundancy using block prediction, transform coding, and quantization. In practice, this means codecs preserve dominant visual structure while discarding less perceptually important detail to reduce bitrate.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025} For live streaming, periodic I-frames are critical because they bound recovery time after loss and allow late-joining receivers to synchronize.
 
 \subsubsection{Inter-frame compression}
 After the first I-frame, subsequent frames are encoded as \textit{P-frames} (predictive) or \textit{B-frames} (bi-directionally predicted). These exploit \textit{temporal redundancy}: consecutive frames in video of natural scenes are nearly identical because most content moves slowly relative to the frame rate.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
-\begin{itemize}
-    \item \textbf{Motion estimation} --- For each macroblock in the current frame, the encoder searches a reference frame for the best-matching block within a search window. For B-frames, both an earlier and a later frame may be used as references. The displacement between the current and reference block positions is stored as a compact \textit{motion vector}.\cite{apostolopoulosVideoStreamingConcepts}
-    \item \textbf{Motion compensation} --- The encoder fetches the predicted block from the reference frame using the motion vector and subtracts it from the actual block, yielding a small \textit{residual}. Only this residual — not the full block content — is passed through DCT and quantization, achieving dramatically higher compression than intra coding alone.\cite{apostolopoulosVideoStreamingConcepts}
-    \item \textbf{B-frames} require the encoder to buffer future frames before the current frame can be encoded, introducing additional latency proportional to the look-ahead window. For this reason B-frames are often disabled in real-time streaming encoders where minimizing end-to-end latency takes priority over maximum compression efficiency.\cite{apostolopoulosVideoStreamingConcepts}
-\end{itemize}
+Inter coding estimates motion between frames and stores compact motion vectors plus residual error instead of full frame content. This greatly improves compression, but deeper look-ahead and bidirectional prediction increase buffering delay.\cite{apostolopoulosVideoStreamingConcepts}
 
-The periodic insertion of I-frames is governed by the \textit{Group of Pictures} (GOP) parameter. A shorter GOP improves resilience to packet loss and reduces the penalty for late stream joins, while a longer GOP allows more inter-frame references and better overall compression. Live streaming systems often use GOP lengths of about one to four seconds.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
+The periodic insertion of I-frames is governed by the \textit{Group of Pictures} (GOP) parameter. A shorter GOP generally improves resilience to packet loss and late joins, while a longer GOP improves compression efficiency.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
 \subsubsection{Entropy coding}
-After quantization, the resulting integers (DCT coefficients, motion vectors, and codec syntax elements) still exhibit statistical structure: many coefficients are zero, and non-zero values cluster near the DC component. Entropy coding removes this redundancy losslessly, mapping frequently occurring patterns to shorter bit sequences.\cite{apostolopoulosVideoStreamingConcepts} H.264 supports two entropy coders:
-\begin{itemize}
-    \item \textbf{CAVLC} (Context-Adaptive Variable-Length Coding) --- lower computational complexity, used in the H.264 Baseline and Constrained Baseline profiles.\cite{jesup_rtp_2011}
-    \item \textbf{CABAC} (Context-Adaptive Binary Arithmetic Coding) --- can provide around 10--15\% better compression than CAVLC at comparable visual quality, used in the Main and High profiles at the cost of higher encoder and decoder complexity.\cite{WebVideoCodec2025,jesup_rtp_2011}
-\end{itemize}
-The output of entropy coding is the final compressed H.264 bitstream.
+After transform and quantization, entropy coding removes remaining statistical redundancy losslessly to produce the final compressed bitstream. In H.264, CAVLC prioritizes lower complexity while CABAC provides better compression at higher computational cost.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025,jesup_rtp_2011}
 
 \subsubsection{Network Abstraction Layer}
 The compressed bitstream is organized into \textit{NAL units} (Network Abstraction Layer units, defined in RFC~6184 for RTP transport\cite{jesup_rtp_2011}), which are self-delimiting data units designed to be carried over diverse network environments without knowledge of their contents:
@@ -259,24 +199,18 @@ For real-time network delivery, NAL units are wrapped into RTP (Real-time Transp
 The resulting RTP datagrams are handed off to the transport layer for delivery to consumers.
 
 \section{Current state of video streaming}
-\subsection{Video streaming in video calls}
-Video calls are a common use case for real-time video streaming, but they represent a different optimization problem than one-to-many live broadcasting. In a video call, the primary objective is very low end-to-end latency and stable bidirectional interaction between a relatively small number of participants. For this reason, modern systems commonly rely on centralized infrastructure that coordinates session establishment, assists with network address translation traversal, and often relays or selectively forwards media streams between participants.\cite{peroniEndtoEndPipelinePerspective2025} Browser-based real-time communication is today strongly associated with WebRTC, which standardizes media exchange and security mechanisms for interactive communication on the web.\cite{noauthor_webrtc_nodate,mcgrew_datagram_2010}
-
-Although direct peer-to-peer communication can be used for very small groups, the fully connected topology scales poorly because each participant must upload a separate stream to multiple receivers. As the number of participants grows, both aggregate upload requirements and coordination complexity increase rapidly. Centralized mediation therefore remains a common architectural choice for video conferencing because it provides predictable quality, simpler access control, recording, moderation, and easier operation under heterogeneous client and network conditions.\cite{peroniEndtoEndPipelinePerspective2025,huangLiveStreamingIts2023a}
 \subsection{Video streaming in live streaming}
-Large-scale live streaming platforms such as Twitch or YouTube Live solve a different problem: one producer providing content to many consumers. In this scenario, a widely used architecture is centralized ingest followed by processing and global distribution through \ac{CDN} infrastructure. The source stream is received by an origin service, frequently transcoded into multiple resolutions, segmented into chunks, and then replicated to edge servers close to viewers. This model is operationally expensive, but it offers strong control over quality, observability, and overall stability.\cite{peroniEndtoEndPipelinePerspective2025,huangLiveStreamingIts2023a}
+Large-scale live streaming platforms such as Twitch or YouTube Live typically use centralized ingest, processing, and \ac{CDN}-based global delivery. This architecture scales reliably and is operationally mature, but it concentrates cost and control at infrastructure providers.\cite{peroniEndtoEndPipelinePerspective2025,huangLiveStreamingIts2023a}
 
-The protocols most commonly used in production platforms, especially HLS and MPEG-DASH, are built around HTTP delivery of media segments.\cite{pantos_http_2017,noauthor_standards_nodate} This makes them highly compatible with browsers, caches, enterprise networks, and existing \ac{CDN} deployments. The trade-off is latency: segment-based delivery is robust and scalable, but often operates with multi-second delay unless additional low-latency extensions are employed. When lower latency is required, platforms often introduce specialized transports such as WebRTC, but doing so usually increases infrastructure cost and operational complexity.\cite{noauthor_webrtc_nodate}
+In production, HLS and MPEG-DASH over HTTP remain common due to compatibility with browsers and caching infrastructure. The main trade-off is increased latency compared to direct low-latency transport paths.\cite{pantos_http_2017,noauthor_standards_nodate,noauthor_webrtc_nodate}
 \subsubsection{Possibility of censorship}
-An important consequence of centralized live streaming is that technical delivery, moderation, and platform governance are concentrated in a small number of operators. Content creators therefore depend not only on the availability of the provider's infrastructure, but also on the provider's business rules, moderation policies, and regional restrictions. Temporary outages of major cloud or platform providers also demonstrate that centralized dependencies can affect availability on a wide scale.\cite{huangLiveStreamingIts2023a,ServiceHealthNov}
+Centralized delivery also concentrates moderation and governance decisions in a small number of operators, creating dependence on provider policy and availability.\cite{huangLiveStreamingIts2023a,ServiceHealthNov}
 
-Decentralized \ac{P2P} video streaming can partially mitigate this concentration of control by removing the requirement for a single distributor of media. However, decentralization does not eliminate governance problems; it shifts them. A fully decentralized system still needs mechanisms for peer authentication, abuse mitigation, access control, and stream authenticity verification. These concerns are particularly important in open overlays where unknown peers may inject invalid or malicious traffic.\cite{SecurityConsiderations,WhatAreSecure}
+Decentralized \ac{P2P} delivery can reduce single-operator dependence, but it still requires authentication, abuse controls, and integrity validation in open overlays.\cite{SecurityConsiderations,WhatAreSecure}
 \subsection{Existing \ac{P2P} video streaming solutions}
-Existing \ac{P2P} solutions rarely attempt to replace the entire streaming stack. Instead, they usually adopt a hybrid approach in which peers exchange media data opportunistically while centralized servers remain available for bootstrap, fallback delivery, coordination, or metadata distribution. This is also consistent with the literature: hybrid \ac{CDN}-\ac{P2P} architectures are repeatedly described as a practical compromise because they preserve service continuity when peer capacity is insufficient while still reducing bandwidth demand on the provider side.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012}
+Existing \ac{P2P} streaming solutions are usually hybrid: peers exchange media when possible, while centralized infrastructure remains for bootstrap, fallback, or coordination. This compromise preserves robustness under variable peer capacity while reducing provider bandwidth demand.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012}
 
-P2P Media Loader is a representative example of this design. It integrates peer-assisted distribution into browser-based players, but it does not remove the role of the origin server or HTTP delivery path. Instead, peers exchange chunks when possible and the player falls back to conventional delivery when peer data is unavailable or late. This design choice is significant: it shows that many production-oriented \ac{P2P} streaming systems prioritize compatibility and robustness over strict decentralization.\cite{NovageP2pmedialoader2025}
-
-The broader libp2p ecosystem demonstrates that decentralized transport primitives, peer identity, encryption, and stream multiplexing are already available as reusable building blocks. What is still largely missing is a mature, general-purpose architecture for low-latency live video distribution that combines these primitives with media-specific requirements such as timing guarantees, packet reordering tolerance, and efficient fan-out. This gap motivates the implementation work in this thesis.\cite{Libp2pIPFSDocs,SecurityConsiderations}
+P2P Media Loader illustrates this pattern by adding peer-assisted delivery to browser playback without removing the origin HTTP path.\cite{NovageP2pmedialoader2025} The broader libp2p ecosystem provides reusable decentralized transport primitives, but low-latency live distribution still requires careful handling of timing, reordering, and fan-out behavior.\cite{Libp2pIPFSDocs,SecurityConsiderations}
 
 \subsection{Why fully decentralized live streaming is still uncommon}
 Despite the conceptual appeal of \ac{P2P} delivery, fully decentralized live video streaming is still less common in mainstream deployments because live media is unusually sensitive to transport instability.\cite{apostolopoulosVideoStreamingConcepts} Peer churn changes available paths over time, residential uplinks are often asymmetric and limited, and heterogeneous devices contribute highly variable encoding, decoding, and forwarding capacity.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} In a live scenario, these effects accumulate immediately as delay, jitter, packet loss, or reduced picture quality at the viewer.
