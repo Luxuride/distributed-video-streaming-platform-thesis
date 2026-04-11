@@ -1,0 +1,3 @@
+[submodule "p2p-stream"]
+	path = p2p-stream
+	url = git@github.com:Luxuride/p2p-stream.git
