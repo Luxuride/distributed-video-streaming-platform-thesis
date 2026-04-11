@@ -441,6 +441,27 @@ This prevents stale video frames from continuing to circulate after their playba
 
 Peers are managed through mDNS lifecycle events: on \texttt{mdns::Event::Discovered}, each new peer is dialed and added to the Gossipsub mesh via \texttt{add\_explicit\_peer}; on \texttt{mdns::Event::Expired}, it is removed via \texttt{remove\_explicit\_peer}. A shared, thread-safe peer set (\texttt{HashSet<PeerId>} guarded by an \texttt{Arc<RwLock>}) is kept current on every connection event.
 
+\subsubsection{Practical saturation issue in Gossipsub}
+\label{sec:gossipsub-saturation}
+During development, the main practical issue of the Gossipsub transport was saturation under higher traffic. The observable symptom was that transmission gradually stalled: new chunks were still produced at the sender, but effective real-time delivery degraded until playback stopped progressing.
+
+The bottleneck was not a single failing component but the interaction between packetization and processing cost. In the implementation repository, each inbound Gossipsub message must be deserialized from CBOR into \texttt{VideoStreamChunk} (see \path{libraries/network/src/gossipsub.rs}), and each outbound chunk is serialized and published through the mesh in the same transport backend. When packet rate increased, serialization/deserialization and mesh dispatch competed for runtime time slices and queue capacity.
+
+In practice, this behavior depended strongly on the ratio between bitrate and MTU. Higher bitrate increases the amount of payload generated per second, and smaller MTU splits the same payload into more packets; together they increase message frequency approximately proportionally to:
+\[
+\text{messages per second} \propto \frac{\text{bitrate}}{\text{MTU}}.
+\]
+Therefore, the worst saturation occurred at high bitrate with small MTU, while larger MTU at the same bitrate reduced message pressure.
+
+The mitigation was applied in three steps:
+\begin{itemize}
+    \item inbound CBOR deserialization was moved out of the critical swarm loop into a separate async task, reducing blocking in the main handling path,
+    \item MTU was increased (configured through the \texttt{chunk\_size} parameter in \texttt{stream\_test} and through payloader MTU in the media pipelines), reducing packet/message count per second,
+    \item bitrate was reduced in unstable scenarios so that offered load stayed below the practical processing limit of the Gossipsub path.
+\end{itemize}
+
+This development issue explains why the practical evaluation in \S\ref{sec:test-matrix} varies both bitrate and MTU: these two parameters jointly determine whether Gossipsub remains stable for live media in this prototype. It also explains the observed trend in the analysis chapter (\S\ref{sec:analysis-mtu-1200-comparison}), where larger MTU substantially improves Gossipsub behavior under higher bitrates.
+
 \subsubsection{Stream}
 The Stream backend uses \texttt{libp2p\_stream} with a custom versioned protocol identifier:
 
