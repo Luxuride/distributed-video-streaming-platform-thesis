@@ -61,6 +61,8 @@
   \def\pdfBorderAttrs{/Border [0 0 0] } % bez okrajů kolem odkazů / without margins around links
   \pdfcompresslevel=9
 
+\usepackage{attachfile2}
+
 % Řešení problému, kdy klikací odkazy na obrázky vedou za obrázek
 % This solves the problems with links which leads after the picture
 \usepackage[all]{hypcap}
@@ -242,5 +244,13 @@
  \appendixpage
   
   % Přílohy / Appendices
+  \section{Source code and analysis attachments}
+  \label{sec:attachments}
+  \begin{itemize}
+    \item \IfFileExists{attachments/p2p-stream.zip}{\attachfile[color=0 0 0]{attachments/p2p-stream.zip}~p2p-stream.zip}{p2p-stream.zip (not available in this build)}
+    \item \IfFileExists{attachments/analysis.zip}{\attachfile[color=0 0 0]{attachments/analysis.zip}~analysis.zip}{analysis.zip (not available in this build)}
+    \item \IfFileExists{attachments/p2p-stream-linux.zip}{\attachfile[color=0 0 0]{attachments/p2p-stream-linux.zip}~p2p-stream-linux.zip}{p2p-stream-linux.zip (pipeline artifact not available for this commit/build)}
+    \item \IfFileExists{attachments/p2p-stream-linux-appimage.zip}{\attachfile[color=0 0 0]{attachments/p2p-stream-linux-appimage.zip}~p2p-stream-linux-appimage.zip}{p2p-stream-linux-appimage.zip (pipeline artifact not available for this commit/build)}
+  \end{itemize}
   
 \end{document}

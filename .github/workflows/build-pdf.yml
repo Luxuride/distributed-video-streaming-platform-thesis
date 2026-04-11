@@ -26,6 +26,39 @@ jobs:
           extra_nix_config: |
             experimental-features = nix-command flakes
 
+      - name: Prepare attachments directory
+        run: mkdir -p attachments
+
+      - name: Generate p2p-stream attachment archive
+        continue-on-error: true
+        run: |
+          rm -f attachments/p2p-stream.zip
+          zip -r attachments/p2p-stream.zip p2p-stream
+
+      - name: Generate analysis attachment archive
+        continue-on-error: true
+        run: |
+          rm -f attachments/analysis.zip
+          zip -r attachments/analysis.zip analysis
+
+      - name: Download p2p-stream Linux binary artifact
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bash scripts/download-github-artifact.sh \
+            --artifact-name p2p-stream-linux \
+            --output-path attachments/p2p-stream-linux.zip
+
+      - name: Download p2p-stream AppImage artifact
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          bash scripts/download-github-artifact.sh \
+            --artifact-name p2p-stream-linux-appimage \
+            --output-path attachments/p2p-stream-linux-appimage.zip
+
       - name: Build thesis PDF
         run: |
           nix develop -c bash -lc '
@@ -46,5 +79,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: thesis-pdf
-          path: main.pdf
+          path: |
+            main.pdf
+            attachments/
           if-no-files-found: error
