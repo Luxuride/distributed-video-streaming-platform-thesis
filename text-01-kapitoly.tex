@@ -19,11 +19,10 @@ During writing, GitHub Copilot was used as an auxiliary tool for three limited t
 \subsection{Author responsibility and verification}
 The author retains full responsibility for the final content of the thesis, including the correctness of factual claims, the selection and interpretation of sources, the accuracy of citations, the final proofreading of all text, and the verification of passages that were initially assisted by AI, and before final submission the complete manuscript was checked for consistency, technical accuracy, and compliance with the intended thesis structure.
 
-\section{Background}
+\section{Foundations of P2P Video Streaming}
 \subsection{Peer-to-Peer}
 
-Peer-to-peer (
-\ac{P2P}) networking is communication model where participating nodes (peers) can directly exchange data and services without relying exclusively on a permanently available central server. In practical architecture discussions, \ac{P2P} systems are characterized by direct resource sharing between autonomous participants and reduced reliance on centralized delivery components.\cite{xuAnalysisCDNP2P2006}
+Peer-to-peer (\ac{P2P}) networking is communication model where participating nodes (peers) can directly exchange data and services without relying exclusively on a permanently available central server. In practical architecture discussions, \ac{P2P} systems are characterized by direct resource sharing between autonomous participants and reduced reliance on centralized delivery components.\cite{xuAnalysisCDNP2P2006}
 
 From architecture perspective, \ac{P2P} systems are typically described as either pure or hybrid.\cite{meskovicContentDeliveryArchitectures2012} In pure \ac{P2P}, peers provide both control and data-plane functions in decentralized manner. In hybrid \ac{P2P}, selected centralized components are preserved for tasks such as discovery, bootstrap, or coordination, while most payload distribution is delegated to peers. This classification is important in practice because many deployed systems use hybrid designs to combine operational control with horizontal scalability.
 
@@ -92,6 +91,9 @@ In large-scale deployments, \ac{CDN} infrastructure is also used for live distri
 \ac{P2P} video streaming distributes media across peers in a decentralized overlay. In this model, a peer can consume stream data and forward it to other peers, reducing direct load on the original producer and potentially improving scalability.
 
 The main disadvantages are greater sensitivity to churn, variable path quality, and possible latency increases caused by multi-hop forwarding.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} Security and trust are also more complex because peers are not inherently trusted media sources.\cite{SecurityConsiderations}
+
+\section{Challenges in Live Video Streaming}
+This section narrows the focus from general concepts to transport-level constraints that directly shape implementation choices and evaluation metrics in this thesis.
 
 \subsection{Basic Problems with video streaming}
 Core transport problems in video streaming include limited bandwidth, delay jitter, and packet loss rate \cite{apostolopoulosVideoStreamingConcepts}. Overlay forwarding across multiple peers can additionally increase delay variation and out-of-order arrival in practice due to multi-path forwarding and asynchronous peer scheduling.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012}
