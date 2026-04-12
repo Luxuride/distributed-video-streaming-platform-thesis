@@ -6,15 +6,15 @@ appsrc --> rtpjitterbuffer
 rtpjitterbuffer: Reorder RTP packets\nwhen they are out of order
 rtpjitterbuffer --> rtmp2tdepay
 rtmp2tdepay: RTP depayloader for RTMP
-rtmp2tdepay --> tsdemux
+rtmp2tdepay -right-> tsdemux
 tsdemux: Demux MPEG-TS stream
-tsdemux -right-> h264parse
+tsdemux -up-> h264parse
 h264parse: Parse H.264 stream
 h264parse -up-> vaapih264dec
 vaapih264dec: Hardware H.264 decoding
-vaapih264dec -up-> videoconvert
+vaapih264dec -right-> videoconvert
 videoconvert: Convert video format
-videoconvert -up-> autovideosink
+videoconvert --> autovideosink
 autovideosink: Output to screen
-autovideosink -up-> [*]
+autovideosink --> [*]
 @enduml

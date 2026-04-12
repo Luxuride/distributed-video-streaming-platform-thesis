@@ -8,19 +8,19 @@ videorate --> videoconvert
 videoconvert: Convert video format
 videoconvert --> timeoverlay
 timeoverlay: Debug time in video
-timeoverlay --> vaapipostproc
+timeoverlay -right-> vaapipostproc
 vaapipostproc: Convert video to\nVAAPI format
-vaapipostproc --> vaapih264enc
+vaapipostproc -up-> vaapih264enc
 vaapih264enc: Hardware H.264 encoding
-vaapih264enc -right-> h264parse
+vaapih264enc -up-> h264parse
 h264parse: Parse H.264 stream
 h264parse -up-> mpegtsmux
 mpegtsmux: Mux into MPEG-TS
-mpegtsmux -up-> rtmp2tpay
+mpegtsmux -right-> rtmp2tpay
 rtmp2tpay: RTP payloader for RTMP
-rtmp2tpay -up-> queue
+rtmp2tpay --> queue
 queue: Buffering queue
-queue -up-> appsink
+queue --> appsink
 appsink: Output to application sink
-appsink -up-> [*]
+appsink --> [*]
 @enduml
