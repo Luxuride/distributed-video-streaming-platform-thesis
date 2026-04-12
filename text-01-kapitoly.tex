@@ -342,7 +342,7 @@ The Cargo workspace contains five members. Table~\ref{tab:crate_overview} lists 
 
 \begin{table}[htbp]
     \centering
-    \caption{Workspace crate overview}
+    \caption{Workspace crate overview. Source: own work.}
     \label{tab:crate_overview}
     \resizebox{\textwidth}{!}{%
         \begin{tabular}{|l|l|l|}
@@ -413,7 +413,7 @@ The file descriptor and node ID are passed directly into the GStreamer pipeline.
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{out/recorder-pipeline/recorder-pipeline.png}
-    \caption{Recorder pipeline}
+    \caption{Recorder pipeline. Source: own work.}
 \end{figure}
 
 \label{sec:gstreamer_recorder}
@@ -442,7 +442,7 @@ Incoming RTP H.264 payloads are decoded and displayed by the \texttt{GstRenderer
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{out/renderer-pipeline/renderer-pipeline.png}
-    \caption{Renderer pipeline}
+    \caption{Renderer pipeline. Source: own work.}
 \end{figure}
 
 \begin{itemize}
@@ -699,14 +699,14 @@ For Stream, both MTUs are stable, but MTU 4096 still improves latency. At 10000 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/mtu/compare_delay_p95_by_mtu_5000kbps.png}
-    \caption{p95 one-way delay by protocol at 5000 kbps, compared between MTU 1200 and MTU 4096.}
+    \caption{p95 one-way delay by protocol at 5000 kbps, compared between MTU 1200 and MTU 4096. Source: own work.}
     \label{fig:analysis_mtu_delay_p95_5000}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/mtu/compare_delay_p95_by_mtu_10000kbps.png}
-    \caption{p95 one-way delay by protocol at 10000 kbps, compared between MTU 1200 and MTU 4096.}
+    \caption{p95 one-way delay by protocol at 10000 kbps, compared between MTU 1200 and MTU 4096. Source: own work.}
     \label{fig:analysis_mtu_delay_p95_10000}
 \end{figure}
 
@@ -716,14 +716,14 @@ Reordering behavior confirms the same trend. For Gossipsub at 10000 kbps, misord
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/mtu/compare_misordered_bytes_rate_by_mtu_10000kbps.png}
-    \caption{Misordered packet rate at 10000 kbps for MTU 1200 versus MTU 4096.}
+    \caption{Misordered packet rate at 10000 kbps for MTU 1200 versus MTU 4096. Source: own work.}
     \label{fig:analysis_mtu_misordered_rate_10000}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/mtu/compare_stability_score_by_mtu_10000kbps.png}
-    \caption{Composite stability score at 10000 kbps for MTU 1200 versus MTU 4096.}
+    \caption{Composite stability score at 10000 kbps for MTU 1200 versus MTU 4096. Source: own work.}
     \label{fig:analysis_mtu_stability_10000}
 \end{figure}
 
@@ -738,7 +738,7 @@ At 500 kbps, Gossipsub already has higher delay than Stream (mean 18.36 ms vs. 3
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/bitrate/mtu_1200/compare_delay_p95_by_bitrate.png}
-    \caption{p95 one-way delay by bitrate for MTU 1200, comparing Stream and Gossipsub.}
+    \caption{p95 one-way delay by bitrate for MTU 1200, comparing Stream and Gossipsub. Source: own work.}
     \label{fig:analysis_1200_delay_p95_bitrate}
 \end{figure}
 At 10000 kbps, Gossipsub behavior changes from degraded to unstable: mean delay rises to 347.95 ms, p95 to 1159.8 ms, and maximum delay reaches 5428.9 ms. In the same condition, Stream remains at mean 33.08 ms, p95 123.7 ms, and maximum 499.8 ms.
@@ -746,14 +746,14 @@ At 10000 kbps, Gossipsub behavior changes from degraded to unstable: mean delay 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/delay/mtu_1200/delay_spike_boxplot.png}
-    \caption{Delay spike distribution for MTU 1200 conditions.}
+    \caption{Delay spike distribution for MTU 1200 conditions. Source: own work.}
     \label{fig:analysis_1200_delay_spike_boxplot}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/delay/bitrate/mtu_1200/delay_p95_by_bitrate_boxplot_gossipsub.png}
-    \caption{Run-to-run p95 delay spread for Gossipsub at MTU 1200 by bitrate.}
+    \caption{Run-to-run p95 delay spread for Gossipsub at MTU 1200 by bitrate. Source: own work.}
     \label{fig:analysis_1200_gossipsub_delay_boxplot}
 \end{figure}
 
@@ -763,7 +763,7 @@ Packet ordering metrics show the same escalation. Gossipsub misordered packet ra
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/bitrate/mtu_1200/compare_misorder_rate_by_bitrate.png}
-    \caption{Misordered packet rate by bitrate for MTU 1200, comparing Stream and Gossipsub.}
+    \caption{Misordered packet rate by bitrate for MTU 1200, comparing Stream and Gossipsub. Source: own work.}
     \label{fig:analysis_1200_misorder_rate_bitrate}
 \end{figure}
 \subsubsection{Stability and recommendation}
@@ -772,7 +772,7 @@ The composite stability score from the analysis scripts is included as a supplem
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/bitrate/mtu_1200/compare_stability_score_by_bitrate.png}
-    \caption{Composite stability score by bitrate for MTU 1200.}
+    \caption{Composite stability score by bitrate for MTU 1200. Source: own work.}
     \label{fig:analysis_1200_stability_bitrate}
 \end{figure}
 
@@ -787,7 +787,7 @@ At 10000 kbps and MTU 4096, Stream mean delay is 8.35 ms (p95 31.0 ms), while Go
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/bitrate/mtu_4096/compare_delay_p95_by_bitrate.png}
-    \caption{p95 one-way delay by bitrate for MTU 4096, comparing Stream and Gossipsub.}
+    \caption{p95 one-way delay by bitrate for MTU 4096, comparing Stream and Gossipsub. Source: own work.}
     \label{fig:analysis_4096_delay_p95_bitrate}
 \end{figure}
 \subsubsection{Packet ordering}
@@ -796,7 +796,7 @@ Reordering also improves versus MTU 1200, although Gossipsub still exhibits nont
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/bitrate/mtu_4096/compare_misorder_rate_by_bitrate.png}
-    \caption{Misordered packet rate by bitrate for MTU 4096, comparing Stream and Gossipsub.}
+    \caption{Misordered packet rate by bitrate for MTU 4096, comparing Stream and Gossipsub. Source: own work.}
     \label{fig:analysis_4096_misorder_rate_bitrate}
 \end{figure}
 
