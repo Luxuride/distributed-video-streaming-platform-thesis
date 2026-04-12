@@ -1,9 +1,9 @@
 \section{Introduction}
 This thesis explores decentralized live video streaming using \ac{P2P} networking. The primary objective is to design and implement a functional prototype and evaluate its performance and stability under controlled conditions. The motivation is to address known limitations of centralized delivery models, including infrastructure cost concentration, operational single points of failure, and scaling constraints.
 
-Most production streaming systems currently rely on centralized origins and \ac{CDN} to deliver media. Although this model provides strong operational control and broad compatibility, provider-side outages demonstrate that central dependencies can still impact service availability at significant scale.\cite{ServiceHealthNov,peroniEndtoEndPipelinePerspective2025}
+Most production streaming systems currently rely on centralized origins and \ac{CDN} to deliver media.\cite{peroniEndtoEndPipelinePerspective2025} Although this model provides strong operational control and broad compatibility, provider-side outages demonstrate that central dependencies can still impact service availability at significant scale.\cite{ServiceHealthNov}
 
-The thesis therefore examines whether \ac{P2P} transport can provide a practical complement for live distribution. It evaluates both expected benefits (resource sharing, resilience, and potential cost reduction)\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} and expected trade-offs (latency sensitivity, quality instability under churn, and security/governance requirements).\cite{SecurityConsiderations}
+The thesis therefore examines whether \ac{P2P} transport can provide a practical complement for live distribution. It evaluates expected benefits such as resource sharing and resilience,\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} including potential cost reduction for large-scale delivery.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} It also evaluates expected trade-offs such as latency sensitivity, quality instability under churn, and security/governance requirements.\cite{SecurityConsiderations}
 
 The scope is live video streaming with emphasis on the transport layer.
 
@@ -22,13 +22,13 @@ The author retains full responsibility for the final content of the thesis, incl
 \section{Foundations of P2P Video Streaming}
 \subsection{Peer-to-Peer}
 
-Peer-to-peer (\ac{P2P}) networking is communication model where participating nodes (peers) can directly exchange data and services without relying exclusively on a permanently available central server. In practical architecture discussions, \ac{P2P} systems are characterized by direct resource sharing between autonomous participants and reduced reliance on centralized delivery components.\cite{xuAnalysisCDNP2P2006}
+Peer-to-peer (\ac{P2P}) networking is communication model where participating nodes (peers) can directly exchange data and services without relying exclusively on a permanently available central server.\cite{xuAnalysisCDNP2P2006} In practical architecture discussions, \ac{P2P} systems are characterized by direct resource sharing between autonomous participants and reduced reliance on centralized delivery components.\cite{xuAnalysisCDNP2P2006}
 
-From architecture perspective, \ac{P2P} systems are typically described as either pure or hybrid.\cite{meskovicContentDeliveryArchitectures2012} In pure \ac{P2P}, peers provide both control and data-plane functions in decentralized manner. In hybrid \ac{P2P}, selected centralized components are preserved for tasks such as discovery, bootstrap, or coordination, while most payload distribution is delegated to peers. This classification is important in practice because many deployed systems use hybrid designs to combine operational control with horizontal scalability.
+From architecture perspective, \ac{P2P} systems are typically described as either pure or hybrid.\cite{meskovicContentDeliveryArchitectures2012} In pure \ac{P2P}, peers provide both control and data-plane functions in decentralized manner. In hybrid \ac{P2P}, selected centralized components are preserved for tasks such as discovery, bootstrap, or coordination, while most payload distribution is delegated to peers.\cite{meskovicContentDeliveryArchitectures2012} This classification is important in practice because many deployed systems use hybrid designs to combine operational control with horizontal scalability.\cite{meskovicContentDeliveryArchitectures2012}
 
-The main advantages of \ac{P2P} include improved scalability through aggregate upload capacity of many peers, reduced dependency on single infrastructure provider, and potential cost reduction for large-scale content distribution.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} However, these benefits are accompanied by trade-offs: peer churn, asymmetric residential connectivity, heterogeneous device capabilities, and more complex trust and abuse resistance mechanisms compared to centralized delivery.\cite{SecurityConsiderations}
+The main advantages of \ac{P2P} include improved scalability through the aggregate upload capacity of many peers and reduced dependency on a single infrastructure provider.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} Large-scale content distribution can also reduce provider bandwidth cost.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} However, these benefits are accompanied by trade-offs: peer churn, asymmetric residential connectivity, and heterogeneous device capabilities.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} More complex trust and abuse resistance mechanisms are also required compared to centralized delivery.\cite{SecurityConsiderations}
 
-For video distribution, \ac{P2P} is commonly combined with \ac{CDN} infrastructure in hybrid designs.\cite{meskovicContentDeliveryArchitectures2012} Literature indicates this approach can reduce provider bandwidth costs while supporting service continuity through \ac{CDN} fallback when peer capacity is insufficient.\cite{xuAnalysisCDNP2P2006} This hybrid approach is also reflected in modern implementations and frameworks, where transport, peer discovery, and secure communication primitives are exposed by reusable protocol stacks (for example libp2p) and browser-oriented distribution libraries.\cite{Libp2pIPFSDocs,NovageP2pmedialoader2025}
+For video distribution, \ac{P2P} is commonly combined with \ac{CDN} infrastructure in hybrid designs.\cite{meskovicContentDeliveryArchitectures2012} Literature indicates this approach can reduce provider bandwidth costs.\cite{xuAnalysisCDNP2P2006} It can also support service continuity through \ac{CDN} fallback when peer capacity is insufficient.\cite{xuAnalysisCDNP2P2006} This hybrid approach is also reflected in modern implementations and frameworks, where transport, peer discovery, and secure communication primitives are exposed by reusable protocol stacks (for example libp2p) and browser-oriented distribution libraries.\cite{Libp2pIPFSDocs,NovageP2pmedialoader2025}
 
 \subsection{Gossipsub as a mesh publish/subscribe protocol}
 Gossipsub is a topic-based publish/subscribe protocol used in libp2p overlays for one-to-many and many-to-many message dissemination.\cite{SpecsPubsubGossipsub} Instead of requiring a producer to maintain a separate direct stream to every receiver, peers subscribe to a topic and forward validated messages to selected neighbors in that topic's overlay.\cite{SpecsPubsubGossipsub} In this pub/sub model, publishers and subscribers are coordinated through shared topics rather than fixed producer-consumer pairs.\cite{WhatPublishSubscribe}
@@ -46,28 +46,28 @@ In this thesis, these theoretical properties directly motivate the practical com
 \subsection{Video Streaming}
 Video streaming is a method of delivering video data over a network as a continuous flow, allowing playback without downloading the entire file in advance.\cite{apostolopoulosVideoStreamingConcepts,peroniEndtoEndPipelinePerspective2025}
 
-The term covers both "on-demand" services (pre-recorded content fetched by the client) and "live" broadcasts where the stream is generated and consumed simultaneously. In practice the distinction blurs: on-demand systems still deliver chunks progressively, and live systems may buffer a few seconds of content to tolerate network variability.\cite{peroniEndtoEndPipelinePerspective2025} In current large-scale deployments, HTTP-based delivery (for example HLS and MPEG-DASH) is widely used because it aligns with existing web and CDN infrastructure.\cite{pantos_http_2017,noauthor_standards_nodate}
+The term covers both "on-demand" services (pre-recorded content fetched by the client) and "live" broadcasts where the stream is generated and consumed simultaneously.\cite{peroniEndtoEndPipelinePerspective2025} In practice the distinction blurs: on-demand systems still deliver chunks progressively, and live systems may buffer a few seconds of content to tolerate network variability.\cite{peroniEndtoEndPipelinePerspective2025} In current large-scale deployments, HTTP-based delivery (for example HLS and MPEG-DASH) is widely used because it aligns with existing web and CDN infrastructure.\cite{pantos_http_2017,noauthor_standards_nodate}
 
-Streaming differs from simple progressive download because the receiver decodes and presents frames as they arrive; in adaptive systems, the delivered bitrate is adjusted according to network conditions (see \S\ref{sec:abr}).\cite{apostolopoulosVideoStreamingConcepts,peroniEndtoEndPipelinePerspective2025}
+Streaming differs from simple progressive download because the receiver decodes and presents frames as they arrive.\cite{apostolopoulosVideoStreamingConcepts} In adaptive systems, the delivered bitrate is adjusted according to network conditions (see \S\ref{sec:abr}).\cite{peroniEndtoEndPipelinePerspective2025}
 
 \subsubsection{Adaptive Bitrate Streaming}
 \label{sec:abr}
-\ac{ABR} streaming is the mechanism by which a player dynamically switches between multiple encoded representations of a video according to available bandwidth, buffer occupancy, and device capabilities. Without \ac{ABR}, a single high-quality stream stalls whenever the network cannot sustain the selected rate, while a low-bitrate stream underuses available capacity on better connections. \ac{ABR} logic is typically implemented client-side and depends on manifests listing available representations and segment locations. Early classes of \ac{ABR} algorithms are commonly described as rate-based, buffer-based, or hybrid, while recent work also studies learning-based optimization using network traces and \ac{QoE} data.\cite{peroniEndtoEndPipelinePerspective2025}
+\ac{ABR} streaming is the mechanism by which a player dynamically switches between multiple encoded representations of a video according to available bandwidth, buffer occupancy, and device capabilities. Without \ac{ABR}, a single high-quality stream stalls whenever the network cannot sustain the selected rate, while a low-bitrate stream underuses available capacity on better connections. \ac{ABR} logic is typically implemented client-side and depends on manifests listing available representations and segment locations. As summarized by Peroni, early classes of \ac{ABR} algorithms are commonly described as rate-based, buffer-based, or hybrid, while recent work also studies learning-based optimization using network traces and \ac{QoE} data.\cite{peroniEndtoEndPipelinePerspective2025}
 
 \subsubsection{Streaming Protocols and Formats}
-Video streaming is not a single protocol but a family of delivery mechanisms. In mainstream deployments, HLS and MPEG-DASH dominate HTTP-based distribution, while RTSP and WebRTC are used in real-time and interactive scenarios.\cite{pantos_http_2017,noauthor_standards_nodate,schulzrinneRealTimeStreamingProtocol2016,noauthor_webrtc_nodate,peroniEndtoEndPipelinePerspective2025}
+Video streaming is not a single protocol but a family of delivery mechanisms. In mainstream deployments, HLS and MPEG-DASH dominate HTTP-based distribution.\cite{pantos_http_2017,noauthor_standards_nodate} RTSP and WebRTC are used in real-time and interactive scenarios.\cite{schulzrinneRealTimeStreamingProtocol2016,noauthor_webrtc_nodate,peroniEndtoEndPipelinePerspective2025}
 
-These protocol families impose different transport expectations. HTTP-based systems inherit in-order behavior from TCP or QUIC, whereas \ac{RTP}/UDP-style delivery exposes packet loss, jitter, and reordering more directly at the application boundary.\cite{pantos_http_2017,schulzrinne_rtp_2003} This distinction is central when evaluating \ac{P2P} transport for live media.
+These protocol families impose different transport expectations. HTTP-based systems inherit in-order behavior from the transport they use, typically TCP, whereas \ac{RTP}/UDP-style delivery exposes packet loss, jitter, and reordering more directly at the application boundary.\cite{pantos_http_2017,schulzrinne_rtp_2003} This distinction is central when evaluating \ac{P2P} transport for live media.
 
 
 \subsubsection{Video Streaming Pipeline}
-Peroni et al. describe the end-to-end streaming pipeline as a sequence of ingestion, processing, and distribution stages, where video is captured and encoded, transformed on the media server, and then delivered to the viewer through a player that adapts to network conditions and device capabilities \cite{peroniEndtoEndPipelinePerspective2025}.
+Peroni et al. describe the end-to-end streaming pipeline as a sequence of ingestion, processing, and distribution stages, where video is captured and encoded, transformed on the media server, and then delivered to the viewer through a player that adapts to network conditions and device capabilities.\cite{peroniEndtoEndPipelinePerspective2025}
 
 In the context of this thesis, the most relevant part of that pipeline is the distribution stage, specifically the transport layer between producer and consumers. \ac{P2P} mechanisms are evaluated as alternatives to centralized distribution in this stage. Encoding and decoding aspects are also addressed because practical transport viability depends on media packetization format, decoder tolerance, and buffering behavior.
 
-Modern distribution pipelines also generate manifests (playlists) and implement adaptive bitrate (ABR) logic in the player. The player then selects among multiple encoded representations based on observed throughput and buffer state (see \S\ref{sec:abr}).\cite{peroniEndtoEndPipelinePerspective2025} Manifest protocols such as HLS and MPEG-DASH are transported over HTTP, on top of TCP or QUIC. Any P2P replacement therefore needs to interoperate with or replicate these behaviours.\cite{pantos_http_2017,noauthor_standards_nodate}
+Modern distribution pipelines also generate manifests (playlists) and implement adaptive bitrate (ABR) logic in the player. The player then selects among multiple encoded representations based on observed throughput and buffer state (see \S\ref{sec:abr}).\cite{peroniEndtoEndPipelinePerspective2025} Manifest protocols such as HLS and MPEG-DASH are transported over HTTP, commonly on top of TCP.\cite{pantos_http_2017,noauthor_standards_nodate} Any P2P replacement therefore needs to interoperate with or replicate these behaviours.
 
-According to \cite{apostolopoulosVideoStreamingConcepts}:
+Apostolopoulos describes the end-to-end streaming pipeline as follows:\cite{apostolopoulosVideoStreamingConcepts}
 \begin{quote}
 The basic idea of video streaming is to split the video
 into parts, transmit these parts in succession, and enable the receiver to
@@ -96,10 +96,10 @@ The main disadvantages are greater sensitivity to churn, variable path quality, 
 This section narrows the focus from general concepts to transport-level constraints that directly shape implementation choices and evaluation metrics in this thesis.
 
 \subsection{Basic Problems with video streaming}
-Core transport problems in video streaming include limited bandwidth, delay jitter, and packet loss rate \cite{apostolopoulosVideoStreamingConcepts}. Overlay forwarding across multiple peers can additionally increase delay variation and out-of-order arrival in practice due to multi-path forwarding and asynchronous peer scheduling.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012}
+Core transport problems in video streaming include limited bandwidth, delay jitter, and packet loss rate.\cite{apostolopoulosVideoStreamingConcepts} Overlay forwarding across multiple peers can additionally increase delay variation and out-of-order arrival in practice due to multi-path forwarding and asynchronous peer scheduling.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012}
 
 \subsubsection{Bandwidth}
-According to \cite{apostolopoulosVideoStreamingConcepts}:
+Apostolopoulos describes the bandwidth constraint as follows:\cite{apostolopoulosVideoStreamingConcepts}
 \begin{quote}
 The bandwidth available between two points in the Internet is generally
 unknown and time-varying. If the sender transmits faster than the available
@@ -111,7 +111,7 @@ bandwidth then the receiver produces sub-optimal video quality.
 This thesis addresses bandwidth management through two different transport architectures: direct libp2p Streams (\S\ref{sec:stream-transport}) and mesh-based Gossipsub (\S\ref{sec:gossipsub-transport}). Both approaches must handle variable available bandwidth while maintaining acceptable latency and delivery reliability. The evaluation framework tests these architectures across different bitrate and packet-size conditions, described in \S\ref{sec:test-matrix}.
 \subsubsection{Delay jitter}
 \label{sec:delay-jitter}
-According to \cite{apostolopoulosVideoStreamingConcepts}:
+Apostolopoulos describes delay jitter as follows:\cite{apostolopoulosVideoStreamingConcepts}
 \begin{quote}
 The end-to-end delay that a packet experiences may fluctuate from packet to
 packet. This variation in end-to-end delay is referred to as the delay jitter.
@@ -123,7 +123,7 @@ can produce problems in the reconstructed video, e.g. jerks in the video.
 In practice, this effect is often more pronounced in mesh-like \ac{P2P} overlays. Packets can arrive out of order and must be reordered before decoding. If packets arrive too late for their playback deadline, they are effectively unusable for real-time rendering. Reordering buffers (jitter buffers) mitigate this issue but increase end-to-end latency.\cite{schulzrinne_rtp_2003,xuAnalysisCDNP2P2006}
 
 \subsubsection{Loss rate}
-According to \cite{apostolopoulosVideoStreamingConcepts}:
+Apostolopoulos describes packet loss as follows:\cite{apostolopoulosVideoStreamingConcepts}
 \begin{quote}
 A number of different types of
 losses may occur, depending on the particular network under consideration.
@@ -181,12 +181,12 @@ Before the compressed encoder can accept frames, several normalization steps ada
 \subsubsection{Intra-frame compression}
 An \textit{I-frame} (intra-coded frame) is encoded entirely from its own content, without reference to any other frame. It is therefore fully self-contained and can be decoded independently — a property essential for random access, stream join, and error recovery.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
-Intra-frame compression exploits spatial redundancy using block prediction, transform coding, and quantization. In practice, this means codecs preserve dominant visual structure while discarding less perceptually important detail to reduce bitrate.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025} For live streaming, periodic I-frames are critical because they bound recovery time after loss and allow late-joining receivers to synchronize.
+Intra-frame compression exploits spatial redundancy using block prediction, transform coding, and quantization. In practice, this means codecs preserve dominant visual structure while discarding less perceptually important detail to reduce bitrate.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025} For live streaming, periodic I-frames are critical because they allow late-joining receivers to synchronize\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025} and bound recovery time after loss.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
 \subsubsection{Inter-frame compression}
 After the first I-frame, subsequent frames are encoded as \textit{P-frames} (predictive) or \textit{B-frames} (bi-directionally predicted). These exploit \textit{temporal redundancy}: consecutive frames in video of natural scenes are nearly identical because most content moves slowly relative to the frame rate.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
-Inter coding estimates motion between frames and stores compact motion vectors plus residual error instead of full frame content. This greatly improves compression, but deeper look-ahead and bidirectional prediction increase buffering delay.\cite{apostolopoulosVideoStreamingConcepts}
+Inter coding estimates motion between frames and stores compact motion vectors plus residual error instead of full frame content. This greatly improves compression, but deeper look-ahead and bidirectional prediction increase buffering delay.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
 The periodic insertion of I-frames is governed by the \textit{Group of Pictures} (GOP) parameter. A shorter GOP generally improves resilience to packet loss and late joins, while a longer GOP improves compression efficiency.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
@@ -234,15 +234,15 @@ For live streaming research, this difference mainly affects how easily a prototy
 
 \section{Current state of video streaming}
 \subsection{Video streaming in live streaming}
-Large-scale live streaming platforms such as Twitch or YouTube Live typically use centralized ingest, processing, and \ac{CDN}-based global delivery. This architecture scales reliably and is operationally mature, but it concentrates cost and control at infrastructure providers.\cite{peroniEndtoEndPipelinePerspective2025,huangLiveStreamingIts2023a}
+Large-scale live streaming platforms typically use centralized ingest, processing, and \ac{CDN}-based global delivery.\cite{peroniEndtoEndPipelinePerspective2025,huangLiveStreamingIts2023a} This architecture scales reliably and is operationally mature, but it concentrates cost and control at infrastructure providers.\cite{huangLiveStreamingIts2023a}
 
-In production, HLS and MPEG-DASH over HTTP remain common due to compatibility with browsers and caching infrastructure. The main trade-off is increased latency compared to direct low-latency transport paths.\cite{pantos_http_2017,noauthor_standards_nodate,noauthor_webrtc_nodate}
+In production, HLS and MPEG-DASH over HTTP remain common due to compatibility with browsers and caching infrastructure.\cite{pantos_http_2017,noauthor_standards_nodate} The main trade-off is increased latency compared to direct low-latency transport paths.\cite{peroniEndtoEndPipelinePerspective2025,noauthor_webrtc_nodate}
 \subsubsection{Possibility of censorship}
-Centralized delivery also concentrates moderation and governance decisions in a small number of operators, creating dependence on provider policy and availability.\cite{huangLiveStreamingIts2023a,ServiceHealthNov}
+Centralized delivery also concentrates control and availability decisions in a small number of operators, creating dependence on provider policy and availability.\cite{huangLiveStreamingIts2023a,ServiceHealthNov}
 
 Decentralized \ac{P2P} delivery can reduce single-operator dependence, but it still requires authentication, abuse controls, and integrity validation in open overlays.\cite{SecurityConsiderations,WhatAreSecure}
 \subsection{Existing \ac{P2P} video streaming solutions}
-Existing \ac{P2P} streaming solutions are usually hybrid: peers exchange media when possible, while centralized infrastructure remains for bootstrap, fallback, or coordination. This compromise preserves robustness under variable peer capacity while reducing provider bandwidth demand.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012}
+Existing \ac{P2P} streaming solutions are usually hybrid: peers exchange media when possible, while centralized infrastructure remains for bootstrap, fallback, or coordination.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} This compromise preserves robustness under variable peer capacity while reducing provider bandwidth demand.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012}
 
 P2P Media Loader illustrates this pattern by adding peer-assisted delivery to browser playback without removing the origin HTTP path.\cite{NovageP2pmedialoader2025} The broader libp2p ecosystem provides reusable decentralized transport primitives, but low-latency live distribution still requires careful handling of timing, reordering, and fan-out behavior.\cite{Libp2pIPFSDocs,SecurityConsiderations}
 
@@ -297,12 +297,12 @@ The corresponding rendering pipeline accepts RTP H.264 payloads on \texttt{appsr
 \subsection{Network Layer}
 The transport layer is built on libp2p, a modular 
 \ac{P2P} stack used in production decentralized systems.
-The implementation uses \ac{QUIC} transport and mDNS peer discovery in local test networks, while higher-level dissemination logic is varied per protocol implementation.
+The implementation uses \ac{QUIC} transport and mDNS peer discovery in local test networks, while higher-level dissemination logic is varied per protocol implementation.\cite{cheshireMulticastDNS2013}
 
 All transport variants implement a common trait interface (
 \texttt{P2PSwarm}) with two operations: receive inbound chunks and enqueue outbound chunks. This abstraction allows producer/renderer/analyzer components to stay unchanged while only the transport strategy is replaced.
 
-Libp2p was selected because it provides identity, encrypted channels, peer discovery, stream multiplexing, and protocol composition in one ecosystem.\cite{Libp2pIPFSDocs,SecurityConsiderations}
+Libp2p was selected because it provides identity, peer discovery, stream multiplexing, and protocol composition in one ecosystem.\cite{Libp2pIPFSDocs} Its secure channels provide encrypted communication between peers.\cite{SecurityConsiderations}
 \subsubsection{Gossipsub}
 \label{sec:gossipsub-transport}
 The first transport variant uses Gossipsub publish/subscribe. Video chunks are serialized and published into a topic-based mesh. Receivers decode messages back into chunk structures and apply freshness filtering before acceptance. In the current codebase, stale chunks are explicitly rejected after a short time-to-live window, which reduces propagation of outdated real-time data.
@@ -314,9 +314,9 @@ The second variant uses direct libp2p streams over a dedicated stream protocol i
 
 This strategy minimizes overlay complexity and serves as a baseline for latency-oriented comparison. Its limitation is scalability in one-to-many scenarios, because the producer must maintain direct outgoing transmission to every consumer.
 \subsubsection{Security}
-Security in the prototype is based on libp2p secure channels and \ac{QUIC} transport security. In \ac{QUIC}, transport security is provided by \ac{TLS}~1.3, which provides confidentiality, integrity protection, and peer authentication during connection establishment; RFC~9001 also notes that, in the absence of packet loss, new connections can usually be established and secured within a single round trip, which is relevant for real-time media delivery.\cite{thomsonUsingTLSSecure2021} In practice, this means the application does not implement its own key exchange or packet-protection scheme, reducing the risk of cryptographic design and implementation errors. At the same time, secure transport protects the channel between peers, not the higher-level policy of who should be allowed to publish, receive, or forward a stream. \cite{SecurityConsiderations,WhatAreSecure}
+Security in the prototype is based on libp2p secure channels and \ac{QUIC} transport security. In \ac{QUIC}, transport security is provided by \ac{TLS}~1.3, which provides confidentiality, integrity protection, and peer authentication during connection establishment; RFC~9001 also notes that, in the absence of packet loss, new connections can usually be established and secured within a single round trip, which is relevant for real-time media delivery.\cite{thomsonUsingTLSSecure2021} In practice, this means the application does not implement its own key exchange or packet-protection scheme, reducing the risk of cryptographic design and implementation errors. At the same time, secure transport protects the channel between peers, not the higher-level policy of who should be allowed to publish, receive, or forward a stream.\cite{SecurityConsiderations,WhatAreSecure}
 \subsubsection{Authentication}
-Each node generates a cryptographic peer identity (public/private keypair). This identity is used by libp2p during connection establishment to authenticate the remote peer and, in the Gossipsub variant, to sign published messages so that receivers can verify message origin before accepting or propagating data. This is an authentication mechanism rather than a complete authorization policy: authentication answers which peer established the connection or sent the message, while authorization decides which authenticated peers are allowed to publish, subscribe, or relay a stream. \cite{SecurityConsiderations,WhatAreSecure}
+Each node generates a cryptographic peer identity (public/private keypair). This identity is used by libp2p during connection establishment to authenticate the remote peer.\cite{SecurityConsiderations,WhatAreSecure} In the Gossipsub variant, it is also used to sign published messages so that receivers can verify message origin before accepting or propagating data.\cite{SecurityConsiderations,WhatAreSecure} This is an authentication mechanism rather than a complete authorization policy: authentication answers which peer established the connection or sent the message, while authorization decides which authenticated peers are allowed to publish, subscribe, or relay a stream.\cite{SecurityConsiderations,WhatAreSecure}
 
 The current prototype does not implement a full authorization policy (e.g., allowlists, role-based access, signed stream ownership claims). It provides authenticated transport primitives and validation hooks that can be extended in future iterations with explicit admission control or peer reputation mechanisms.
 
@@ -367,9 +367,9 @@ pub struct VideoStreamChunk {
 }
 \end{verbatim}
 
-The three fields serve distinct purposes. \texttt{chunk} carries the raw RTP payload bytes; the \texttt{serde\_bytes} attribute instructs the CBOR serializer to encode it as a compact byte array rather than as a sequence of integers, which is important for throughput. \texttt{timestamp} records the wall-clock time at which the chunk was created on the producer; the analyzer subtracts this from its local arrival time to derive per-packet latency. \texttt{index} is a monotonically increasing counter used to detect lost packets (gaps in the sequence) and out-of-order delivery (arrivals where \texttt{index} is less than the highest seen so far).
+The three fields serve distinct purposes. \texttt{chunk} carries the raw RTP payload bytes; the \texttt{serde\_bytes} attribute instructs the CBOR serializer to encode it as a compact byte array rather than as a sequence of integers, which is important for throughput.\cite{bormannConciseBinaryObject2020} \texttt{timestamp} records the wall-clock time at which the chunk was created on the producer; the analyzer subtracts this from its local arrival time to derive per-packet latency. \texttt{index} is a monotonically increasing counter used to detect lost packets (gaps in the sequence) and out-of-order delivery (arrivals where \texttt{index} is less than the highest seen so far).
 
-Serialization between peers uses CBOR via the \texttt{serde\_cbor} crate. CBOR is a compact binary encoding that handles raw byte arrays natively and requires no schema, making it straightforward to extend the structure without a versioning step.
+Serialization between peers uses CBOR via the \texttt{serde\_cbor} crate. CBOR is a compact binary encoding that handles raw byte arrays natively and requires no schema, making it straightforward to extend the structure without a versioning step.\cite{bormannConciseBinaryObject2020}
 
 The \texttt{P2PSwarm} trait forms the interface boundary between media-handling and transport code:
 
@@ -440,7 +440,7 @@ Incoming RTP H.264 payloads are decoded and displayed by the \texttt{GstRenderer
 
 \subsection{Transport layer crate}
 \label{sec:network_crate}
-The \texttt{libraries/network} crate provides two concrete implementations of the \texttt{P2PSwarm} trait. Both share the same underlying stack: QUIC transport over UDP listening on all interfaces at a random ephemeral port (\texttt{/ip4/0.0.0.0/udp/0/quic-v1}), and mDNS for automatic peer discovery on local networks. Each node generates a fresh Ed25519 keypair at startup, giving it a unique but ephemeral cryptographic identity for the duration of the session.
+The \texttt{libraries/network} crate provides two concrete implementations of the \texttt{P2PSwarm} trait. Both share the same underlying stack: QUIC transport over UDP listening on all interfaces at a random ephemeral port (\texttt{/ip4/0.0.0.0/udp/0/quic-v1}), and mDNS for automatic peer discovery on local networks.\cite{cheshireMulticastDNS2013} Each node generates a fresh Ed25519 keypair at startup, giving it a unique but ephemeral cryptographic identity for the duration of the session.\cite{turnerEdwardsEd25519Software2017}
 
 \subsubsection{Gossipsub}
 The Gossipsub backend configures strict per-message authentication:
@@ -456,9 +456,9 @@ let gs = gossipsub::Behaviour::new(
 )?;
 \end{verbatim}
 
-\texttt{ValidationMode::Strict} combined with \texttt{MessageAuthenticity::Signed} requires every Gossipsub message to carry a valid Ed25519 signature from its originating peer before it is forwarded through the mesh. Each inbound message is validated and the outcome is reported back to the swarm: valid, fresh chunks receive \texttt{MessageAcceptance::Accept} and are forwarded; invalid or stale ones receive \texttt{MessageAcceptance::Reject} and are dropped immediately without further propagation.
+\texttt{ValidationMode::Strict} combined with \texttt{MessageAuthenticity::Signed} requires every Gossipsub message to carry a valid Ed25519 signature from its originating peer before it is forwarded through the mesh.\cite{turnerEdwardsEd25519Software2017} Each inbound message is validated and the outcome is reported back to the swarm: valid, fresh chunks receive \texttt{MessageAcceptance::Accept} and are forwarded; invalid or stale ones receive \texttt{MessageAcceptance::Reject} and are dropped immediately without further propagation.
 
-A 5-second TTL is applied to every accepted chunk. After CBOR deserialization, the implementation computes the chunk's age and rejects it if too old:
+A 5-second TTL is applied to every accepted chunk. After CBOR deserialization, the implementation computes the chunk's age and rejects it if too old.\cite{bormannConciseBinaryObject2020}
 
 \begin{verbatim}
 static TTL: Duration = Duration::from_secs(5);
@@ -473,7 +473,7 @@ if age > TTL {
 
 This prevents stale video frames from continuing to circulate after their playback window has closed, reducing unnecessary load on the mesh.
 
-Peers are managed through mDNS lifecycle events: on \texttt{mdns::Event::Discovered}, each new peer is dialed and added to the Gossipsub mesh via \texttt{add\_explicit\_peer}; on \texttt{mdns::Event::Expired}, it is removed via \texttt{remove\_explicit\_peer}. A shared, thread-safe peer set (\texttt{HashSet<PeerId>} guarded by an \texttt{Arc<RwLock>}) is kept current on every connection event.
+Peers are managed through mDNS lifecycle events: on \texttt{mdns::Event::Discovered}, each new peer is dialed and added to the Gossipsub mesh via \texttt{add\_explicit\_peer}; on \texttt{mdns::Event::Expired}, it is removed via \texttt{remove\_explicit\_peer}.\cite{cheshireMulticastDNS2013} A shared, thread-safe peer set (\texttt{HashSet<PeerId>} guarded by an \texttt{Arc<RwLock>}) is kept current on every connection event.
 
 \subsubsection{Practical saturation issue in Gossipsub}
 \label{sec:gossipsub-saturation}
@@ -556,7 +556,7 @@ The \texttt{VideoReader} in \texttt{libraries/video-reader} reads a pre-recorded
 This section describes the systematic approach used to measure and evaluate transport behavior. The methodology comprises five components: the standardized video test source, the factorial test matrix design, the data collection workflow, metric computation from raw packet data, and visualization strategy for comparative interpretation.
 
 \subsection{Test Setup and Data Source}
-All experiments use Big Buck Bunny to ensure repeatable and representative measurements. It is a widely recognized open-source test video for streaming research and benchmarking. Big Buck Bunny provides a royalty-free, standardized stream with consistent motion complexity and codec characteristics across repeated runs. Using a file-based source instead of live screen capture eliminates variability caused by changing content, allowing transport behavior to be isolated from capture-side effects.
+All experiments use Big Buck Bunny to ensure repeatable and representative measurements.\cite{BigBuckBunny} It is a widely recognized open-source test video for streaming research and benchmarking. Big Buck Bunny provides a royalty-free, standardized stream with consistent motion complexity and codec characteristics across repeated runs. Using a file-based source instead of live screen capture eliminates variability caused by changing content, allowing transport behavior to be isolated from capture-side effects.
 
 The video is played through the \texttt{VideoReader} pipeline (described in \S\ref{sec:video-reader-pipeline}), which emits the same RTP H.264 format as the live recorder capture path. This ensures that test results faithfully represent the codec characteristics and packetization behavior of a real live streaming scenario.
 
@@ -578,7 +578,7 @@ The selection of bitrates reflects practical deployment scenarios: 500 kbps is t
 The MTU choice is particularly significant. MTU 1200 is chosen as the conservative baseline because it aligns with Internet-standard assumptions and avoids fragmentation across heterogeneous networks. MTU 4096 represents an optimized deployment scenario where jumbo frames are available end-to-end; results at this MTU reveal protocol behavior when packetization overhead is minimized.
 
 \subsection{Data Collection Workflow}
-Each experimental run employs the role-based \texttt{stream\_test} binary architecture described in \S\ref{sec:test-binary}. The manager process spawns two child processes, a producer and an analyzer, both with the same \texttt{--protocol} parameter. The producer instantiates the chosen transport swarm and streams Big Buck Bunny through the \texttt{VideoReader} pipeline (\S\ref{sec:video-reader-pipeline}). Each RTP packet is wrapped in a \texttt{VideoStream\-Chunk} with creation timestamp and sequence index. The analyzer subscribes to the inbound channel and logs each received packet as an \texttt{AnalysisItem} record to CSV.
+Each experimental run employs the role-based \texttt{stream\_test} binary architecture described in \S\ref{sec:test-binary}. The manager process spawns two child processes, a producer and an analyzer, both with the same \texttt{--protocol} parameter. The producer instantiates the chosen transport swarm and streams Big Buck Bunny through the \texttt{VideoReader} pipeline (\S\ref{sec:video-reader-pipeline}).\cite{BigBuckBunny} Each RTP packet is wrapped in a \texttt{VideoStream\-Chunk} with creation timestamp and sequence index. The analyzer subscribes to the inbound channel and logs each received packet as an \texttt{AnalysisItem} record to CSV.
 
 Each \texttt{AnalysisItem} record contains four fields:
 \begin{verbatim}
@@ -592,7 +592,7 @@ pub struct AnalysisItem {
 \end{verbatim}
 The \texttt{creation\_time} and \texttt{arrival\_time} fields (UNIX timestamps in milliseconds) enable computation of one-way packet latency. The \texttt{index} field (packet sequence number) allows detection of lost and out-of-order packets. The \texttt{size} field (chunk payload plus 24 bytes of serialized metadata) reflects the data volume processed by the transport layer.
 
-Both processes run on the same host with shared mDNS peer discovery (no external synchronization service required). One-way latency is computed as the difference between arrival and creation timestamps (assuming host-local clock synchronization). Packet loss is inferred from missing sequence numbers, and reordering is detected by comparing observed sequence order against the monotonically increasing index.
+Both processes run on the same host with shared mDNS peer discovery (no external synchronization service required).\cite{cheshireMulticastDNS2013} One-way latency is computed as the difference between arrival and creation timestamps (assuming host-local clock synchronization). Packet loss is inferred from missing sequence numbers, and reordering is detected by comparing observed sequence order against the monotonically increasing index.
 
 \subsection{Metric Computation Pipeline}
 Raw CSV data from each of the 80 runs is processed by a three-stage R-based analysis pipeline:
@@ -649,7 +649,7 @@ Analysis results are presented through a hierarchically organized set of visuali
     \item \textbf{Boxplots for variability:} Key metrics (delay percentiles, reorder depth, stability scores) are shown as boxplots across the ten runs per condition, allowing inspection of run-to-run variability and identification of outliers.
 \end{itemize}
 
-This methodology is applied to ten runs per condition using Big Buck Bunny as the consistent video source. Results from the grouped metrics and visualizations are presented in the following Analysis section, organized by MTU profile and deployment perspective to address practical deployment questions.
+This methodology is applied to ten runs per condition using Big Buck Bunny as the consistent video source.\cite{BigBuckBunny} Results from the grouped metrics and visualizations are presented in the following Analysis section, organized by MTU profile and deployment perspective to address practical deployment questions.
 
 \section{Analysis}
 This section evaluates measured transport behavior using aggregated results from ten runs per condition and the generated plots in the 
