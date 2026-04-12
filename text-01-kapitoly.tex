@@ -41,7 +41,7 @@ Message acceptance is separated from transport reception through explicit valida
 
 In topic-based pub/sub, peers can join and leave topics while dissemination continues through currently connected participants.\cite{WhatPublishSubscribe,SpecsPubsubGossipsub} For live media overlays, prior hybrid CDN-P2P studies report a recurring trade-off: multi-hop dissemination can improve reachability, but can also increase delay variation and out-of-order behavior relative to more direct paths.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012}
 
-In this thesis, these theoretical properties directly motivate the practical comparison between Gossipsub and direct Stream transport. The concrete implementation choices and runtime behavior of Gossipsub are described in \S\ref{sec:gossipsub_transport} and \S\ref{sec:gossipsub_saturation}, while measured delay, reordering, and stability effects are analyzed in \S\ref{sec:analysis_mtu_1200_comparison} and \S\ref{sec:analysis_mtu_4096}.
+In this thesis, these theoretical properties directly motivate the practical comparison between Gossipsub and direct Stream transport. The concrete implementation choices and runtime behavior of Gossipsub are described in \S\ref{sec:gossipsub_transport}, \S\ref{sec:transport_format_evolution}, and \S\ref{sec:gossipsub_saturation}, while measured delay, reordering, and stability effects are analyzed in \S\ref{sec:analysis_mtu_1200_comparison} and \S\ref{sec:analysis_mtu_4096}.
 
 \subsection{Video Streaming}
 Video streaming is a method of delivering video data over a network as a continuous flow, allowing playback without downloading the entire file in advance.\cite{apostolopoulosVideoStreamingConcepts,peroniEndtoEndPipelinePerspective2025}
@@ -286,7 +286,7 @@ It contains serialized media bytes, creation timestamp, and monotonic sequence i
 This metadata enables the measurement methodology described later in \S\ref{sec:metric_definitions} (latency, packet loss, reordering, and throughput).
 Both the live recorder path and the file-based test path use direct H.264-in-\ac{RTP} payloading (\texttt{rtph264pay}), while differing in source and orchestration constraints.
 This keeps transport format consistent between interactive capture and controlled benchmarking.
-An earlier development variant used MPEG-TS packetization, which produced very small transport units and did not allow practical MTU tuning in this setup; this contributed to the Gossipsub saturation issue described in \S\ref{sec:gossipsub_saturation}.
+The format used at the transport boundary evolved during development from earlier non-RTP variants to the final RTP-based path. This evolution and its relation to packet ordering and saturation behavior are described in \S\ref{sec:transport_format_evolution} and \S\ref{sec:gossipsub_saturation}.
 \subsection{Screen Recording}
 Screen capture is implemented for Wayland using the \texttt{ashpd} interface to the XDG desktop portal.
 This approach delegates monitor/window selection and user permissions to the compositor and portal service.
@@ -554,12 +554,22 @@ The \texttt{VideoReader} in \texttt{libraries/video-reader} reads a pre-recorded
 \end{enumerate}
 
 \section{Issues encountered during implementation}
+\subsection{Evolution of media transport format and packet ordering}
+\label{sec:transport_format_evolution}
+Before the final evaluation setup, the implementation went through several transport-format iterations driven mainly by packet ordering behavior in Gossipsub.
+
+In the first stage, the project used pure H264 and H264 in Matroska (MKV) stream representations. These early variants were sufficient for basic end-to-end media transport, but they did not provide a robust practical basis for handling packet reordering in the mesh transport path.
+
+As Gossipsub traffic increased, out-of-order arrival became a recurring practical problem. The first mitigation approach used MPEG-TS together with manual ordering logic in the application path. This approach improved control over sequence handling, but the practical reason for replacing MPEG-TS is discussed in detail in \S\ref{sec:gossipsub_saturation}.
+
+The next iteration moved to direct H.264-in-RTP payloading and delegated packet reordering to the transport-aware receiver path using \texttt{rtpjitterbuffer}. This provided explicit sequence-based reordering behavior in the media pipeline and became the final baseline for experiments.
+
 \subsection{Practical saturation issue in Gossipsub}
 \label{sec:gossipsub_saturation}
 During development, the main practical issue of the Gossipsub transport was saturation under higher traffic.
 The observable symptom was gradual stalling: new chunks were still produced at the sender, but real-time delivery degraded until playback stopped progressing.
 
-The earliest prototype variant used MPEG-TS, where packetization produced fixed small packets (188-byte TS units). In that phase, practical MTU tuning was not available in the payloading path, so packet/message rate could not be reduced through MTU configuration. This led to very high message frequency and quickly saturated the Gossipsub path.
+As described in \S\ref{sec:transport_format_evolution}, one of the intermediate variants used MPEG-TS, where packetization produced fixed small packets (188-byte TS units). In that phase, practical MTU tuning was not available in the payloading path, so packet/message rate could not be reduced through MTU configuration. This led to very high message frequency and quickly saturated the Gossipsub path.
 
 After migration to direct H.264-in-RTP payloading (\texttt{rtph264pay}), MTU became explicitly configurable; from this point onward, packet rate became a controllable parameter in experiments and runtime tuning. With smaller MTU, large NAL units are fragmented into more RTP packets (see \S\ref{sec:rtp_packetization}), which still increases per-second message count and queue pressure.
 
