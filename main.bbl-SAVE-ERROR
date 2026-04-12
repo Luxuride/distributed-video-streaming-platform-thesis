@@ -1,0 +1,1293 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{none/global//global/global/global}
+    \entry{xuAnalysisCDNP2P2006}{article}{}{}
+      \name{author}{4}{}{%
+        {{hash=3ef6b69482a18357987464040ea00810}{%
+           family={Xu},
+           familyi={X\bibinitperiod},
+           given={Dongyan},
+           giveni={D\bibinitperiod}}}%
+        {{hash=7c08ba9afa3c4797b556fa51b1db8d71}{%
+           family={Kulkarni},
+           familyi={K\bibinitperiod},
+           given={Sunil\bibnamedelima Suresh},
+           giveni={S\bibinitperiod\bibinitdelim S\bibinitperiod}}}%
+        {{hash=abc2dd59883c65f86196debf127b81e8}{%
+           family={Rosenberg},
+           familyi={R\bibinitperiod},
+           given={Catherine},
+           giveni={C\bibinitperiod}}}%
+        {{hash=c960ad303b3309f2a7d4abcad89ce9d6}{%
+           family={Chai},
+           familyi={C\bibinitperiod},
+           given={Heung-Keung},
+           giveni={H\bibinithyphendelim K\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \strng{namehash}{f9b66d001d29ed1461353fe22f27d7a0}
+      \strng{fullhash}{f9b66d001d29ed1461353fe22f27d7a0}
+      \strng{fullhashraw}{f9b66d001d29ed1461353fe22f27d7a0}
+      \strng{bibnamehash}{f9b66d001d29ed1461353fe22f27d7a0}
+      \strng{authorbibnamehash}{f9b66d001d29ed1461353fe22f27d7a0}
+      \strng{authornamehash}{f9b66d001d29ed1461353fe22f27d7a0}
+      \strng{authorfullhash}{f9b66d001d29ed1461353fe22f27d7a0}
+      \strng{authorfullhashraw}{f9b66d001d29ed1461353fe22f27d7a0}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{To distribute video and audio data in real-time streaming mode, two different technologies – Content Distribution Network (CDN) and Peer-to-Peer (P2P) – have been proposed. However, both technologies have their own limitations: CDN servers are expensive to deploy and maintain, and consequently incur a cost for media providers and/or clients for server capacity reservation. On the other hand, a P2P-based architecture requires sufﬁcient number of seed supplying peers to jumpstart the distribution process. Compared with a CDN server, a peer usually offers much lower out-bound streaming rate and hence multiple peers must jointly stream a media data to a requesting peer. Furthermore, it is not clear how to determine how much a peer should contribute back to the system after receiving the media data, in order to sustain the overall media distribution capacity.}
+      \field{issn}{0942-4962, 1432-1882}
+      \field{journaltitle}{Multimedia Systems}
+      \field{month}{4}
+      \field{number}{4}
+      \field{title}{Analysis of a {CDN}–{P2P} hybrid architecture for cost-effective streaming media distribution}
+      \field{urlday}{4}
+      \field{urlmonth}{11}
+      \field{urlyear}{2025}
+      \field{volume}{11}
+      \field{year}{2006}
+      \field{urldateera}{ce}
+      \field{pages}{383\bibrangedash 399}
+      \range{pages}{17}
+      \verb{doi}
+      \verb 10.1007/s00530-006-0015-3
+      \endverb
+      \verb{file}
+      \verb PDF:files/19/Xu et al. - 2006 - Analysis of a CDN–P2P hybrid architecture for cost-effective streaming media distribution.pdf:application/pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://link.springer.com/10.1007/s00530-006-0015-3
+      \endverb
+      \verb{url}
+      \verb http://link.springer.com/10.1007/s00530-006-0015-3
+      \endverb
+    \endentry
+    \entry{meskovicContentDeliveryArchitectures2012}{book}{}{}
+      \name{author}{3}{}{%
+        {{hash=20ff41165eb1ad15de55e2e2da3ae26b}{%
+           family={Meskovic},
+           familyi={M\bibinitperiod},
+           given={Melika},
+           giveni={M\bibinitperiod}}}%
+        {{hash=edf0795a9a396977fc97a46b71e2fc2f}{%
+           family={Bajric},
+           familyi={B\bibinitperiod},
+           given={Himzo},
+           giveni={H\bibinitperiod}}}%
+        {{hash=c8774fb6f47ab4ca597e5337421f4301}{%
+           family={Kos},
+           familyi={K\bibinitperiod},
+           given={Mladen},
+           giveni={M\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \list{publisher}{1}{%
+        {ThinkMind}%
+      }
+      \strng{namehash}{305376b36546320a4196b8d99bcf1dd1}
+      \strng{fullhash}{305376b36546320a4196b8d99bcf1dd1}
+      \strng{fullhashraw}{305376b36546320a4196b8d99bcf1dd1}
+      \strng{bibnamehash}{305376b36546320a4196b8d99bcf1dd1}
+      \strng{authorbibnamehash}{305376b36546320a4196b8d99bcf1dd1}
+      \strng{authornamehash}{305376b36546320a4196b8d99bcf1dd1}
+      \strng{authorfullhash}{305376b36546320a4196b8d99bcf1dd1}
+      \strng{authorfullhashraw}{305376b36546320a4196b8d99bcf1dd1}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{In the last years, with the help of high-speed and broadband networking, the content delivery service has been grown up widely. There are a lot of providers for online streaming via Content Delivery Network (CDN), Peer to Peer (P2P) network or hybrid CDN-P2P system. In this paper, we analyse a hybrid solution for real-time streaming: hybrid CDNP2P mechanism that takes the best of both CDN and P2P content delivery architectures. By adapting the best of breed of both worlds (CDN and P2P), we detail a hybrid model which, thorough quantative analysis, shows the benefits of merging the two architectures. Through simulation, we will show that a hybrid CDN-P2P approach is a much more stable platform whilst at the same time a very cost effective approach in providing a live streaming service to the masses.}
+      \field{isbn}{78-1-61208-192-2}
+      \field{title}{Content {Delivery} {Architectures} for {Live} {Video} {Streaming}: {Hybrid} {CDN}-{P2P} as the best option}
+      \field{year}{2012}
+      \verb{file}
+      \verb PDF:files/23/Meskovic et al. - 2012 - Content Delivery Architectures for Live Video Streaming Hybrid CDN-P2P as the best option.pdf:application/pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://personales.upv.es/thinkmind/dl/conferences/ctrq/ctrq_2012/ctrq_2012_2_10_10086.pdf
+      \endverb
+      \verb{url}
+      \verb https://personales.upv.es/thinkmind/dl/conferences/ctrq/ctrq_2012/ctrq_2012_2_10_10086.pdf
+      \endverb
+    \endentry
+    \entry{peroniEndtoEndPipelinePerspective2025}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=ba57ae82a051f68406f0870e64cfda31}{%
+           family={Peroni},
+           familyi={P\bibinitperiod},
+           given={Leonardo},
+           giveni={L\bibinitperiod}}}%
+        {{hash=96721dd3452ad0c4ddcd57102f2544c7}{%
+           family={Gorinsky},
+           familyi={G\bibinitperiod},
+           given={Sergey},
+           giveni={S\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \strng{namehash}{fd350ab9cc2d49d7576d673ea64d5b8b}
+      \strng{fullhash}{fd350ab9cc2d49d7576d673ea64d5b8b}
+      \strng{fullhashraw}{fd350ab9cc2d49d7576d673ea64d5b8b}
+      \strng{bibnamehash}{fd350ab9cc2d49d7576d673ea64d5b8b}
+      \strng{authorbibnamehash}{fd350ab9cc2d49d7576d673ea64d5b8b}
+      \strng{authornamehash}{fd350ab9cc2d49d7576d673ea64d5b8b}
+      \strng{authorfullhash}{fd350ab9cc2d49d7576d673ea64d5b8b}
+      \strng{authorfullhashraw}{fd350ab9cc2d49d7576d673ea64d5b8b}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{shorttitle}
+      \field{abstract}{CCS Concepts: • General and reference → Surveys and overviews; • Networks → Application layer protocols; In-network processing; • Information systems → Multimedia streaming; • Computing methodologies → Machine learning.}
+      \field{issn}{0360-0300, 1557-7341}
+      \field{journaltitle}{ACM Computing Surveys}
+      \field{month}{12}
+      \field{note}{arXiv:2403.05192 [cs]}
+      \field{number}{12}
+      \field{shorttitle}{An {End}-to-{End} {Pipeline} {Perspective} on {Video} {Streaming} in {Best}-{Effort} {Networks}}
+      \field{title}{An {End}-to-{End} {Pipeline} {Perspective} on {Video} {Streaming} in {Best}-{Effort} {Networks}: {A} {Survey} and {Tutorial}}
+      \field{urlday}{23}
+      \field{urlmonth}{12}
+      \field{urlyear}{2025}
+      \field{volume}{57}
+      \field{year}{2025}
+      \field{urldateera}{ce}
+      \field{pages}{1\bibrangedash 47}
+      \range{pages}{47}
+      \verb{doi}
+      \verb 10.1145/3742472
+      \endverb
+      \verb{file}
+      \verb PDF:files/50/Peroni and Gorinsky - 2025 - An End-to-End Pipeline Perspective on Video Streaming in Best-Effort Networks A Survey and Tutorial.pdf:application/pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://arxiv.org/abs/2403.05192
+      \endverb
+      \verb{url}
+      \verb http://arxiv.org/abs/2403.05192
+      \endverb
+      \keyw{Computer Science - Multimedia,Computer Science - Networking and Internet Architecture}
+    \endentry
+    \entry{ServiceHealthNov}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=4847e034bb0a55fcbc8a3380d6a3ab80}{%
+           family={AWS},
+           familyi={A\bibinitperiod}}}%
+      }
+      \strng{namehash}{4847e034bb0a55fcbc8a3380d6a3ab80}
+      \strng{fullhash}{4847e034bb0a55fcbc8a3380d6a3ab80}
+      \strng{fullhashraw}{4847e034bb0a55fcbc8a3380d6a3ab80}
+      \strng{bibnamehash}{4847e034bb0a55fcbc8a3380d6a3ab80}
+      \strng{authorbibnamehash}{4847e034bb0a55fcbc8a3380d6a3ab80}
+      \strng{authornamehash}{4847e034bb0a55fcbc8a3380d6a3ab80}
+      \strng{authorfullhash}{4847e034bb0a55fcbc8a3380d6a3ab80}
+      \strng{authorfullhashraw}{4847e034bb0a55fcbc8a3380d6a3ab80}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Service health - {Nov} 19, 2025 {|} {AWS} {Health} {Dashboard} {|} {Global}}
+      \field{urlday}{19}
+      \field{urlmonth}{11}
+      \field{urlyear}{2025}
+      \field{urldateera}{ce}
+      \verb{file}
+      \verb Service health - Nov 19, 2025 | AWS Health Dashboard | Global:files/30/status.html:text/html
+      \endverb
+      \verb{urlraw}
+      \verb https://health.aws.amazon.com/health/status?eventID=arn:aws:health:us-east-1::event/MULTIPLE_SERVICES/AWS_MULTIPLE_SERVICES_OPERATIONAL_ISSUE/AWS_MULTIPLE_SERVICES_OPERATIONAL_ISSUE_BA540_514A652BE1A
+      \endverb
+      \verb{url}
+      \verb https://health.aws.amazon.com/health/status?eventID=arn:aws:health:us-east-1::event/MULTIPLE_SERVICES/AWS_MULTIPLE_SERVICES_OPERATIONAL_ISSUE/AWS_MULTIPLE_SERVICES_OPERATIONAL_ISSUE_BA540_514A652BE1A
+      \endverb
+    \endentry
+    \entry{SecurityConsiderations}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=71515aeef84a35a6ec34f99e24344f09}{%
+           family={libp2p},
+           familyi={l\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {en-us}%
+      }
+      \strng{namehash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{fullhash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{fullhashraw}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{bibnamehash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{authorbibnamehash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{authornamehash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{authorfullhash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{authorfullhashraw}{71515aeef84a35a6ec34f99e24344f09}
+      \field{extraname}{1}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{libp2p makes it simple to establish encrypted, authenticated communication channels between two peers, but there are other important security issues to consider when building robust peer-to-peer systems.}
+      \field{journaltitle}{libp2p}
+      \field{title}{Security {Considerations}}
+      \field{urlday}{27}
+      \field{urlmonth}{11}
+      \field{urlyear}{2025}
+      \field{urldateera}{ce}
+      \verb{file}
+      \verb Snapshot:files/33/security-considerations.html:text/html
+      \endverb
+      \verb{urlraw}
+      \verb https://docs.libp2p.io/concepts/security/security-considerations/
+      \endverb
+      \verb{url}
+      \verb https://docs.libp2p.io/concepts/security/security-considerations/
+      \endverb
+    \endentry
+    \entry{Libp2pIPFSDocs}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=7180928e71e552358dade0378011e5e9}{%
+           family={Docs},
+           familyi={D\bibinitperiod},
+           given={IPFS},
+           giveni={I\bibinitperiod}}}%
+      }
+      \strng{namehash}{7180928e71e552358dade0378011e5e9}
+      \strng{fullhash}{7180928e71e552358dade0378011e5e9}
+      \strng{fullhashraw}{7180928e71e552358dade0378011e5e9}
+      \strng{bibnamehash}{7180928e71e552358dade0378011e5e9}
+      \strng{authorbibnamehash}{7180928e71e552358dade0378011e5e9}
+      \strng{authornamehash}{7180928e71e552358dade0378011e5e9}
+      \strng{authorfullhash}{7180928e71e552358dade0378011e5e9}
+      \strng{authorfullhashraw}{7180928e71e552358dade0378011e5e9}
+      \field{extraname}{1}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{libp2p {|} {IPFS} {Docs}}
+      \field{urlday}{27}
+      \field{urlmonth}{11}
+      \field{urlyear}{2025}
+      \field{urldateera}{ce}
+      \verb{file}
+      \verb libp2p | IPFS Docs:files/37/libp2p.html:text/html
+      \endverb
+      \verb{urlraw}
+      \verb https://docs.ipfs.tech/concepts/libp2p/
+      \endverb
+      \verb{url}
+      \verb https://docs.ipfs.tech/concepts/libp2p/
+      \endverb
+    \endentry
+    \entry{NovageP2pmedialoader2025}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=22772e7500e8ff5737109fa88134145d}{%
+           family={Novage},
+           familyi={N\bibinitperiod},
+           given={LLC},
+           giveni={L\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Novage, LLC}%
+      }
+      \strng{namehash}{22772e7500e8ff5737109fa88134145d}
+      \strng{fullhash}{22772e7500e8ff5737109fa88134145d}
+      \strng{fullhashraw}{22772e7500e8ff5737109fa88134145d}
+      \strng{bibnamehash}{22772e7500e8ff5737109fa88134145d}
+      \strng{authorbibnamehash}{22772e7500e8ff5737109fa88134145d}
+      \strng{authornamehash}{22772e7500e8ff5737109fa88134145d}
+      \strng{authorfullhash}{22772e7500e8ff5737109fa88134145d}
+      \strng{authorfullhashraw}{22772e7500e8ff5737109fa88134145d}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{An open-source engine for P2P streaming of live and on demand video directly in a web browser HTML page}
+      \field{month}{11}
+      \field{note}{original-date: 2018-08-07T20:06:34Z}
+      \field{title}{Novage/p2p-media-loader}
+      \field{urlday}{19}
+      \field{urlmonth}{11}
+      \field{urlyear}{2025}
+      \field{year}{2025}
+      \field{urldateera}{ce}
+      \verb{urlraw}
+      \verb https://github.com/Novage/p2p-media-loader
+      \endverb
+      \verb{url}
+      \verb https://github.com/Novage/p2p-media-loader
+      \endverb
+      \keyw{bittorrent,dash,hls,hlsjs,media-playback,mediastream,p2p,p2p-media-loader,p2p-network,peer,player,shaka-player,video,webrtc,webtorrent}
+    \endentry
+    \entry{SpecsPubsubGossipsub}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=71515aeef84a35a6ec34f99e24344f09}{%
+           family={libp2p},
+           familyi={l\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \strng{namehash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{fullhash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{fullhashraw}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{bibnamehash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{authorbibnamehash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{authornamehash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{authorfullhash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{authorfullhashraw}{71515aeef84a35a6ec34f99e24344f09}
+      \field{extraname}{2}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Technical specifications for the libp2p networking stack - libp2p/specs}
+      \field{journaltitle}{GitHub}
+      \field{title}{specs/pubsub/gossipsub/gossipsub-v1.1.md at master · libp2p/specs}
+      \field{urlday}{11}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{file}
+      \verb Snapshot:files/77/gossipsub-v1.1.html:text/html
+      \endverb
+      \verb{urlraw}
+      \verb https://github.com/libp2p/specs/blob/master/pubsub/gossipsub/gossipsub-v1.1.md
+      \endverb
+      \verb{url}
+      \verb https://github.com/libp2p/specs/blob/master/pubsub/gossipsub/gossipsub-v1.1.md
+      \endverb
+    \endentry
+    \entry{WhatPublishSubscribe}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=71515aeef84a35a6ec34f99e24344f09}{%
+           family={libp2p},
+           familyi={l\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \strng{namehash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{fullhash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{fullhashraw}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{bibnamehash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{authorbibnamehash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{authornamehash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{authorfullhash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{authorfullhashraw}{71515aeef84a35a6ec34f99e24344f09}
+      \field{extraname}{3}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Publish/Subscribe is a system where peers congregate around topics they are interested in. Peers interested in a topic are said to be subscribed to that topic. Learn about how peers can message data in libp2p.}
+      \field{journaltitle}{libp2p}
+      \field{title}{What is {Publish}/{Subscribe}}
+      \field{urlday}{11}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{file}
+      \verb Snapshot:files/78/pubsub.html:text/html
+      \endverb
+      \verb{urlraw}
+      \verb https://libp2p.io/docs/pubsub/
+      \endverb
+      \verb{url}
+      \verb https://libp2p.io/docs/pubsub/
+      \endverb
+    \endentry
+    \entry{WhatAreSecure}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=71515aeef84a35a6ec34f99e24344f09}{%
+           family={libp2p},
+           familyi={l\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {en-us}%
+      }
+      \strng{namehash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{fullhash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{fullhashraw}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{bibnamehash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{authorbibnamehash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{authornamehash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{authorfullhash}{71515aeef84a35a6ec34f99e24344f09}
+      \strng{authorfullhashraw}{71515aeef84a35a6ec34f99e24344f09}
+      \field{extraname}{4}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Before two peers can transmit data, the communication channel they established with a transport protocol should be secure. Learn about secure channels in libp2p.}
+      \field{journaltitle}{libp2p}
+      \field{title}{What are {Secure} {Channels}}
+      \field{urlday}{27}
+      \field{urlmonth}{11}
+      \field{urlyear}{2025}
+      \field{urldateera}{ce}
+      \verb{file}
+      \verb Snapshot:files/35/overview.html:text/html
+      \endverb
+      \verb{urlraw}
+      \verb https://docs.libp2p.io/concepts/secure-comm/overview/
+      \endverb
+      \verb{url}
+      \verb https://docs.libp2p.io/concepts/secure-comm/overview/
+      \endverb
+    \endentry
+    \entry{apostolopoulosVideoStreamingConcepts}{article}{}{}
+      \name{author}{1}{}{%
+        {{hash=4344a49eae6350da841ca6fded169c02}{%
+           family={Apostolopoulos},
+           familyi={A\bibinitperiod},
+           given={John\bibnamedelima G},
+           giveni={J\bibinitperiod\bibinitdelim G\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \strng{namehash}{4344a49eae6350da841ca6fded169c02}
+      \strng{fullhash}{4344a49eae6350da841ca6fded169c02}
+      \strng{fullhashraw}{4344a49eae6350da841ca6fded169c02}
+      \strng{bibnamehash}{4344a49eae6350da841ca6fded169c02}
+      \strng{authorbibnamehash}{4344a49eae6350da841ca6fded169c02}
+      \strng{authornamehash}{4344a49eae6350da841ca6fded169c02}
+      \strng{authorfullhash}{4344a49eae6350da841ca6fded169c02}
+      \strng{authorfullhashraw}{4344a49eae6350da841ca6fded169c02}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Technical report}
+      \field{title}{Video {Streaming}: {Concepts}, {Algorithms}, and {Systems}}
+      \field{year}{2002}
+      \verb{file}
+      \verb PDF:files/42/Apostolopoulos - Video Streaming Concepts, Algorithms, and Systems.pdf:application/pdf
+      \endverb
+    \endentry
+    \entry{pantos_http_2017}{report}{}{}
+      \name{author}{2}{}{%
+        {{hash=fa5100c95ba0b556dc172db749550757}{%
+           family={Pantos},
+           familyi={P\bibinitperiod},
+           given={Roger},
+           giveni={R\bibinitperiod}}}%
+        {{hash=52bb360d0d0a8c2da0a9b85999493f3e}{%
+           family={May},
+           familyi={M\bibinitperiod},
+           given={William},
+           giveni={W\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Internet Engineering Task Force}%
+      }
+      \strng{namehash}{605214e13bb04f8e3763075ded1e0b30}
+      \strng{fullhash}{605214e13bb04f8e3763075ded1e0b30}
+      \strng{fullhashraw}{605214e13bb04f8e3763075ded1e0b30}
+      \strng{bibnamehash}{605214e13bb04f8e3763075ded1e0b30}
+      \strng{authorbibnamehash}{605214e13bb04f8e3763075ded1e0b30}
+      \strng{authornamehash}{605214e13bb04f8e3763075ded1e0b30}
+      \strng{authorfullhash}{605214e13bb04f8e3763075ded1e0b30}
+      \strng{authorfullhashraw}{605214e13bb04f8e3763075ded1e0b30}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{This document describes a protocol for transferring unbounded streams of multimedia data. It specifies the data format of the files and the actions to be taken by the server (sender) and the clients (receivers) of the streams. It describes version 7 of this protocol.}
+      \field{month}{8}
+      \field{note}{Num Pages: 60}
+      \field{number}{RFC 8216}
+      \field{title}{{HTTP} {Live} {Streaming}}
+      \field{type}{Request for {Comments}}
+      \field{urlday}{2}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2017}
+      \field{urldateera}{ce}
+      \verb{doi}
+      \verb 10.17487/RFC8216
+      \endverb
+      \verb{file}
+      \verb Full Text PDF:files/65/Pantos and May - 2017 - HTTP Live Streaming.pdf:application/pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://datatracker.ietf.org/doc/rfc8216
+      \endverb
+      \verb{url}
+      \verb https://datatracker.ietf.org/doc/rfc8216
+      \endverb
+    \endentry
+    \entry{noauthor_standards_nodate}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=9988b1d8a770677b8ba24111dbef6dc6}{%
+           family={MPEG},
+           familyi={M\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {en-US}%
+      }
+      \strng{namehash}{9988b1d8a770677b8ba24111dbef6dc6}
+      \strng{fullhash}{9988b1d8a770677b8ba24111dbef6dc6}
+      \strng{fullhashraw}{9988b1d8a770677b8ba24111dbef6dc6}
+      \strng{bibnamehash}{9988b1d8a770677b8ba24111dbef6dc6}
+      \strng{authorbibnamehash}{9988b1d8a770677b8ba24111dbef6dc6}
+      \strng{authornamehash}{9988b1d8a770677b8ba24111dbef6dc6}
+      \strng{authorfullhash}{9988b1d8a770677b8ba24111dbef6dc6}
+      \strng{authorfullhashraw}{9988b1d8a770677b8ba24111dbef6dc6}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Standards – {MPEG}}
+      \field{urlday}{2}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{file}
+      \verb Snapshot:files/64/standards.html:text/html
+      \endverb
+      \verb{urlraw}
+      \verb https://www.mpeg.org/standards/
+      \endverb
+      \verb{url}
+      \verb https://www.mpeg.org/standards/
+      \endverb
+    \endentry
+    \entry{schulzrinneRealTimeStreamingProtocol2016}{report}{}{}
+      \name{author}{5}{}{%
+        {{hash=c520fc132510d84b39cdc7763de73842}{%
+           family={Schulzrinne},
+           familyi={S\bibinitperiod},
+           given={Henning},
+           giveni={H\bibinitperiod}}}%
+        {{hash=293b486a7e956afeac45290b400514a3}{%
+           family={Rao},
+           familyi={R\bibinitperiod},
+           given={Anup},
+           giveni={A\bibinitperiod}}}%
+        {{hash=f1f1a47d3dd66d52fe02ce3a6617caa0}{%
+           family={Lanphier},
+           familyi={L\bibinitperiod},
+           given={Rob},
+           giveni={R\bibinitperiod}}}%
+        {{hash=ed07b958842a8f4d3dc9a6da878ff527}{%
+           family={Westerlund},
+           familyi={W\bibinitperiod},
+           given={Magnus},
+           giveni={M\bibinitperiod}}}%
+        {{hash=1962867eea3ef80b37e8c10fcddc586a}{%
+           family={Stiemerling},
+           familyi={S\bibinitperiod},
+           given={Martin},
+           giveni={M\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Internet Engineering Task Force}%
+      }
+      \strng{namehash}{c7b5cfe39a8c06dc66c99be65db4eb64}
+      \strng{fullhash}{c7b5cfe39a8c06dc66c99be65db4eb64}
+      \strng{fullhashraw}{c7b5cfe39a8c06dc66c99be65db4eb64}
+      \strng{bibnamehash}{c7b5cfe39a8c06dc66c99be65db4eb64}
+      \strng{authorbibnamehash}{c7b5cfe39a8c06dc66c99be65db4eb64}
+      \strng{authornamehash}{c7b5cfe39a8c06dc66c99be65db4eb64}
+      \strng{authorfullhash}{c7b5cfe39a8c06dc66c99be65db4eb64}
+      \strng{authorfullhashraw}{c7b5cfe39a8c06dc66c99be65db4eb64}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{This memorandum defines the Real-Time Streaming Protocol (RTSP) version 2.0, which obsoletes RTSP version 1.0 defined in RFC 2326. RTSP is an application-layer protocol for the setup and control of the delivery of data with real-time properties. RTSP provides an extensible framework to enable controlled, on-demand delivery of real-time data, such as audio and video. Sources of data can include both live data feeds and stored clips. This protocol is intended to control multiple data delivery sessions; provide a means for choosing delivery channels such as UDP, multicast UDP, and TCP; and provide a means for choosing delivery mechanisms based upon RTP (RFC 3550).}
+      \field{month}{12}
+      \field{note}{Num Pages: 318}
+      \field{number}{RFC 7826}
+      \field{title}{Real-{Time} {Streaming} {Protocol} {Version} 2.0}
+      \field{type}{Request for {Comments}}
+      \field{urlday}{8}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{year}{2016}
+      \field{urldateera}{ce}
+      \verb{doi}
+      \verb 10.17487/RFC7826
+      \endverb
+      \verb{file}
+      \verb Full Text PDF:files/74/Schulzrinne et al. - 2016 - Real-Time Streaming Protocol Version 2.0.pdf:application/pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://datatracker.ietf.org/doc/rfc7826
+      \endverb
+      \verb{url}
+      \verb https://datatracker.ietf.org/doc/rfc7826
+      \endverb
+    \endentry
+    \entry{noauthor_webrtc_nodate}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=446a1ae6601a5c59360c7d591c3992da}{%
+           family={W3C},
+           familyi={W\bibinitperiod}}}%
+      }
+      \strng{namehash}{446a1ae6601a5c59360c7d591c3992da}
+      \strng{fullhash}{446a1ae6601a5c59360c7d591c3992da}
+      \strng{fullhashraw}{446a1ae6601a5c59360c7d591c3992da}
+      \strng{bibnamehash}{446a1ae6601a5c59360c7d591c3992da}
+      \strng{authorbibnamehash}{446a1ae6601a5c59360c7d591c3992da}
+      \strng{authornamehash}{446a1ae6601a5c59360c7d591c3992da}
+      \strng{authorfullhash}{446a1ae6601a5c59360c7d591c3992da}
+      \strng{authorfullhashraw}{446a1ae6601a5c59360c7d591c3992da}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{{WebRTC}: {Real}-{Time} {Communication} in {Browsers}}
+      \field{urlday}{2}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{file}
+      \verb WebRTC\: Real-Time Communication in Browsers:files/62/webrtc.html:text/html
+      \endverb
+      \verb{urlraw}
+      \verb https://www.w3.org/TR/webrtc/
+      \endverb
+      \verb{url}
+      \verb https://www.w3.org/TR/webrtc/
+      \endverb
+    \endentry
+    \entry{schulzrinne_rtp_2003}{report}{}{}
+      \name{author}{4}{}{%
+        {{hash=c520fc132510d84b39cdc7763de73842}{%
+           family={Schulzrinne},
+           familyi={S\bibinitperiod},
+           given={Henning},
+           giveni={H\bibinitperiod}}}%
+        {{hash=fc899913b13c6b4fca223f6930a882af}{%
+           family={Casner},
+           familyi={C\bibinitperiod},
+           given={Stephen\bibnamedelima L.},
+           giveni={S\bibinitperiod\bibinitdelim L\bibinitperiod}}}%
+        {{hash=a57010710d96bbf9ff58322b08d0d4bd}{%
+           family={Frederick},
+           familyi={F\bibinitperiod},
+           given={Ron},
+           giveni={R\bibinitperiod}}}%
+        {{hash=2191d887ae31ebf1ef43a77dc25834c4}{%
+           family={Jacobson},
+           familyi={J\bibinitperiod},
+           given={Van},
+           giveni={V\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Internet Engineering Task Force}%
+      }
+      \strng{namehash}{dab2e0ec8ecf2834b892a165be5eecee}
+      \strng{fullhash}{dab2e0ec8ecf2834b892a165be5eecee}
+      \strng{fullhashraw}{dab2e0ec8ecf2834b892a165be5eecee}
+      \strng{bibnamehash}{dab2e0ec8ecf2834b892a165be5eecee}
+      \strng{authorbibnamehash}{dab2e0ec8ecf2834b892a165be5eecee}
+      \strng{authornamehash}{dab2e0ec8ecf2834b892a165be5eecee}
+      \strng{authorfullhash}{dab2e0ec8ecf2834b892a165be5eecee}
+      \strng{authorfullhashraw}{dab2e0ec8ecf2834b892a165be5eecee}
+      \field{sortinit}{4}
+      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{shorttitle}
+      \field{abstract}{This memorandum describes RTP, the real-time transport protocol. RTP provides end-to-end network transport functions suitable for applications transmitting real-time data, such as audio, video or simulation data, over multicast or unicast network services. RTP does not address resource reservation and does not guarantee quality-of- service for real-time services. The data transport is augmented by a control protocol (RTCP) to allow monitoring of the data delivery in a manner scalable to large multicast networks, and to provide minimal control and identification functionality. RTP and RTCP are designed to be independent of the underlying transport and network layers. The protocol supports the use of RTP-level translators and mixers. Most of the text in this memorandum is identical to RFC 1889 which it obsoletes. There are no changes in the packet formats on the wire, only changes to the rules and algorithms governing how the protocol is used. The biggest change is an enhancement to the scalable timer algorithm for calculating when to send RTCP packets in order to minimize transmission in excess of the intended rate when many participants join a session simultaneously. [STANDARDS-TRACK]}
+      \field{month}{7}
+      \field{note}{Num Pages: 104}
+      \field{number}{RFC 3550}
+      \field{shorttitle}{{RTP}}
+      \field{title}{{RTP}: {A} {Transport} {Protocol} for {Real}-{Time} {Applications}}
+      \field{type}{Request for {Comments}}
+      \field{urlday}{12}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2003}
+      \field{urldateera}{ce}
+      \verb{doi}
+      \verb 10.17487/RFC3550
+      \endverb
+      \verb{file}
+      \verb Full Text PDF:files/69/Schulzrinne et al. - 2003 - RTP A Transport Protocol for Real-Time Applications.pdf:application/pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://datatracker.ietf.org/doc/rfc3550
+      \endverb
+      \verb{url}
+      \verb https://datatracker.ietf.org/doc/rfc3550
+      \endverb
+    \endentry
+    \entry{WebVideoCodec2025}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=3ea55c6971b673b2279b8381df63591d}{%
+           family={Docs},
+           familyi={D\bibinitperiod},
+           given={MDN\bibnamedelima Web},
+           giveni={M\bibinitperiod\bibinitdelim W\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {en-US}%
+      }
+      \strng{namehash}{3ea55c6971b673b2279b8381df63591d}
+      \strng{fullhash}{3ea55c6971b673b2279b8381df63591d}
+      \strng{fullhashraw}{3ea55c6971b673b2279b8381df63591d}
+      \strng{bibnamehash}{3ea55c6971b673b2279b8381df63591d}
+      \strng{authorbibnamehash}{3ea55c6971b673b2279b8381df63591d}
+      \strng{authornamehash}{3ea55c6971b673b2279b8381df63591d}
+      \strng{authorfullhash}{3ea55c6971b673b2279b8381df63591d}
+      \strng{authorfullhashraw}{3ea55c6971b673b2279b8381df63591d}
+      \field{extraname}{2}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{This guide introduces the video codecs you're most likely to encounter or consider using on the web, summaries of their capabilities and any compatibility and utility concerns, and advice to help you choose the right codec for your project's video.}
+      \field{journaltitle}{MDN Web Docs}
+      \field{month}{7}
+      \field{title}{Web video codec guide - {Media} {|} {MDN}}
+      \field{urlday}{28}
+      \field{urlmonth}{10}
+      \field{urlyear}{2025}
+      \field{year}{2025}
+      \field{urldateera}{ce}
+      \verb{file}
+      \verb Snapshot:files/14/Video_codecs.html:text/html
+      \endverb
+      \verb{urlraw}
+      \verb https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Video_codecs
+      \endverb
+      \verb{url}
+      \verb https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Video_codecs
+      \endverb
+    \endentry
+    \entry{jesup_rtp_2011}{report}{}{}
+      \name{author}{4}{}{%
+        {{hash=c6baf1c85936b41246fbf7d9f2e925f1}{%
+           family={Jesup},
+           familyi={J\bibinitperiod},
+           given={Randell},
+           giveni={R\bibinitperiod}}}%
+        {{hash=04951f2920162ead811e7996215a462d}{%
+           family={Kristensen},
+           familyi={K\bibinitperiod},
+           given={Tom},
+           giveni={T\bibinitperiod}}}%
+        {{hash=0ad41e88f9854bc9c63f4a73c6982d1d}{%
+           family={Wang},
+           familyi={W\bibinitperiod},
+           given={Yekui},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=7cfd203a51f0bfad9d12cfbec92e3325}{%
+           family={Even},
+           familyi={E\bibinitperiod},
+           given={Roni},
+           giveni={R\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Internet Engineering Task Force}%
+      }
+      \strng{namehash}{b4e0c2a9bf9ff470bb29472fd241a436}
+      \strng{fullhash}{b4e0c2a9bf9ff470bb29472fd241a436}
+      \strng{fullhashraw}{b4e0c2a9bf9ff470bb29472fd241a436}
+      \strng{bibnamehash}{b4e0c2a9bf9ff470bb29472fd241a436}
+      \strng{authorbibnamehash}{b4e0c2a9bf9ff470bb29472fd241a436}
+      \strng{authornamehash}{b4e0c2a9bf9ff470bb29472fd241a436}
+      \strng{authorfullhash}{b4e0c2a9bf9ff470bb29472fd241a436}
+      \strng{authorfullhashraw}{b4e0c2a9bf9ff470bb29472fd241a436}
+      \field{sortinit}{8}
+      \field{sortinithash}{a231b008ebf0ecbe0b4d96dcc159445f}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{This memo describes an RTP Payload format for the ITU-T Recommendation H.264 video codec and the technically identical ISO/IEC International Standard 14496-10 video codec, excluding the Scalable Video Coding (SVC) extension and the Multiview Video Coding extension, for which the RTP payload formats are defined elsewhere. The RTP payload format allows for packetization of one or more Network Abstraction Layer Units (NALUs), produced by an H.264 video encoder, in each RTP payload. The payload format has wide applicability, as it supports applications from simple low bitrate conversational usage, to Internet video streaming with interleaved transmission, to high bitrate video-on-demand. This memo obsoletes RFC 3984. Changes from RFC 3984 are summarized in Section 14. Issues on backward compatibility to RFC 3984 are discussed in Section 15. [STANDARDS-TRACK]}
+      \field{month}{5}
+      \field{note}{Num Pages: 101}
+      \field{number}{RFC 6184}
+      \field{title}{{RTP} {Payload} {Format} for {H}.264 {Video}}
+      \field{type}{Request for {Comments}}
+      \field{urlday}{12}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2011}
+      \field{urldateera}{ce}
+      \verb{doi}
+      \verb 10.17487/RFC6184
+      \endverb
+      \verb{file}
+      \verb Full Text PDF:files/70/Jesup et al. - 2011 - RTP Payload Format for H.264 Video.pdf:application/pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://datatracker.ietf.org/doc/rfc6184
+      \endverb
+      \verb{url}
+      \verb https://datatracker.ietf.org/doc/rfc6184
+      \endverb
+    \endentry
+    \entry{gstreamerTutorials2026}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=6a02735284bda85fcc75d6d36040648c}{%
+           family={Project},
+           familyi={P\bibinitperiod},
+           given={GStreamer},
+           giveni={G\bibinitperiod}}}%
+      }
+      \strng{namehash}{6a02735284bda85fcc75d6d36040648c}
+      \strng{fullhash}{6a02735284bda85fcc75d6d36040648c}
+      \strng{fullhashraw}{6a02735284bda85fcc75d6d36040648c}
+      \strng{bibnamehash}{6a02735284bda85fcc75d6d36040648c}
+      \strng{authorbibnamehash}{6a02735284bda85fcc75d6d36040648c}
+      \strng{authornamehash}{6a02735284bda85fcc75d6d36040648c}
+      \strng{authorfullhash}{6a02735284bda85fcc75d6d36040648c}
+      \strng{authorfullhashraw}{6a02735284bda85fcc75d6d36040648c}
+      \field{extraname}{1}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Tutorials}
+      \field{urlday}{11}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{file}
+      \verb Tutorials:files/85/index.html:text/html
+      \endverb
+      \verb{urlraw}
+      \verb https://gstreamer.freedesktop.org/documentation/tutorials/index.html?gi-language=c
+      \endverb
+      \verb{url}
+      \verb https://gstreamer.freedesktop.org/documentation/tutorials/index.html?gi-language=c
+      \endverb
+    \endentry
+    \entry{ffmpegDocumentation2026}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=7e1bcf1cfe4966dea32617a48d0c4ba3}{%
+           family={Project},
+           familyi={P\bibinitperiod},
+           given={FFmpeg},
+           giveni={F\bibinitperiod}}}%
+      }
+      \strng{namehash}{7e1bcf1cfe4966dea32617a48d0c4ba3}
+      \strng{fullhash}{7e1bcf1cfe4966dea32617a48d0c4ba3}
+      \strng{fullhashraw}{7e1bcf1cfe4966dea32617a48d0c4ba3}
+      \strng{bibnamehash}{7e1bcf1cfe4966dea32617a48d0c4ba3}
+      \strng{authorbibnamehash}{7e1bcf1cfe4966dea32617a48d0c4ba3}
+      \strng{authornamehash}{7e1bcf1cfe4966dea32617a48d0c4ba3}
+      \strng{authorfullhash}{7e1bcf1cfe4966dea32617a48d0c4ba3}
+      \strng{authorfullhashraw}{7e1bcf1cfe4966dea32617a48d0c4ba3}
+      \field{extraname}{2}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{title}{Documentation}
+      \field{urlday}{11}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{urldateera}{ce}
+      \verb{file}
+      \verb Documentation:files/80/documentation.html:text/html
+      \endverb
+      \verb{urlraw}
+      \verb https://ffmpeg.org/documentation.html
+      \endverb
+      \verb{url}
+      \verb https://ffmpeg.org/documentation.html
+      \endverb
+    \endentry
+    \entry{fFFmpegVsGStreamer2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=a8fa6b553b655657f943cb8fd85859d1}{%
+           family={F},
+           familyi={F\bibinitperiod},
+           given={D.},
+           giveni={D\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \strng{namehash}{a8fa6b553b655657f943cb8fd85859d1}
+      \strng{fullhash}{a8fa6b553b655657f943cb8fd85859d1}
+      \strng{fullhashraw}{a8fa6b553b655657f943cb8fd85859d1}
+      \strng{bibnamehash}{a8fa6b553b655657f943cb8fd85859d1}
+      \strng{authorbibnamehash}{a8fa6b553b655657f943cb8fd85859d1}
+      \strng{authornamehash}{a8fa6b553b655657f943cb8fd85859d1}
+      \strng{authorfullhash}{a8fa6b553b655657f943cb8fd85859d1}
+      \strng{authorfullhashraw}{a8fa6b553b655657f943cb8fd85859d1}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{shorttitle}
+      \field{abstract}{When it comes to multimedia processing, two giants often stand out: FFmpeg and GStreamer. Both are powerful multimedia frameworks used to…}
+      \field{journaltitle}{Medium}
+      \field{month}{9}
+      \field{shorttitle}{{FFmpeg} vs. {GStreamer}}
+      \field{title}{{FFmpeg} vs. {GStreamer}: {A} {Comprehensive} {Comparison}}
+      \field{urlday}{4}
+      \field{urlmonth}{11}
+      \field{urlyear}{2025}
+      \field{year}{2024}
+      \field{urldateera}{ce}
+      \verb{file}
+      \verb Snapshot:files/26/ffmpeg-vs-gstreamer-a-comprehensive-comparison-23217be772d3.html:text/html
+      \endverb
+      \verb{urlraw}
+      \verb https://medium.com/@contact_45426/ffmpeg-vs-gstreamer-a-comprehensive-comparison-23217be772d3
+      \endverb
+      \verb{url}
+      \verb https://medium.com/@contact_45426/ffmpeg-vs-gstreamer-a-comprehensive-comparison-23217be772d3
+      \endverb
+    \endentry
+    \entry{huangLiveStreamingIts2023a}{inproceedings}{}{}
+      \name{author}{4}{}{%
+        {{hash=536462bb3a16ce6ceddb82623ee3e5f0}{%
+           family={Huang},
+           familyi={H\bibinitperiod},
+           given={Zhao},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=8747c43bce4aa89f5d97095fa67c46f8}{%
+           family={Mou},
+           familyi={M\bibinitperiod},
+           given={Jian},
+           giveni={J\bibinitperiod}}}%
+        {{hash=0e7600a65868457ef0fb6ae8f1a09150}{%
+           family={Benyoucef},
+           familyi={B\bibinitperiod},
+           given={Morad},
+           giveni={M\bibinitperiod}}}%
+        {{hash=0e5e14e83148465e04af4e2591e42d68}{%
+           family={Kim},
+           familyi={K\bibinitperiod},
+           given={Jongki},
+           giveni={J\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \strng{namehash}{a5a5a93cf6d6844250d60afcfb8ae4f6}
+      \strng{fullhash}{a5a5a93cf6d6844250d60afcfb8ae4f6}
+      \strng{fullhashraw}{a5a5a93cf6d6844250d60afcfb8ae4f6}
+      \strng{bibnamehash}{a5a5a93cf6d6844250d60afcfb8ae4f6}
+      \strng{authorbibnamehash}{a5a5a93cf6d6844250d60afcfb8ae4f6}
+      \strng{authornamehash}{a5a5a93cf6d6844250d60afcfb8ae4f6}
+      \strng{authorfullhash}{a5a5a93cf6d6844250d60afcfb8ae4f6}
+      \strng{authorfullhashraw}{a5a5a93cf6d6844250d60afcfb8ae4f6}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{shorttitle}
+      \field{abstract}{Live streaming is a new form of social applications involving video content, consumption and real-time human interaction to facilitate users’ ability to interact with each other. Despite the increasing popularity of live streaming and its influence on business and society, relatively little research has been conducted to understand what we know and what we need to know about it. Therefore, a systematic review of the existing literature was carried out to synthesize the research findings. Accordingly, we systematically reviewed 133 useable papers published across 52 academic journals and 10 conferences with regards to research trends, topics, methodology, and contexts. This study offers a thorough understanding of current practices in live streaming, which may help businesses to better realize their live streaming deployment objectives.}
+      \field{booktitle}{Proceedings of the 56th Hawaii International Conference on System Sciences}
+      \field{shorttitle}{Live {Streaming}}
+      \field{title}{Live {Streaming}: {Its} {Relevant} {Concepts} and {Literature} {Review}}
+      \field{urlday}{23}
+      \field{urlmonth}{12}
+      \field{urlyear}{2025}
+      \field{year}{2023}
+      \field{urldateera}{ce}
+      \field{pages}{1\bibrangedash 10}
+      \range{pages}{10}
+      \verb{doi}
+      \verb 10.24251/HICSS.2023.065
+      \endverb
+      \verb{file}
+      \verb PDF:files/48/Huang et al. - 2023 - Live Streaming Its Relevant Concepts and Literature Review.pdf:application/pdf
+      \endverb
+      \verb{urlraw}
+      \verb http://hdl.handle.net/10125/102693
+      \endverb
+      \verb{url}
+      \verb http://hdl.handle.net/10125/102693
+      \endverb
+    \endentry
+    \entry{Libp2pEthereumMerge}{misc}{}{}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labeltitlesource}{title}
+      \field{title}{libp2p \& {Ethereum} (the {Merge}) {|} libp2p {Blog} \& {News}}
+      \field{urlday}{27}
+      \field{urlmonth}{11}
+      \field{urlyear}{2025}
+      \field{urldateera}{ce}
+      \verb{file}
+      \verb libp2p & Ethereum (the Merge) | libp2p Blog & News:files/39/libp2p-and-ethereum.html:text/html
+      \endverb
+      \verb{urlraw}
+      \verb https://blog.libp2p.io/libp2p-and-ethereum/
+      \endverb
+      \verb{url}
+      \verb https://blog.libp2p.io/libp2p-and-ethereum/
+      \endverb
+    \endentry
+    \entry{thomsonUsingTLSSecure2021}{report}{}{}
+      \name{author}{2}{}{%
+        {{hash=a4e224194a64046472d567f5d35b02bc}{%
+           family={Thomson},
+           familyi={T\bibinitperiod},
+           given={Martin},
+           giveni={M\bibinitperiod}}}%
+        {{hash=2561e47066e8b6e1ea6914463f60f78d}{%
+           family={Turner},
+           familyi={T\bibinitperiod},
+           given={Sean},
+           giveni={S\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Internet Engineering Task Force}%
+      }
+      \strng{namehash}{fc494595114272132c4cb2e62ba60d79}
+      \strng{fullhash}{fc494595114272132c4cb2e62ba60d79}
+      \strng{fullhashraw}{fc494595114272132c4cb2e62ba60d79}
+      \strng{bibnamehash}{fc494595114272132c4cb2e62ba60d79}
+      \strng{authorbibnamehash}{fc494595114272132c4cb2e62ba60d79}
+      \strng{authornamehash}{fc494595114272132c4cb2e62ba60d79}
+      \strng{authorfullhash}{fc494595114272132c4cb2e62ba60d79}
+      \strng{authorfullhashraw}{fc494595114272132c4cb2e62ba60d79}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{This document describes how Transport Layer Security (TLS) is used to secure QUIC.}
+      \field{month}{5}
+      \field{note}{Num Pages: 52}
+      \field{number}{RFC 9001}
+      \field{title}{Using {TLS} to {Secure} {QUIC}}
+      \field{type}{Request for {Comments}}
+      \field{urlday}{13}
+      \field{urlmonth}{3}
+      \field{urlyear}{2026}
+      \field{year}{2021}
+      \field{urldateera}{ce}
+      \verb{doi}
+      \verb 10.17487/RFC9001
+      \endverb
+      \verb{file}
+      \verb Full Text PDF:files/72/Thomson and Turner - 2021 - Using TLS to Secure QUIC.pdf:application/pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://datatracker.ietf.org/doc/rfc9001
+      \endverb
+      \verb{url}
+      \verb https://datatracker.ietf.org/doc/rfc9001
+      \endverb
+    \endentry
+    \entry{cheshireMulticastDNS2013}{report}{}{}
+      \name{author}{2}{}{%
+        {{hash=a9193f337ca348490dc4ce22c5dab887}{%
+           family={Cheshire},
+           familyi={C\bibinitperiod},
+           given={Stuart},
+           giveni={S\bibinitperiod}}}%
+        {{hash=243a3e41e8827e073162cdae965ce506}{%
+           family={Krochmal},
+           familyi={K\bibinitperiod},
+           given={Mark},
+           giveni={M\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Internet Engineering Task Force}%
+      }
+      \strng{namehash}{331bcec7c3ac5631a67101845122d1fb}
+      \strng{fullhash}{331bcec7c3ac5631a67101845122d1fb}
+      \strng{fullhashraw}{331bcec7c3ac5631a67101845122d1fb}
+      \strng{bibnamehash}{331bcec7c3ac5631a67101845122d1fb}
+      \strng{authorbibnamehash}{331bcec7c3ac5631a67101845122d1fb}
+      \strng{authornamehash}{331bcec7c3ac5631a67101845122d1fb}
+      \strng{authorfullhash}{331bcec7c3ac5631a67101845122d1fb}
+      \strng{authorfullhashraw}{331bcec7c3ac5631a67101845122d1fb}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{This document specifies Multicast DNS (mDNS), a protocol that allows DNS-like name resolution and service discovery on local links without a central DNS server.}
+      \field{month}{2}
+      \field{note}{Num Pages: 66}
+      \field{number}{RFC 6762}
+      \field{title}{Multicast {DNS}}
+      \field{type}{Request for {Comments}}
+      \field{urlday}{12}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{year}{2013}
+      \field{urldateera}{ce}
+      \verb{doi}
+      \verb 10.17487/RFC6762
+      \endverb
+      \verb{file}
+      \verb Full Text PDF:files/87/Cheshire and Krochmal - 2013 - Multicast DNS.pdf:application/pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://datatracker.ietf.org/doc/rfc6762
+      \endverb
+      \verb{url}
+      \verb https://datatracker.ietf.org/doc/rfc6762
+      \endverb
+    \endentry
+    \entry{bormannConciseBinaryObject2020}{report}{}{}
+      \name{author}{2}{}{%
+        {{hash=7fe2f98d5101608d1a28002bcb59c6d0}{%
+           family={Bormann},
+           familyi={B\bibinitperiod},
+           given={Carsten},
+           giveni={C\bibinitperiod}}}%
+        {{hash=20339076a46a7815881ab552eb232220}{%
+           family={Hoffman},
+           familyi={H\bibinitperiod},
+           given={Paul},
+           giveni={P\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Internet Engineering Task Force}%
+      }
+      \strng{namehash}{8f099d99efb64167c38b8205136e29f7}
+      \strng{fullhash}{8f099d99efb64167c38b8205136e29f7}
+      \strng{fullhashraw}{8f099d99efb64167c38b8205136e29f7}
+      \strng{bibnamehash}{8f099d99efb64167c38b8205136e29f7}
+      \strng{authorbibnamehash}{8f099d99efb64167c38b8205136e29f7}
+      \strng{authornamehash}{8f099d99efb64167c38b8205136e29f7}
+      \strng{authorfullhash}{8f099d99efb64167c38b8205136e29f7}
+      \strng{authorfullhashraw}{8f099d99efb64167c38b8205136e29f7}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{This document defines the Concise Binary Object Representation (CBOR), a data format designed for small code size, small message size, and extensibility without a schema.}
+      \field{month}{2}
+      \field{note}{Num Pages: 66}
+      \field{number}{RFC 8949}
+      \field{title}{Concise Binary Object Representation ({CBOR})}
+      \field{type}{Request for {Comments}}
+      \field{urlday}{12}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{year}{2020}
+      \field{urldateera}{ce}
+      \verb{doi}
+      \verb 10.17487/RFC8949
+      \endverb
+      \verb{file}
+      \verb Full Text PDF:files/86/Bormann and Hoffman - 2020 - Concise Binary Object Representation (CBOR).pdf:application/pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://datatracker.ietf.org/doc/rfc8949
+      \endverb
+      \verb{url}
+      \verb https://datatracker.ietf.org/doc/rfc8949
+      \endverb
+    \endentry
+    \entry{turnerEdwardsEd25519Software2017}{report}{}{}
+      \name{author}{2}{}{%
+        {{hash=2561e47066e8b6e1ea6914463f60f78d}{%
+           family={Turner},
+           familyi={T\bibinitperiod},
+           given={Sean},
+           giveni={S\bibinitperiod}}}%
+        {{hash=a6fb34b49fa97f25cb177978ab96ce87}{%
+           family={Edwards},
+           familyi={E\bibinitperiod},
+           given={Simon},
+           giveni={S\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Internet Engineering Task Force}%
+      }
+      \strng{namehash}{a0b4340ce7db40c21185d745571f4ec9}
+      \strng{fullhash}{a0b4340ce7db40c21185d745571f4ec9}
+      \strng{fullhashraw}{a0b4340ce7db40c21185d745571f4ec9}
+      \strng{bibnamehash}{a0b4340ce7db40c21185d745571f4ec9}
+      \strng{authorbibnamehash}{a0b4340ce7db40c21185d745571f4ec9}
+      \strng{authornamehash}{a0b4340ce7db40c21185d745571f4ec9}
+      \strng{authorfullhash}{a0b4340ce7db40c21185d745571f4ec9}
+      \strng{authorfullhashraw}{a0b4340ce7db40c21185d745571f4ec9}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{This document describes the Edwards-curve Digital Signature Algorithm (EdDSA) and specifies the Ed25519 signature scheme.}
+      \field{month}{1}
+      \field{note}{Num Pages: 57}
+      \field{number}{RFC 8032}
+      \field{title}{Edwards-Curve Digital Signature Algorithm ({EdDSA})}
+      \field{type}{Request for {Comments}}
+      \field{urlday}{12}
+      \field{urlmonth}{4}
+      \field{urlyear}{2026}
+      \field{year}{2017}
+      \field{urldateera}{ce}
+      \verb{doi}
+      \verb 10.17487/RFC8032
+      \endverb
+      \verb{file}
+      \verb Full Text PDF:files/88/Turner and Edwards - 2017 - Edwards-Curve Digital Signature Algorithm (EdDSA).pdf:application/pdf
+      \endverb
+      \verb{urlraw}
+      \verb https://datatracker.ietf.org/doc/rfc8032
+      \endverb
+      \verb{url}
+      \verb https://datatracker.ietf.org/doc/rfc8032
+      \endverb
+    \endentry
+    \entry{BigBuckBunny}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=44275c392a37e9fa9de37082ab548a59}{%
+           family={Foundation},
+           familyi={F\bibinitperiod},
+           given={Blender},
+           giveni={B\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {en}%
+      }
+      \strng{namehash}{44275c392a37e9fa9de37082ab548a59}
+      \strng{fullhash}{44275c392a37e9fa9de37082ab548a59}
+      \strng{fullhashraw}{44275c392a37e9fa9de37082ab548a59}
+      \strng{bibnamehash}{44275c392a37e9fa9de37082ab548a59}
+      \strng{authorbibnamehash}{44275c392a37e9fa9de37082ab548a59}
+      \strng{authornamehash}{44275c392a37e9fa9de37082ab548a59}
+      \strng{authorfullhash}{44275c392a37e9fa9de37082ab548a59}
+      \strng{authorfullhashraw}{44275c392a37e9fa9de37082ab548a59}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Big Buck Bunny is a 2008 animated comedy short film featuring animals of the forest, made by the Blender Institute, part of the Blender Foundation.[1][2] Like the foundation's previous film, Elephants Dream, the film was made using Blender, a free and open-source software application for 3D computer modeling and animation developed by the same foundation. Unlike that earlier project, the tone and visuals departed from a cryptic story and dark visuals to one of comedy, cartoons, and...}
+      \field{journaltitle}{Blender Foundation Wiki}
+      \field{title}{Big {Buck} {Bunny}}
+      \field{urlday}{27}
+      \field{urlmonth}{11}
+      \field{urlyear}{2025}
+      \field{urldateera}{ce}
+      \verb{file}
+      \verb Snapshot:files/41/Big_Buck_Bunny.html:text/html
+      \endverb
+      \verb{urlraw}
+      \verb https://blenderfoundation.fandom.com/wiki/Big_Buck_Bunny
+      \endverb
+      \verb{url}
+      \verb https://blenderfoundation.fandom.com/wiki/Big_Buck_Bunny
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

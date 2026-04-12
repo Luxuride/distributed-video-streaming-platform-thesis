@@ -43,6 +43,7 @@
 \usepackage{setspace}
 \usepackage{csquotes}
 \usepackage{fancyvrb}
+\usepackage{pdfpages}
 \usepackage[backend=biber,style=iso-numeric,urldate=iso]{biblatex}
 \addbibresource{text-02-literatura/text-02-literatura.bib}
 \AtBeginBibliography{\sloppy}
@@ -238,6 +239,13 @@
  \appendixpage
   
   % Přílohy / Appendices
+  \IfFileExists{assignment.pdf}{%
+    \section*{Assignment}
+    \label{sec:appendix-assignment}
+    \addcontentsline{toc}{section}{Assignment}
+    \includepdf[pages=-,pagecommand={}]{assignment.pdf}
+  }{}
+
   \IfFileExists{attachments.zip}{%
     \section*{Combined Attachments Archive}
     \label{sec:attachments-combined}
