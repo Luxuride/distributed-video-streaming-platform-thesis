@@ -446,8 +446,7 @@ Incoming RTP H.264 payloads are decoded and displayed by the \texttt{GstRenderer
 \end{figure}
 
 \begin{itemize}
-    \item \textbf{\texttt{appsrc}} --- configured with RTP H.264 caps and live timestamping.
-    Key caps are \texttt{encoding-name=H264}, \texttt{payload=96}, and \texttt{clock-rate=90000}.
+    \item \textbf{\texttt{appsrc}} --- configured with RTP H.264 caps (\texttt{encoding-name=H264}, \texttt{payload=96}, and \texttt{clock-rate=90000}) plus \texttt{is-live=true}, \texttt{do-timestamp=false}, and \texttt{format=Time}.
     Declaring the caps before the first buffer arrives allows GStreamer to negotiate the downstream pipeline topology immediately.
     \item \textbf{\texttt{rtpjitterbuffer latency=5000}} --- accumulates incoming RTP packets for up to 5000 milliseconds and reorders them by sequence number before passing them downstream. The large window absorbs worst-case reordering from Gossipsub's multi-hop mesh, trading initial latency for stable decoding order.
     \item \textbf{\texttt{rtph264depay}}, \textbf{\texttt{h264parse}} --- strip the RTP framing and reassemble NAL units into a continuous H.264 bytestream.
@@ -495,8 +494,8 @@ if age > TTL {
 This prevents stale video frames from continuing to circulate after their playback window has closed, reducing unnecessary load on the mesh.
 
 Peers are managed through mDNS lifecycle events.
-On discovery, each new peer is dialed and added to the Gossipsub mesh.
-On expiry, it is removed.\cite{cheshireMulticastDNS2013}
+On \texttt{mdns::Event::Discovered}, each new peer is dialed and added to the Gossipsub mesh via \texttt{add\_explicit\_peer}.
+On \texttt{mdns::Event::Expired}, it is removed via \texttt{remove\_explicit\_peer}.\cite{cheshireMulticastDNS2013}
 A shared, thread-safe peer set (\texttt{HashSet<PeerId>} guarded by an \texttt{Arc<RwLock>}) is kept current on every connection event.
 
 \subsubsection{Practical saturation issue in Gossipsub}
