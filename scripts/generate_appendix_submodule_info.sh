@@ -41,7 +41,7 @@ normalize_remote_url() {
 repo_url="$(normalize_remote_url "${remote_url_raw}")"
 repo_url="${repo_url%.git}"
 
-commit_url="${repo_url}/commit/${commit_hash}"
+commit_url="${repo_url}/tree/${commit_hash}"
 action_run_id="${APPENDIX_ACTION_RUN_ID:-${GITHUB_RUN_ID:-}}"
 if [ -n "${action_run_id}" ]; then
   workflow_runs_url="${repo_url}/actions/runs/${action_run_id}"
