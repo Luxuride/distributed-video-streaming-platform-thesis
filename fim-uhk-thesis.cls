@@ -33,10 +33,10 @@
 \ProcessOptions\relax
 %Jako vychozi pouzijeme tridu REPORT / We will use REPORT class as a base
 \iftwoside
-    \LoadClass[a4paper,twoside,onecolumn,12pt]{article}
+  \LoadClass[a4paper,twoside,onecolumn,12pt]{article}
 \fi
 \ifoneside
-    \LoadClass[a4paper,oneside,onecolumn,12pt]{article}
+  \LoadClass[a4paper,oneside,onecolumn,12pt]{article}
 \fi
 
 %-----------------------------------------------------------------------------

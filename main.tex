@@ -1,4 +1,4 @@
-\documentclass[english]{fim-uhk-thesis}
+\documentclass[english,twoside]{fim-uhk-thesis}
 %\documentclass[english]{fim-uhk-thesis} % without assignment - for the work start to avoid compilation problem
 % * Je-li práce psaná v anglickém jazyce, je zapotřebí u třídy použít 
 %   parametr english následovně:
@@ -49,6 +49,7 @@
 \AtBeginBibliography{\sloppy}
 
 \onehalfspacing
+\setlength{\emergencystretch}{3em}
 
 % =======================================================================
 % balíček "hyperref" vytváří klikací odkazy v pdf, pokud tedy použijeme pdflatex
@@ -243,7 +244,7 @@
 
   \IfFileExists{attachments.zip}{%
     \section{Combined Attachments Archive}
-    \label{sec:attachments-combined}
+    \label{sec:attachments_combined}
     The supplementary archive for this thesis build is \texttt{attachments.zip}.
     \par\smallskip
     The archive contains the following files:
@@ -255,7 +256,7 @@
 
   \IfFileExists{assignment.pdf}{%
     \section{Assignment}
-    \label{sec:appendix-assignment}
+    \label{sec:appendix_assignment}
     \includepdf[pages=-,pagecommand={}]{assignment.pdf}
   }{}
 \end{document}

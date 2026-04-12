@@ -358,8 +358,8 @@
       \strng{authorfullhash}{71515aeef84a35a6ec34f99e24344f09}
       \strng{authorfullhashraw}{71515aeef84a35a6ec34f99e24344f09}
       \field{extraname}{2}
-      \field{sortinit}{2}
-      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{sortinit}{1}
+      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{abstract}{Technical specifications for the libp2p networking stack - libp2p/specs}
@@ -511,8 +511,8 @@
       \strng{authornamehash}{605214e13bb04f8e3763075ded1e0b30}
       \strng{authorfullhash}{605214e13bb04f8e3763075ded1e0b30}
       \strng{authorfullhashraw}{605214e13bb04f8e3763075ded1e0b30}
-      \field{sortinit}{4}
-      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{abstract}{This document describes a protocol for transferring unbounded streams of multimedia data. It specifies the data format of the files and the actions to be taken by the server (sender) and the clients (receivers) of the streams. It describes version 7 of this protocol.}
@@ -556,8 +556,8 @@
       \strng{authornamehash}{9988b1d8a770677b8ba24111dbef6dc6}
       \strng{authorfullhash}{9988b1d8a770677b8ba24111dbef6dc6}
       \strng{authorfullhashraw}{9988b1d8a770677b8ba24111dbef6dc6}
-      \field{sortinit}{4}
-      \field{sortinithash}{9381316451d1b9788675a07e972a12a7}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{title}{Standards – {MPEG}}

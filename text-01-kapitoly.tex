@@ -41,7 +41,7 @@ Message acceptance is separated from transport reception through explicit valida
 
 In topic-based pub/sub, peers can join and leave topics while dissemination continues through currently connected participants.\cite{WhatPublishSubscribe,SpecsPubsubGossipsub} For live media overlays, prior hybrid CDN-P2P studies report a recurring trade-off: multi-hop dissemination can improve reachability, but can also increase delay variation and out-of-order behavior relative to more direct paths.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012}
 
-In this thesis, these theoretical properties directly motivate the practical comparison between Gossipsub and direct Stream transport. The concrete implementation choices and runtime behavior of Gossipsub are described in \S\ref{sec:gossipsub-transport} and \S\ref{sec:gossipsub-saturation}, while measured delay, reordering, and stability effects are analyzed in \S\ref{sec:analysis-mtu-1200-comparison} and \S\ref{sec:analysis-mtu-4096}.
+In this thesis, these theoretical properties directly motivate the practical comparison between Gossipsub and direct Stream transport. The concrete implementation choices and runtime behavior of Gossipsub are described in \S\ref{sec:gossipsub_transport} and \S\ref{sec:gossipsub_saturation}, while measured delay, reordering, and stability effects are analyzed in \S\ref{sec:analysis_mtu_1200_comparison} and \S\ref{sec:analysis_mtu_4096}.
 
 \subsection{Video Streaming}
 Video streaming is a method of delivering video data over a network as a continuous flow, allowing playback without downloading the entire file in advance.\cite{apostolopoulosVideoStreamingConcepts,peroniEndtoEndPipelinePerspective2025}
@@ -108,9 +108,9 @@ drop in video quality. If the sender transmits slower than the available
 bandwidth then the receiver produces sub-optimal video quality.
 \end{quote}
 
-This thesis addresses bandwidth management through two different transport architectures: direct libp2p Streams (\S\ref{sec:stream-transport}) and mesh-based Gossipsub (\S\ref{sec:gossipsub-transport}). Both approaches must handle variable available bandwidth while maintaining acceptable latency and delivery reliability. The evaluation framework tests these architectures across different bitrate and packet-size conditions, described in \S\ref{sec:test-matrix}.
+This thesis addresses bandwidth management through two different transport architectures: direct libp2p Streams (\S\ref{sec:stream_transport}) and mesh-based Gossipsub (\S\ref{sec:gossipsub_transport}). Both approaches must handle variable available bandwidth while maintaining acceptable latency and delivery reliability. The evaluation framework tests these architectures across different bitrate and packet-size conditions, described in \S\ref{sec:test_matrix}.
 \subsubsection{Delay jitter}
-\label{sec:delay-jitter}
+\label{sec:delay_jitter}
 Apostolopoulos describes delay jitter as follows:\cite{apostolopoulosVideoStreamingConcepts}
 \begin{quote}
 The end-to-end delay that a packet experiences may fluctuate from packet to
@@ -135,9 +135,12 @@ combat the effect of losses, a video streaming system is designed with error
 control.
 \end{quote}
 
-In this thesis, loss behavior is measured at the transport level by analyzing gaps in the monotonic packet index carried in each \texttt{VideoStreamChunk} (see \S\ref{sec:chunk-trait}). The metrics and methodology are documented in \S\ref{sec:metric-definitions}.
+In this thesis, loss behavior is measured at the transport level by analyzing gaps in the monotonic packet index carried in each \texttt{VideoStreamChunk} (see \S\ref{sec:chunk_trait}).
+The metrics and methodology are documented in \S\ref{sec:metric_definitions}.
 
-The implementation applies practical loss-mitigation choices at multiple levels. Low-latency encoder settings are described in \S\ref{sec:gstreamer-recorder}, periodic SPS/PPS insertion (\texttt{h264parse config-interval=1}) supports faster decoder resynchronization after loss, and bounded queues prefer dropping stale buffers over unbounded latency growth. These architectural choices reflect a real-time priority: graceful degradation under loss is preferred over delayed playback of outdated frames.
+The implementation applies practical loss-mitigation choices at multiple levels.
+Low-latency encoder settings are described in \S\ref{sec:gstreamer_recorder}, periodic SPS/PPS insertion (\texttt{h264parse config-interval=1}) supports faster decoder resynchronization after loss, and bounded queues prefer dropping stale buffers over unbounded latency growth.
+These choices prioritize graceful degradation over delayed playback of outdated frames.
 
 \section{Handling video streams}
 Common stream sources include cameras and computer screens. In raw form, these sources produce data volumes that are impractical for direct network transport.\cite{WebVideoCodec2025,apostolopoulosVideoStreamingConcepts}
@@ -164,7 +167,7 @@ Codec selection is a practical trade-off between quality, bitrate efficiency, co
 After compression, media streams are multiplexed into a synchronized container or transport stream. The muxer interleaves encoded data and timing metadata so the receiver can reconstruct correct playback order.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
 \subsection{Encoding pipeline}
-\label{sec:encoding-pipeline}
+\label{sec:encoding_pipeline}
 An encoding pipeline is the ordered sequence of processing stages that transforms uncompressed raw video frames into a compact, network-ready bitstream. Each stage has a well-defined input and output, so individual stages can be replaced by different implementations (software, hardware-accelerated, remote) without affecting the rest of the pipeline. The following description uses H.264 as the concrete codec example; the same conceptual stages apply to all modern block-based codecs (H.265, VP9, AV1), with differences in internal algorithms and compression efficiency.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
 \subsubsection{Raw frame acquisition}
@@ -214,13 +217,15 @@ For real-time network delivery, NAL units are wrapped into RTP (Real-time Transp
 The resulting RTP datagrams are handed off to the transport layer for delivery to consumers.
 
 \subsection{GStreamer and FFmpeg}
-\label{sec:gstreamer-ffmpeg-theory}
+\label{sec:gstreamer_ffmpeg_theory}
 GStreamer and FFmpeg are software frameworks that implement the media-processing workflows described above.\cite{gstreamerTutorials2026,ffmpegDocumentation2026}
 
 \subsubsection{GStreamer}
-GStreamer documents its core model as a graph of processing elements connected through pads, and it is designed to be extensible through plugins that let applications assemble pipelines from reusable components.\cite{gstreamerTutorials2026}
+GStreamer documents its core model as a graph of processing elements connected through pads.
+It is designed to be extensible through plugins that let applications assemble pipelines from reusable components.\cite{gstreamerTutorials2026}
 
-In practice, this component-level composition is relevant for real-time experimentation because individual stages can be replaced without redesigning the full media path, which supports controlled evaluation of transport and buffering strategies in live delivery pipelines.\cite{peroniEndtoEndPipelinePerspective2025}
+This component-level composition is useful for real-time experimentation because individual stages can be replaced without redesigning the full media path.
+That supports controlled evaluation of transport and buffering strategies in live delivery pipelines.\cite{peroniEndtoEndPipelinePerspective2025}
 
 \subsubsection{FFmpeg}
 FFmpeg provides a comprehensive multimedia toolchain with command-line tools and libraries for encoding, decoding, filtering, and muxing media.\cite{ffmpegDocumentation2026}
@@ -228,7 +233,8 @@ FFmpeg provides a comprehensive multimedia toolchain with command-line tools and
 Besides command-line usage, FFmpeg exposes a set of developer libraries (for example, \texttt{libavcodec}, \texttt{libavformat}, and \texttt{libavfilter}) that applications can integrate when they need lower-level control over media workflows.\cite{ffmpegDocumentation2026}
 
 \subsubsection{Comparison and relevance}
-At the architectural level, the two frameworks expose different primary control surfaces: GStreamer emphasizes explicit graph composition inside application pipelines, while FFmpeg emphasizes command-line tools and reusable libraries.\cite{gstreamerTutorials2026,ffmpegDocumentation2026,fFFmpegVsGStreamer2024}
+At the architectural level, the two frameworks expose different primary control surfaces.
+GStreamer emphasizes explicit graph composition inside application pipelines, while FFmpeg emphasizes command-line tools and reusable libraries.\cite{gstreamerTutorials2026,ffmpegDocumentation2026,fFFmpegVsGStreamer2024}
 
 For live streaming research, this difference mainly affects how easily a prototype can isolate and replace one stage (for example, encoder, packetizer, or sink) while keeping the rest of the path stable, which is important for attributing observed latency or loss behavior to the intended experimental variable.\cite{peroniEndtoEndPipelinePerspective2025,apostolopoulosVideoStreamingConcepts}
 
@@ -253,14 +259,19 @@ Despite the conceptual appeal of \ac{P2P} delivery, fully decentralized live vid
 
 \section{Implementation of developed video streaming solution}
 \subsection{Choice of programming language}
-The prototype is implemented in Rust. Besides personal familiarity, Rust was selected for technical reasons that are directly relevant to real-time media systems: memory safety without garbage collection, a strong type system, and predictable performance. High-volume packet transport requires high performance, and the language guarantees that unused memory is released when it is no longer needed.
+The prototype is implemented in Rust. Besides personal familiarity, Rust was selected for technical reasons that are directly relevant to real-time media systems: memory safety without garbage collection, a strong type system, and predictable performance.
+High-volume packet transport requires high performance, and the language guarantees that unused memory is released when it is no longer needed.
 
-Another important reason is multi-threading safety. The implementation runs concurrent capture, transport, rendering, and analysis tasks, and Rust enforces thread-safety rules at compile time through ownership, borrowing, and the \texttt{Send}/\texttt{Sync} trait system. This significantly reduces the risk of data races in shared state. In practice, shared resources are passed through explicit synchronization primitives (for example \texttt{Arc<Mutex<T>>}) or message channels, so synchronization is visible in code and easier to audit.
+Another important reason is multi-threading safety. The implementation runs concurrent capture, transport, rendering, and analysis tasks, and Rust enforces thread-safety rules at compile time through ownership, borrowing, and the \texttt{Send}/\texttt{Sync} trait system.
+This significantly reduces the risk of data races in shared state.
+In practice, shared resources are passed through explicit synchronization primitives (for example \texttt{Arc<Mutex<T>>}) or message channels, so synchronization is visible in code and easier to audit.
 
-Rust also provides mature asynchronous tooling such as \texttt{tokio} and ecosystem crates required by this thesis, namely libp2p for networking and GStreamer bindings for media processing. This makes it possible to keep capture, transport, and rendering in one language while preserving low-level control over buffers, serialization, and timing metadata.
+Rust also provides mature asynchronous tooling such as \texttt{tokio} and ecosystem crates required by this thesis, namely libp2p for networking and GStreamer bindings for media processing.
+This makes it possible to keep capture, transport, and rendering in one language while preserving low-level control over buffers, serialization, and timing metadata.
 
 \subsection{Implementation architecture}
-The implementation repository is organized as a Rust workspace with reusable library crates and executable binaries. The key design goal is separation of concerns:
+The implementation repository is organized as a Rust workspace with reusable library crates and executable binaries.
+The key design goal is separation of concerns:
 \begin{itemize}
     \item \textbf{Media capture / source layer} --- produces RTP payloads from either live screen capture or a deterministic file source used in testing.
     \item \textbf{Transport layer} --- abstracts 
@@ -269,10 +280,14 @@ The implementation repository is organized as a Rust workspace with reusable lib
     \item \textbf{Testing orchestration layer} --- runs producer, renderer, and analyzer roles for repeatable experiments and CSV export.
 \end{itemize}
 
-At the transport boundary, each packet is represented by a shared structure called VideoStreamChunk. It contains serialized media bytes, creation timestamp, and monotonic sequence index. This metadata enables the measurement methodology described later in \S\ref{sec:metric-definitions} (latency, packet loss, reordering, and throughput). The implementation evaluates two packetization contexts: a live recorder path using \ac{RTP} over MPEG-TS payloading, and a file-based test path using direct H.264-in-\ac{RTP} payloading. This distinction is stated explicitly to separate live-capture integration constraints from controlled transport benchmarking.
+At the transport boundary, each packet is represented by a shared structure called VideoStreamChunk.
+It contains serialized media bytes, creation timestamp, and monotonic sequence index.
+This metadata enables the measurement methodology described later in \S\ref{sec:metric_definitions} (latency, packet loss, reordering, and throughput).
+The implementation evaluates two packetization contexts: a live recorder path using \ac{RTP} over MPEG-TS payloading, and a file-based test path using direct H.264-in-\ac{RTP} payloading.
+This distinction separates live-capture integration constraints from controlled transport benchmarking.
 \subsection{Screen Recording}
-Screen capture is implemented for Wayland using the 
-\texttt{ashpd} interface to the XDG desktop portal. This approach delegates monitor/window selection and user permissions to the compositor and portal service.
+Screen capture is implemented for Wayland using the \texttt{ashpd} interface to the XDG desktop portal.
+This approach delegates monitor/window selection and user permissions to the compositor and portal service.
 
 After the portal session is created, the application obtains a PipeWire file descriptor and selected stream node identifier. These are injected into the GStreamer pipeline through \texttt{pipewiresrc}, so capture frames can be processed with standard media elements.
 
@@ -284,7 +299,8 @@ The recorder pipeline performs rate normalization and encoding before handing pa
     \item parser/mux/payloader stages that produce RTP payloads consumed via \texttt{appsink}.
 \end{itemize}
 
-The implementation uses low-latency settings such as bounded sink buffers and frame dropping when downstream is overloaded, preventing unbounded queue growth during transport congestion.
+The implementation uses low-latency settings such as bounded sink buffers and frame dropping when downstream is overloaded.
+This prevents unbounded queue growth during transport congestion.
 \subsection{Encoding}
 Two dominant open-source media stacks are FFmpeg and GStreamer. For this thesis, GStreamer was chosen because its graph-based pipeline model maps naturally to a modular experimental architecture where individual stages can be replaced without rewriting the full application.
 
@@ -300,12 +316,12 @@ All transport variants implement a common trait interface, \texttt{P2PSwarm}, wi
 
 Libp2p was selected because it provides identity, peer discovery, stream multiplexing, and protocol composition in one ecosystem.\cite{Libp2pIPFSDocs} Its secure channels provide encrypted communication between peers.\cite{SecurityConsiderations}
 \subsubsection{Gossipsub}
-\label{sec:gossipsub-transport}
+\label{sec:gossipsub_transport}
 The first transport variant uses Gossipsub publish/subscribe. Video chunks are serialized and published into a topic-based mesh. Receivers decode messages back into chunk structures and apply freshness filtering before acceptance. In the current codebase, stale chunks are explicitly rejected after a short time-to-live window, which reduces propagation of outdated real-time data.
 
 The expected strength of this variant is resilience: data can propagate even when direct links between producer and all viewers are not available. The expected cost is higher latency and possible reordering caused by multi-hop dissemination.
 \subsubsection{Stream}
-\label{sec:stream-transport}
+\label{sec:stream_transport}
 The second variant uses direct libp2p streams over a dedicated stream protocol identifier. Outbound chunks are serialized once and sent directly to currently connected peers. Inbound stream payloads are decoded immediately and forwarded to the media pipeline.
 
 This strategy minimizes overlay complexity and serves as a baseline for latency-oriented comparison. Its limitation is scalability in one-to-many scenarios, because the producer must maintain direct outgoing transmission to every consumer.
@@ -322,12 +338,12 @@ The implementation is organized as a Rust workspace consisting of four library c
 An early prototype used bare MPEG-TS streams, where each MPEG-TS packet has a fixed size of 188 bytes. Forwarding one network packet per MPEG-TS packet produced an extremely high packet rate that saturated the Gossipsub message queue and caused the stream to stall. The fix was to multiplex several MPEG-TS packets into a single larger RTP datagram: \texttt{mpegtsmux} with \texttt{alignment=7} groups seven 188-byte MPEG-TS packets into one 1316-byte RTP payload, reducing the packet rate by a factor of seven. The file-based testing pipeline goes further and adopts direct H.264-in-RTP payloading (\texttt{rtph264pay}) with a configurable MTU of 4096 bytes, eliminating the MPEG-TS layer entirely.
 
 \subsection{Workspace and crate structure}
-The Cargo workspace contains five members. Table~\ref{tab:crate-overview} lists each member's role and key external dependencies.
+The Cargo workspace contains five members. Table~\ref{tab:crate_overview} lists each member's role and key external dependencies.
 
 \begin{table}[htbp]
     \centering
     \caption{Workspace crate overview}
-    \label{tab:crate-overview}
+    \label{tab:crate_overview}
     \resizebox{\textwidth}{!}{%
         \begin{tabular}{|l|l|l|}
             \hline
@@ -347,10 +363,10 @@ The Cargo workspace contains five members. Table~\ref{tab:crate-overview} lists 
     }
 \end{table}
 
-All crates share a Tokio async runtime. The root binary (\texttt{p2p-stream}) integrates the recorder and renderer for interactive live use, while \texttt{stream\_test} drives the repeatable performance experiments described in \S\ref{sec:test-matrix}.
+All crates share a Tokio async runtime. The root binary (\texttt{p2p-stream}) integrates the recorder and renderer for interactive live use, while \texttt{stream\_test} drives the repeatable performance experiments described in \S\ref{sec:test_matrix}.
 
 \subsection{Shared data structures and trait interface}
-\label{sec:chunk-trait}
+\label{sec:chunk_trait}
 All transport variants carry video data as instances of \texttt{VideoStreamChunk}, defined in \texttt{libraries/network/src/protocol.rs}:
 
 \begin{Verbatim}[samepage=true]
@@ -380,7 +396,7 @@ pub trait P2PSwarm: Send + Sync {
 The trait exposes exactly two operations: read access to an \texttt{async\_channel} receiver that delivers inbound chunks, and an async method to enqueue an outbound chunk. Because all media components interact with the network only through this interface, the transport backend can be selected at runtime without any change to capture, rendering, or analysis code.
 
 \subsection{Screen recording crate}
-\label{sec:recorder-crate}
+\label{sec:recorder_crate}
 Live screen capture is implemented in \texttt{libraries/recorder} using the \texttt{ashpd} crate, which provides a Rust interface to the XDG Desktop Portal screen-cast service. The portal is the standard Wayland mechanism for delegating monitor and window selection and user permission prompts to the compositor; it is supported by all major Wayland compositors including GNOME Mutter and KDE KWin.
 
 The capture initialization sequence is as follows:
@@ -400,23 +416,27 @@ The file descriptor and node ID are passed directly into the GStreamer pipeline.
     \caption{Recorder pipeline}
 \end{figure}
 
-\label{sec:gstreamer-recorder}
+\label{sec:gstreamer_recorder}
 The GStreamer recorder pipeline elements and their relevant parameters are:
 \begin{itemize}
     \item \textbf{\texttt{pipewiresrc}} with \texttt{fd} and \texttt{path} set to the portal-provided file descriptor and PipeWire node ID --- ingests raw frames from PipeWire at the source capture rate.
     \item \textbf{\texttt{queue leaky=downstream}} --- a bounded queue that discards its oldest pending buffers when the downstream pipeline cannot keep up. Without this element, backpressure from a congested transport layer would propagate upstream and stall the compositor's screen capture.
     \item \textbf{\texttt{videorate}}, \textbf{\texttt{videoconvert}} --- normalize the frame rate to a constant target and convert the pixel format to one acceptable to the encoder.
     \item \textbf{\texttt{timeoverlay}} --- renders a wall-clock timestamp into each frame, useful for visual end-to-end latency verification.
-    \item \textbf{H.264 encoding, VA-API path:} \texttt{vaapipostproc} converts the frame to a VA-API surface; \texttt{vaapih264enc quality-level=6 bitrate=1000 keyframe-period=0} encodes it via hardware. A \texttt{keyframe-period} of zero instructs the hardware encoder to insert I-frames adaptively rather than at a fixed interval.
-    \item \textbf{H.264 encoding, software fallback:} if VA-API elements are unavailable at runtime, the pipeline substitutes an \texttt{identity} pass-through for the post-processor and \texttt{x264enc} (with \texttt{tune=zerolatency}, \texttt{speed-preset=ultrafast}, \texttt{bitrate=500}, and \texttt{keyframe-period=30}) for the encoder. The \texttt{zerolatency} tune disables B-frame look-ahead and internal output buffering, minimizing encoding latency at some cost to compression efficiency.
-    \item \textbf{\texttt{h264parse}} with \texttt{config-interval=1} --- instructs the parser to inject SPS and PPS parameter-set NAL units at every key-frame boundary. This allows a newly joining consumer, or one recovering from packet loss, to resynchronize immediately without waiting for the next natural key-frame.
+    \item \textbf{H.264 encoding, VA-API path:} \texttt{vaapipostproc} converts the frame to a VA-API surface.
+    \texttt{vaapih264enc quality-level=6 bitrate=1000 keyframe-period=0} encodes it via hardware.
+    A \texttt{keyframe-period} of zero instructs the hardware encoder to insert I-frames adaptively rather than at a fixed interval.
+    \item \textbf{H.264 encoding, software fallback:} if VA-API elements are unavailable at runtime, the pipeline substitutes an \texttt{identity} pass-through for the post-processor and \texttt{x264enc} (with \texttt{tune=zerolatency}, \texttt{speed-preset=ultrafast}, \texttt{bitrate=500}, and \texttt{keyframe-period=30}) for the encoder.
+    The \texttt{zerolatency} tune disables B-frame look-ahead and internal output buffering, minimizing encoding latency at some cost to compression efficiency.
+    \item \textbf{\texttt{h264parse}} with \texttt{config-interval=1} --- instructs the parser to inject SPS and PPS parameter-set NAL units at every key-frame boundary.
+    This allows a newly joining consumer, or one recovering from packet loss, to resynchronize immediately without waiting for the next natural key-frame.
     \item \textbf{\texttt{mpegtsmux alignment=7}} --- multiplexes the H.264 elementary stream into MPEG-TS and groups seven 188-byte MPEG-TS packets per output buffer, yielding 1316-byte payloads.
     \item \textbf{\texttt{rtpmp2tpay pt=33}} --- wraps each MPEG-TS payload in an RTP datagram using payload type 33, the IANA-registered type for MPEG-TS over RTP.
     \item \textbf{\texttt{appsink max-buffers=1 drop=true}} --- exposes RTP samples to application code. A buffer limit of one combined with \texttt{drop=true} discards any sample that arrives while the previous one has not yet been consumed, preventing unbounded memory growth under transport congestion.
 \end{itemize}
 
 \subsection{Rendering crate}
-\label{sec:renderer-crate}
+\label{sec:renderer_crate}
 Incoming RTP H.264 payloads are decoded and displayed by the \texttt{GstRenderer} struct in \texttt{libraries/renderer}. The renderer is built around the RTP H.264 format produced by the file-based test source (\texttt{rtph264pay pt=96}) and processes chunks through the following pipeline:
 
 \begin{figure}[H]
@@ -426,7 +446,9 @@ Incoming RTP H.264 payloads are decoded and displayed by the \texttt{GstRenderer
 \end{figure}
 
 \begin{itemize}
-    \item \textbf{\texttt{appsrc}} --- configured with RTP H.264 caps (\texttt{encoding-name=H264}, \texttt{payload=96}, and \texttt{clock-rate=90000}) plus \texttt{is-live=true}, \texttt{do-timestamp=false}, and \texttt{format=Time}. Declaring the caps before the first buffer arrives allows GStreamer to negotiate the downstream pipeline topology immediately.
+    \item \textbf{\texttt{appsrc}} --- configured with RTP H.264 caps and live timestamping.
+    Key caps are \texttt{encoding-name=H264}, \texttt{payload=96}, and \texttt{clock-rate=90000}.
+    Declaring the caps before the first buffer arrives allows GStreamer to negotiate the downstream pipeline topology immediately.
     \item \textbf{\texttt{rtpjitterbuffer latency=5000}} --- accumulates incoming RTP packets for up to 5000 milliseconds and reorders them by sequence number before passing them downstream. The large window absorbs worst-case reordering from Gossipsub's multi-hop mesh, trading initial latency for stable decoding order.
     \item \textbf{\texttt{rtph264depay}}, \textbf{\texttt{h264parse}} --- strip the RTP framing and reassemble NAL units into a continuous H.264 bytestream.
     \item \textbf{H.264 decoding, fallback chain:} \texttt{vaapih264dec low-latency=true} (hardware, VA-API) is tried first; \texttt{v4l2h264dec} (hardware, V4L2) second; \texttt{avdec\_h264} (software, libavcodec) third. The \texttt{low-latency} property on the VA-API decoder disables its internal frame reordering buffer, reducing decoder-introduced latency.
@@ -436,7 +458,9 @@ Incoming RTP H.264 payloads are decoded and displayed by the \texttt{GstRenderer
 
 \subsection{Transport layer crate}
 \label{sec:network_crate}
-The \texttt{libraries/network} crate provides two concrete implementations of the \texttt{P2PSwarm} trait. Both share the same underlying stack: QUIC transport over UDP listening on all interfaces at a random ephemeral port (\texttt{/ip4/0.0.0.0/udp/0/quic-v1}), and mDNS for automatic peer discovery on local networks.\cite{cheshireMulticastDNS2013} Each node generates a fresh Ed25519 keypair at startup, giving it a unique but ephemeral cryptographic identity for the duration of the session.\cite{turnerEdwardsEd25519Software2017}
+The \texttt{libraries/network} crate provides two concrete implementations of the \texttt{P2PSwarm} trait.
+Both share the same underlying stack: QUIC transport over UDP listening on all interfaces at a random ephemeral port (\texttt{/ip4/0.0.0.0/udp/0/quic-v1}), and mDNS for automatic peer discovery on local networks.\cite{cheshireMulticastDNS2013}
+Each node generates a fresh Ed25519 keypair at startup, giving it a unique but ephemeral cryptographic identity for the duration of the session.\cite{turnerEdwardsEd25519Software2017}
 
 \subsubsection{Gossipsub}
 The Gossipsub backend configures strict per-message authentication:
@@ -452,7 +476,8 @@ let gs = gossipsub::Behaviour::new(
 )?;
 \end{Verbatim}
 
-\texttt{ValidationMode::Strict} combined with \texttt{MessageAuthenticity::Signed} requires every Gossipsub message to carry a valid Ed25519 signature from its originating peer before it is forwarded through the mesh.\cite{turnerEdwardsEd25519Software2017} Each inbound message is validated and the outcome is reported back to the swarm: valid, fresh chunks receive \texttt{MessageAcceptance::Accept} and are forwarded; invalid or stale ones receive \texttt{MessageAcceptance::Reject} and are dropped immediately without further propagation.
+\texttt{ValidationMode::Strict} combined with \texttt{MessageAuthenticity::Signed} requires every Gossipsub message to carry a valid Ed25519 signature from its originating peer before it is forwarded through the mesh.\cite{turnerEdwardsEd25519Software2017}
+Each inbound message is validated and the outcome is reported back to the swarm: valid, fresh chunks receive \texttt{MessageAcceptance::Accept} and are forwarded; invalid or stale ones receive \texttt{MessageAcceptance::Reject} and are dropped immediately without further propagation.
 
 A 5-second TTL is applied to every accepted chunk. After CBOR deserialization, the implementation computes the chunk's age and rejects it if too old.\cite{bormannConciseBinaryObject2020}
 
@@ -469,15 +494,22 @@ if age > TTL {
 
 This prevents stale video frames from continuing to circulate after their playback window has closed, reducing unnecessary load on the mesh.
 
-Peers are managed through mDNS lifecycle events: on \texttt{mdns::Event::Discovered}, each new peer is dialed and added to the Gossipsub mesh via \texttt{add\_explicit\_peer}; on \texttt{mdns::Event::Expired}, it is removed via \texttt{remove\_explicit\_peer}.\cite{cheshireMulticastDNS2013} A shared, thread-safe peer set (\texttt{HashSet<PeerId>} guarded by an \texttt{Arc<RwLock>}) is kept current on every connection event.
+Peers are managed through mDNS lifecycle events.
+On discovery, each new peer is dialed and added to the Gossipsub mesh.
+On expiry, it is removed.\cite{cheshireMulticastDNS2013}
+A shared, thread-safe peer set (\texttt{HashSet<PeerId>} guarded by an \texttt{Arc<RwLock>}) is kept current on every connection event.
 
 \subsubsection{Practical saturation issue in Gossipsub}
-\label{sec:gossipsub-saturation}
-During development, the main practical issue of the Gossipsub transport was saturation under higher traffic. The observable symptom was that transmission gradually stalled: new chunks were still produced at the sender, but effective real-time delivery degraded until playback stopped progressing.
+\label{sec:gossipsub_saturation}
+During development, the main practical issue of the Gossipsub transport was saturation under higher traffic.
+The observable symptom was gradual stalling: new chunks were still produced at the sender, but real-time delivery degraded until playback stopped progressing.
 
-The bottleneck was not a single failing component but the interaction between packetization and processing cost. In the implementation repository, each inbound Gossipsub message must be deserialized from CBOR into \texttt{VideoStreamChunk} (see \path{libraries/network/src/gossipsub.rs}), and each outbound chunk is serialized and published through the mesh in the same transport backend. When packet rate increased, serialization/deserialization and mesh dispatch competed for runtime time slices and queue capacity.
+The bottleneck was not a single failing component but the interaction between packetization and processing cost.
+In the implementation repository, each inbound Gossipsub message must be deserialized from CBOR into \texttt{VideoStreamChunk} (see \path{libraries/network/src/gossipsub.rs}), and each outbound chunk is serialized and published through the mesh in the same transport backend.
+When packet rate increased, serialization/deserialization and mesh dispatch competed for runtime time slices and queue capacity.
 
-In practice, this behavior depended strongly on the ratio between bitrate and MTU. Higher bitrate increases the amount of payload generated per second, and smaller MTU splits the same payload into more packets; together they increase message frequency approximately proportionally to:
+In practice, this behavior depended strongly on the ratio between bitrate and MTU.
+Higher bitrate increases the amount of payload generated per second, and smaller MTU splits the same payload into more packets; together they increase message frequency approximately proportionally to:
 \[
 \text{messages per second} \propto \frac{\text{bitrate}}{\text{MTU}}.
 \]
@@ -490,7 +522,8 @@ The mitigation was applied in three steps:
     \item bitrate was reduced in unstable scenarios so that offered load stayed below the practical processing limit of the Gossipsub path.
 \end{itemize}
 
-This development issue explains why the practical evaluation in \S\ref{sec:test-matrix} varies both bitrate and MTU: these two parameters jointly determine whether Gossipsub remains stable for live media in this prototype. It also explains the observed trend in the analysis chapter (\S\ref{sec:analysis-mtu-1200-comparison}), where larger MTU substantially improves Gossipsub behavior under higher bitrates.
+This development issue explains why the practical evaluation in \S\ref{sec:test_matrix} varies both bitrate and MTU: these two parameters jointly determine whether Gossipsub remains stable for live media in this prototype.
+It also explains the observed trend in the analysis chapter (\S\ref{sec:analysis_mtu_1200_comparison}), where larger MTU substantially improves Gossipsub behavior under higher bitrates.
 
 \subsubsection{Stream}
 The Stream backend uses \texttt{libp2p\_stream} with a custom versioned protocol identifier:
@@ -507,7 +540,7 @@ On the sending side, each \texttt{send\_message} call serializes the chunk into 
 The same mDNS autodiscovery logic and shared peer set bookkeeping used in the Gossipsub backend are reused unchanged. The Stream backend does not apply a TTL filter; staleness checking is left to the receiving application.
 
 \subsection{Testing binary}
-\label{sec:test-binary}
+\label{sec:test_binary}
 The \texttt{stream\_test} binary is the primary tool for controlled experiments. It accepts two orthogonal command-line arguments via \texttt{clap}:
 
 \begin{itemize}
@@ -534,7 +567,7 @@ pub struct AnalysisItem {
 \end{itemize}
 
 \subsubsection{Video reader pipeline}
-\label{sec:video-reader-pipeline}
+\label{sec:video_reader_pipeline}
 The \texttt{VideoReader} in \texttt{libraries/video-reader} reads a pre-recorded MP4 file specified by the \texttt{VIDEO\_SOURCE} environment variable and emits it as a sequence of RTP H.264 \texttt{VideoStreamChunk} values at the file's original encoded frame rate. Its GStreamer pipeline is designed to produce output in the same RTP H.264 format as a live capture session, keeping test results directly comparable. The pipeline stages are:
 
 \begin{enumerate}
@@ -554,14 +587,15 @@ This section describes the systematic approach used to measure and evaluate tran
 \subsection{Test Setup and Data Source}
 All experiments use Big Buck Bunny to ensure repeatable and representative measurements.\cite{BigBuckBunny} It is a widely recognized open-source test video for streaming research and benchmarking. Big Buck Bunny provides a royalty-free, standardized stream with consistent motion complexity and codec characteristics across repeated runs. Using a file-based source instead of live screen capture eliminates variability caused by changing content, allowing transport behavior to be isolated from capture-side effects.
 
-The video is played through the \texttt{VideoReader} pipeline (described in \S\ref{sec:video-reader-pipeline}), which emits the same RTP H.264 format as the live recorder capture path. This ensures that test results faithfully represent the codec characteristics and packetization behavior of a real live streaming scenario.
+The video is played through the \texttt{VideoReader} pipeline (described in \S\ref{sec:video_reader_pipeline}), which emits the same RTP H.264 format as the live recorder capture path.
+This ensures that test results faithfully represent the codec characteristics and packetization behavior of a real live streaming scenario.
 
 \subsection{Test Matrix Design}
-\label{sec:test-matrix}
+\label{sec:test_matrix}
 The experimental evaluation employs a factorial test matrix structure to systematically isolate the effects of protocol choice, load, and packet size constraints:
 
 \begin{itemize}
-    \item \textbf{Protocols:} Two transport backends are compared: direct libp2p Streams (point-to-point, \S\ref{sec:stream-transport}) and Gossipsub (mesh-based, \S\ref{sec:gossipsub-transport}).
+    \item \textbf{Protocols:} Two transport backends are compared: direct libp2p Streams (point-to-point, \S\ref{sec:stream_transport}) and Gossipsub (mesh-based, \S\ref{sec:gossipsub_transport}).
     \item \textbf{Bitrates:} Four source bitrates are tested: 500 kbps, 2500 kbps, 5000 kbps, and 10000 kbps. These represent a range from low-quality smooth playback to high-quality stalls-prone conditions on constrained links.
     \item \textbf{Packet size (MTU):} Two packet sizes are tested: 1200 bytes (Internet-compatible baseline reflecting typical path MTU constraints) and 4096 bytes (jumbo-frame environments supporting larger payloads end-to-end).
     \item \textbf{Repetitions:} Ten runs per condition ensure statistical confidence in measurements and capture run-to-run variability in transport behavior.
@@ -574,7 +608,11 @@ The selection of bitrates reflects practical deployment scenarios: 500 kbps is t
 The MTU choice is particularly significant. MTU 1200 is chosen as the conservative baseline because it aligns with Internet-standard assumptions and avoids fragmentation across heterogeneous networks. MTU 4096 represents an optimized deployment scenario where jumbo frames are available end-to-end; results at this MTU reveal protocol behavior when packetization overhead is minimized.
 
 \subsection{Data Collection Workflow}
-Each experimental run employs the role-based \texttt{stream\_test} binary architecture described in \S\ref{sec:test-binary}. The manager process spawns two child processes, a producer and an analyzer, both with the same \texttt{--protocol} parameter. The producer instantiates the chosen transport swarm and streams Big Buck Bunny through the \texttt{VideoReader} pipeline (\S\ref{sec:video-reader-pipeline}).\cite{BigBuckBunny} Each RTP packet is wrapped in a \texttt{VideoStream\-Chunk} with creation timestamp and sequence index. The analyzer subscribes to the inbound channel and logs each received packet as an \texttt{AnalysisItem} record to CSV.
+Each experimental run employs the role-based \texttt{stream\_test} binary architecture described in \S\ref{sec:test_binary}.
+The manager process spawns two child processes, a producer and an analyzer, both with the same \texttt{--protocol} parameter.
+The producer instantiates the chosen transport swarm and streams Big Buck Bunny through the \texttt{VideoReader} pipeline (\S\ref{sec:video_reader_pipeline}).\cite{BigBuckBunny}
+Each RTP packet is wrapped in a \texttt{VideoStreamChunk} with creation timestamp and sequence index.
+The analyzer subscribes to the inbound channel and logs each received packet as an \texttt{AnalysisItem} record to CSV.
 
 Each \texttt{AnalysisItem} record contains four fields:
 \begin{Verbatim}[samepage=true]
@@ -609,7 +647,7 @@ The output of this pipeline includes:
 \end{itemize}
 
 \subsection{Metric Definitions}
-\label{sec:metric-definitions}
+\label{sec:metric_definitions}
 The following metrics are computed from raw packet sequences:
 
 \begin{itemize}
@@ -621,7 +659,7 @@ The following metrics are computed from raw packet sequences:
     
     \item \textbf{Packet reordering rate:} Count of packets received out of sequence as a percentage of total received packets. A packet is out-of-order if its index is less than some previously received index.
     
-    \item \textbf{Reorder depth:} For each out-of-order packet, the distance (in positions) the packet moved relative to its correct position. Reported as mean, max, and p95 reorder depth. High reorder depth indicates severe scrambling and requires larger receiver jitter buffers to compensate (see \S\ref{sec:delay-jitter} for discussion of reordering buffers in real-time media).
+    \item \textbf{Reorder depth:} For each out-of-order packet, the distance (in positions) the packet moved relative to its correct position. Reported as mean, max, and p95 reorder depth. High reorder depth indicates severe scrambling and requires larger receiver jitter buffers to compensate (see \S\ref{sec:delay_jitter} for discussion of reordering buffers in real-time media).
     
     \item \textbf{Goodput (throughput):} Total bytes successfully received divided by total elapsed time, expressed in Mbps. Reflects the effective data rate delivered to the application and accounts for any overhead or packet loss.
     
@@ -653,7 +691,7 @@ This section evaluates measured transport behavior using aggregated results from
 
 The analysis is structured around delay, packet ordering, and stability. Each subsection therefore focuses on one deployment question and then summarizes the operational implication.
 \subsection{MTU 1200 versus MTU 4096}
-\label{sec:analysis-mtu-1200-comparison}
+\label{sec:analysis_mtu_1200_comparison}
 \subsubsection{Delay behavior}
 At a high level, MTU 4096 provides better transport efficiency and lower delay variability, especially for Gossipsub at higher bitrates. However, MTU 1200 remains the practical baseline for Internet transport due to path MTU constraints and fragmentation risk across heterogeneous networks.
 
@@ -663,14 +701,14 @@ For Stream, both MTUs are stable, but MTU 4096 still improves latency. At 10000 
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/mtu/compare_delay_p95_by_mtu_5000kbps.png}
     \caption{p95 one-way delay by protocol at 5000 kbps, compared between MTU 1200 and MTU 4096.}
-    \label{fig:analysis-mtu-delay-p95-5000}
+    \label{fig:analysis_mtu_delay_p95_5000}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/mtu/compare_delay_p95_by_mtu_10000kbps.png}
     \caption{p95 one-way delay by protocol at 10000 kbps, compared between MTU 1200 and MTU 4096.}
-    \label{fig:analysis-mtu-delay-p95-10000}
+    \label{fig:analysis_mtu_delay_p95_10000}
 \end{figure}
 
 \subsubsection{Reordering and stability}
@@ -680,14 +718,14 @@ Reordering behavior confirms the same trend. For Gossipsub at 10000 kbps, misord
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/mtu/compare_misordered_bytes_rate_by_mtu_10000kbps.png}
     \caption{Misordered packet rate at 10000 kbps for MTU 1200 versus MTU 4096.}
-    \label{fig:analysis-mtu-misordered-rate-10000}
+    \label{fig:analysis_mtu_misordered_rate_10000}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/mtu/compare_stability_score_by_mtu_10000kbps.png}
     \caption{Composite stability score at 10000 kbps for MTU 1200 versus MTU 4096.}
-    \label{fig:analysis-mtu-stability-10000}
+    \label{fig:analysis_mtu_stability_10000}
 \end{figure}
 
 The practical consequence is that MTU 4096 is preferred where the network supports jumbo-like payloads end-to-end, but MTU 1200 must remain the default profile for general Internet operation.
@@ -702,7 +740,7 @@ At 500 kbps, Gossipsub already has higher delay than Stream (mean 18.36 ms vs. 3
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/bitrate/mtu_1200/compare_delay_p95_by_bitrate.png}
     \caption{p95 one-way delay by bitrate for MTU 1200, comparing Stream and Gossipsub.}
-    \label{fig:analysis-1200-delay-p95-bitrate}
+    \label{fig:analysis_1200_delay_p95_bitrate}
 \end{figure}
 At 10000 kbps, Gossipsub behavior changes from degraded to unstable: mean delay rises to 347.95 ms, p95 to 1159.8 ms, and maximum delay reaches 5428.9 ms. In the same condition, Stream remains at mean 33.08 ms, p95 123.7 ms, and maximum 499.8 ms.
 
@@ -710,14 +748,14 @@ At 10000 kbps, Gossipsub behavior changes from degraded to unstable: mean delay 
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/delay/mtu_1200/delay_spike_boxplot.png}
     \caption{Delay spike distribution for MTU 1200 conditions.}
-    \label{fig:analysis-1200-delay-spike-boxplot}
+    \label{fig:analysis_1200_delay_spike_boxplot}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/delay/bitrate/mtu_1200/delay_p95_by_bitrate_boxplot_gossipsub.png}
     \caption{Run-to-run p95 delay spread for Gossipsub at MTU 1200 by bitrate.}
-    \label{fig:analysis-1200-gossipsub-delay-boxplot}
+    \label{fig:analysis_1200_gossipsub_delay_boxplot}
 \end{figure}
 
 \subsubsection{Packet ordering}
@@ -727,7 +765,7 @@ Packet ordering metrics show the same escalation. Gossipsub misordered packet ra
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/bitrate/mtu_1200/compare_misorder_rate_by_bitrate.png}
     \caption{Misordered packet rate by bitrate for MTU 1200, comparing Stream and Gossipsub.}
-    \label{fig:analysis-1200-misorder-rate-bitrate}
+    \label{fig:analysis_1200_misorder_rate_bitrate}
 \end{figure}
 \subsubsection{Stability and recommendation}
 The composite stability score from the analysis scripts is included as a supplementary aggregate indicator. In MTU 1200 results, Stream stays in the high 80s at 500--5000 kbps and still averages 75.17 at 10000 kbps, while Gossipsub falls from 86.64 at 500 kbps to 75.88 at 2500 kbps, 67.07 at 5000 kbps, and 45.75 at 10000 kbps.
@@ -736,12 +774,12 @@ The composite stability score from the analysis scripts is included as a supplem
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/bitrate/mtu_1200/compare_stability_score_by_bitrate.png}
     \caption{Composite stability score by bitrate for MTU 1200.}
-    \label{fig:analysis-1200-stability-bitrate}
+    \label{fig:analysis_1200_stability_bitrate}
 \end{figure}
 
 For practical operation on MTU 1200 paths, results suggest a conservative recommendation: when using Gossipsub for media transport, keep bitrate around 5000 kbps or below. The transition to 10000 kbps causes large delay spikes and much worse ordering behavior, which would visibly degrade interactive playback quality.
 \subsection{MTU 4096 in jumbo-frame environments}
-\label{sec:analysis-mtu-4096}
+\label{sec:analysis_mtu_4096}
 \subsubsection{Delay behavior}
 When MTU 4096 is available end-to-end, both protocols improve, but the relative protocol ranking remains unchanged: Stream is still more stable and lower latency than Gossipsub.
 
@@ -751,7 +789,7 @@ At 10000 kbps and MTU 4096, Stream mean delay is 8.35 ms (p95 31.0 ms), while Go
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/bitrate/mtu_4096/compare_delay_p95_by_bitrate.png}
     \caption{p95 one-way delay by bitrate for MTU 4096, comparing Stream and Gossipsub.}
-    \label{fig:analysis-4096-delay-p95-bitrate}
+    \label{fig:analysis_4096_delay_p95_bitrate}
 \end{figure}
 \subsubsection{Packet ordering}
 Reordering also improves versus MTU 1200, although Gossipsub still exhibits nontrivial disorder at high bitrate (14.46\% misordered packets at 10000 kbps), whereas Stream remains near-zero.
@@ -760,13 +798,13 @@ Reordering also improves versus MTU 1200, although Gossipsub still exhibits nont
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/bitrate/mtu_4096/compare_misorder_rate_by_bitrate.png}
     \caption{Misordered packet rate by bitrate for MTU 4096, comparing Stream and Gossipsub.}
-    \label{fig:analysis-4096-misorder-rate-bitrate}
+    \label{fig:analysis_4096_misorder_rate_bitrate}
 \end{figure}
 
 The stability score mirrors the same pattern: at 10000 kbps, Stream averages 90.05 under MTU 4096, while Gossipsub rises to 81.12. Jumbo frames therefore improve stability substantially, but they do not remove the advantage of direct Stream delivery.
 
 \subsection{Analysis conclusion}
-\label{sec:analysis-conclusion}
+\label{sec:analysis_conclusion}
 The measurements lead to four clear conclusions.
 
 First, MTU 4096 is technically superior for this transport workload, especially for Gossipsub under high bitrate, because it reduces packet processing pressure and significantly improves delay, ordering, and stability metrics.
