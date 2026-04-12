@@ -357,7 +357,7 @@ All crates share a Tokio async runtime. The root binary (\texttt{p2p-stream}) in
 \label{sec:chunk-trait}
 All transport variants carry video data as instances of \texttt{VideoStreamChunk}, defined in \texttt{libraries/network/src/protocol.rs}:
 
-\begin{verbatim}
+\begin{Verbatim}[samepage=true]
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct VideoStreamChunk {
     #[serde(with = "serde_bytes")]
@@ -365,7 +365,7 @@ pub struct VideoStreamChunk {
     pub timestamp: SystemTime,
     pub index: u64,
 }
-\end{verbatim}
+\end{Verbatim}
 
 The three fields serve distinct purposes. \texttt{chunk} carries the raw RTP payload bytes; the \texttt{serde\_bytes} attribute instructs the CBOR serializer to encode it as a compact byte array rather than as a sequence of integers, which is important for throughput.\cite{bormannConciseBinaryObject2020} \texttt{timestamp} records the wall-clock time at which the chunk was created on the producer; the analyzer subtracts this from its local arrival time to derive per-packet latency. \texttt{index} is a monotonically increasing counter used to detect lost packets (gaps in the sequence) and out-of-order delivery (arrivals where \texttt{index} is less than the highest seen so far).
 
@@ -373,13 +373,13 @@ Serialization between peers uses CBOR via the \texttt{serde\_cbor} crate. CBOR i
 
 The \texttt{P2PSwarm} trait forms the interface boundary between media-handling and transport code:
 
-\begin{verbatim}
+\begin{Verbatim}[samepage=true]
 #[async_trait]
 pub trait P2PSwarm: Send + Sync {
     fn inbound_rx(&self) -> &Receiver<VideoStreamChunk>;
     async fn send_message(&mut self, chunk: VideoStreamChunk);
 }
-\end{verbatim}
+\end{Verbatim}
 
 The trait exposes exactly two operations: read access to an \texttt{async\_channel} receiver that delivers inbound chunks, and an async method to enqueue an outbound chunk. Because all media components interact with the network only through this interface, the transport backend can be selected at runtime without any change to capture, rendering, or analysis code.
 
@@ -445,7 +445,7 @@ The \texttt{libraries/network} crate provides two concrete implementations of th
 \subsubsection{Gossipsub}
 The Gossipsub backend configures strict per-message authentication:
 
-\begin{verbatim}
+\begin{Verbatim}[samepage=true]
 let gossipsub_config = gossipsub::ConfigBuilder::default()
     .validation_mode(gossipsub::ValidationMode::Strict)
     .validate_messages()
@@ -454,13 +454,13 @@ let gs = gossipsub::Behaviour::new(
     MessageAuthenticity::Signed(local_key.clone()),
     gossipsub_config,
 )?;
-\end{verbatim}
+\end{Verbatim}
 
 \texttt{ValidationMode::Strict} combined with \texttt{MessageAuthenticity::Signed} requires every Gossipsub message to carry a valid Ed25519 signature from its originating peer before it is forwarded through the mesh.\cite{turnerEdwardsEd25519Software2017} Each inbound message is validated and the outcome is reported back to the swarm: valid, fresh chunks receive \texttt{MessageAcceptance::Accept} and are forwarded; invalid or stale ones receive \texttt{MessageAcceptance::Reject} and are dropped immediately without further propagation.
 
 A 5-second TTL is applied to every accepted chunk. After CBOR deserialization, the implementation computes the chunk's age and rejects it if too old.\cite{bormannConciseBinaryObject2020}
 
-\begin{verbatim}
+\begin{Verbatim}[samepage=true]
 static TTL: Duration = Duration::from_secs(5);
 // ...
 let age = SystemTime::now()
@@ -469,7 +469,7 @@ let age = SystemTime::now()
 if age > TTL {
     // Reject — do not forward through the mesh
 }
-\end{verbatim}
+\end{Verbatim}
 
 This prevents stale video frames from continuing to circulate after their playback window has closed, reducing unnecessary load on the mesh.
 
@@ -499,10 +499,10 @@ This development issue explains why the practical evaluation in \S\ref{sec:test-
 \subsubsection{Stream}
 The Stream backend uses \texttt{libp2p\_stream} with a custom versioned protocol identifier:
 
-\begin{verbatim}
+\begin{Verbatim}[samepage=true]
 const STREAM_PROTOCOL: StreamProtocol
     = StreamProtocol::new("/stream");
-\end{verbatim}
+\end{Verbatim}
 
 On the receiving side, a dedicated Tokio task listens for incoming streams on the \texttt{/stream} protocol, spawning a sub-task per connection. Each sub-task reads the full payload with \texttt{read\_to\_end}, deserializes it from CBOR into a \texttt{VideoStreamChunk}, and forwards the result to the inbound channel.
 
@@ -524,7 +524,7 @@ The four roles operate as follows:
     \item \textbf{Manager} --- spawns two child processes of the same binary: one as \texttt{producer} and one as \texttt{analyzer}, both with the same \texttt{--protocol} flag. It waits for both children to exit or handles Ctrl+C by sending \texttt{SIGINT} to each child before joining them, ensuring clean shutdown of all media pipelines and transport tasks.
     \item \textbf{Producer} --- instantiates a \texttt{VideoReader} (described below) and the chosen transport swarm, then continuously sends every \texttt{VideoStreamChunk} produced by the video pipeline through \texttt{send\_message} until the source reaches end-of-stream.
     \item \textbf{Analyzer} --- subscribes to the inbound channel of the chosen swarm and records each received chunk as an \texttt{AnalysisItem}. After five seconds of inactivity, it writes all collected items to \texttt{Output.csv} using the \texttt{csv} crate:
-\begin{verbatim}
+\begin{Verbatim}[samepage=true]
 #[derive(Serialize)]
 pub struct AnalysisItem {
     creation_time: u128,
@@ -532,7 +532,7 @@ pub struct AnalysisItem {
     index: u64,
     size: u32,
 }
-\end{verbatim}
+\end{Verbatim}
     \texttt{creation\_time} and \texttt{arrival\_time} are UNIX timestamps in milliseconds; their difference gives per-packet one-way latency. \texttt{index} allows detection of lost and out-of-order packets. \texttt{size} is the chunk payload length plus 24 bytes for the serialized \texttt{timestamp} and \texttt{index} metadata.
     \item \textbf{Renderer} --- receives inbound chunks and pushes each raw byte payload to the renderer backend (\texttt{GstRenderer}). This produces a live decoded video window for visual inspection.
 \end{itemize}
@@ -581,7 +581,7 @@ The MTU choice is particularly significant. MTU 1200 is chosen as the conservati
 Each experimental run employs the role-based \texttt{stream\_test} binary architecture described in \S\ref{sec:test-binary}. The manager process spawns two child processes, a producer and an analyzer, both with the same \texttt{--protocol} parameter. The producer instantiates the chosen transport swarm and streams Big Buck Bunny through the \texttt{VideoReader} pipeline (\S\ref{sec:video-reader-pipeline}).\cite{BigBuckBunny} Each RTP packet is wrapped in a \texttt{VideoStream\-Chunk} with creation timestamp and sequence index. The analyzer subscribes to the inbound channel and logs each received packet as an \texttt{AnalysisItem} record to CSV.
 
 Each \texttt{AnalysisItem} record contains four fields:
-\begin{verbatim}
+\begin{Verbatim}[samepage=true]
 #[derive(Serialize)]
 pub struct AnalysisItem {
     creation_time: u128,
@@ -589,7 +589,7 @@ pub struct AnalysisItem {
     index: u64,
     size: u32,
 }
-\end{verbatim}
+\end{Verbatim}
 The \texttt{creation\_time} and \texttt{arrival\_time} fields (UNIX timestamps in milliseconds) enable computation of one-way packet latency. The \texttt{index} field (packet sequence number) allows detection of lost and out-of-order packets. The \texttt{size} field (chunk payload plus 24 bytes of serialized metadata) reflects the data volume processed by the transport layer.
 
 Both processes run on the same host with shared mDNS peer discovery (no external synchronization service required).\cite{cheshireMulticastDNS2013} One-way latency is computed as the difference between arrival and creation timestamps (assuming host-local clock synchronization). Packet loss is inferred from missing sequence numbers, and reordering is detected by comparing observed sequence order against the monotonically increasing index.

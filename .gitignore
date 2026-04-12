@@ -15,5 +15,8 @@ main.lot
 main.out
 main.toc
 main.synctex
+main.synctex(busy)
 main.atfi
 attachments/
+main.bcf
+main.run.xml
