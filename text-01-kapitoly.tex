@@ -304,11 +304,11 @@ The recorder pipeline performs rate normalization and encoding before handing pa
 The implementation uses low-latency settings such as bounded sink buffers and frame dropping when downstream is overloaded.
 This prevents unbounded queue growth during transport congestion.
 \subsection{Encoding}
-Two dominant open-source media stacks are FFmpeg and GStreamer. For this thesis, GStreamer was chosen because its graph-based pipeline model maps naturally to a modular experimental architecture where individual stages can be replaced without rewriting the full application.
+As discussed in \S\ref{sec:gstreamer_ffmpeg_theory}, the two dominant open-source media stacks considered for the encoding pipeline were FFmpeg and GStreamer.\cite{fFFmpegVsGStreamer2024} For this prototype, GStreamer was chosen because its graph-based pipeline model maps naturally to a modular experimental architecture where individual stages can be replaced dynamically.\cite{gstreamerTutorials2026,peroniEndtoEndPipelinePerspective2025}
 
-In practice, this enables hardware/software fallback at runtime (for both encoder and decoder), explicit insertion of RTP-related elements, and direct application integration through \texttt{appsink}/\texttt{appsrc}. The same design is used in both recorder and renderer crates, which simplifies debugging and keeps the media path explicit.
+While FFmpeg provides a highly optimized suite of command-line tools and libraries (\texttt{libavcodec}), integrating its components requires manual management of buffers and timing within the application.\cite{ffmpegDocumentation2026,fFFmpegVsGStreamer2024} In contrast, GStreamer abstracts these concerns through self-contained processing elements and negotiated pads, allowing the application to assemble complex paths at runtime without manual memory orchestration.\cite{gstreamerTutorials2026}
 
-The corresponding rendering pipeline accepts RTP H.264 payloads on \texttt{appsrc}, passes them through jitter buffering and depayloading, decodes with hardware-first fallback, converts the video format, and displays frames using \texttt{autovideosink}.
+In practice, this architecture enables the prototype to implement hardware-accelerated H.264 encoding and decoding with automatic software fallback. It also simplifies the integration of RTP packetization stages required for transport. The Rust application interfaces with these pipelines explicitly using \texttt{appsink} to capture outgoing payloads and \texttt{appsrc} to inject incoming data.\cite{peroniEndtoEndPipelinePerspective2025} This symmetrical design is used in both the recorder and renderer crates, which keeps the encoding logic completely decoupled from the experimental \ac{P2P} network transport.
 \subsection{Network Layer}
 The transport layer is built on libp2p, a modular 
 \ac{P2P} stack used in production decentralized systems.\cite{Libp2pIPFSDocs,Libp2pEthereumMerge}
