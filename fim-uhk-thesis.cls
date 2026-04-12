@@ -264,6 +264,9 @@
  \ifEqString{#1}{DEF}{#2}{\@department@CS}
  \ifEqString{#1}{DEF}{#2}{\@department@SK}
  \ifEqString{#1}{DEF}{#3}{\@department@EN}
+ \ifEqString{#1}{KIKM}{Katedra Informačních Technologií a Kvantitativních metod}{\@department@CS}
+ \ifEqString{#1}{KIKM}{Katedra Informačních Technologií a Kvantitativních metod}{\@department@SK}
+ \ifEqString{#1}{KIKM}{Department of Informatics and Quantitative Metohods}{\@department@EN}
  \ifnasel
  \else
    \typeout{Spatny ustav! Moznosti: KIT, DEF}\set@department{KIT}
