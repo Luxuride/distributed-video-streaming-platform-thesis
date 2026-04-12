@@ -237,14 +237,6 @@
     \renewcommand{\appendixname}{Príloha}
   \fi
  \appendixpage
-  
-  % Přílohy / Appendices
-  \IfFileExists{assignment.pdf}{%
-    \section*{Assignment}
-    \label{sec:appendix-assignment}
-    \addcontentsline{toc}{section}{Assignment}
-    \includepdf[pages=-,pagecommand={}]{assignment.pdf}
-  }{}
 
   \IfFileExists{attachments.zip}{%
     \section*{Combined Attachments Archive}
@@ -257,5 +249,11 @@
       \item \texttt{analysis.zip} --- analysis directory with generated plots and metrics.
     \end{itemize}
   }{}
-  
+
+  \newpage
+  \IfFileExists{assignment.pdf}{%
+    \section{Assignment}
+    \label{sec:appendix-assignment}
+    \includepdf[pages=-,pagecommand={}]{assignment.pdf}
+  }{}
 \end{document}
