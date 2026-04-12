@@ -101,6 +101,12 @@ jobs:
             echo "No attachment files were available to bundle."
           fi
 
+      - name: Generate appendix metadata
+        env:
+          APPENDIX_ACTION_RUN_ID: ${{ github.run_id }}
+        run: |
+          bash scripts/generate_appendix_submodule_info.sh
+
       - name: Build thesis PDF
         run: |
           nix develop -c bash -lc '

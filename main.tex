@@ -238,6 +238,10 @@
   \fi
  \appendixpage
 
+    \IfFileExists{generated/appendix-p2p-stream.tex}{%
+      \input{generated/appendix-p2p-stream.tex}
+    }{}
+
   \IfFileExists{attachments.zip}{%
     \section*{Combined Attachments Archive}
     \label{sec:attachments-combined}

@@ -20,3 +20,6 @@ main.atfi
 attachments/
 main.bcf
 main.run.xml
+generated/
+main.bcf-SAVE-ERROR
+main.bbl-SAVE-ERROR
