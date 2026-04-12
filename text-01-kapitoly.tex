@@ -1,5 +1,5 @@
 \section{Introduction}
-This thesis explores decentralized live video streaming using \ac{P2P} networking. The primary objective is to design and implement a functional prototype and evaluate its performance and stability under controlled conditions. The motivation is to address known limitations of centralized delivery models, including infrastructure cost concentration, operational single points of failure, and scaling constraints.
+This thesis explores decentralized live video streaming using \ac{P2P} networking. The primary objective is to design and implement a functional prototype and evaluate its performance and stability under controlled conditions. The motivation is to address known limitations of centralized delivery models, including infrastructure cost concentration, operational single points of failure, and scaling constraints.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012,peroniEndtoEndPipelinePerspective2025}
 
 Most production streaming systems currently rely on centralized origins and \ac{CDN} to deliver media.\cite{peroniEndtoEndPipelinePerspective2025} Although this model provides strong operational control and broad compatibility, provider-side outages demonstrate that central dependencies can still impact service availability at significant scale.\cite{ServiceHealthNov}
 
@@ -52,7 +52,7 @@ Streaming differs from simple progressive download because the receiver decodes 
 
 \subsubsection{Adaptive Bitrate Streaming}
 \label{sec:abr}
-\ac{ABR} streaming is the mechanism by which a player dynamically switches between multiple encoded representations of a video according to available bandwidth, buffer occupancy, and device capabilities. Without \ac{ABR}, a single high-quality stream stalls whenever the network cannot sustain the selected rate, while a low-bitrate stream underuses available capacity on better connections. \ac{ABR} logic is typically implemented client-side and depends on manifests listing available representations and segment locations. As summarized by Peroni, early classes of \ac{ABR} algorithms are commonly described as rate-based, buffer-based, or hybrid, while recent work also studies learning-based optimization using network traces and \ac{QoE} data.\cite{peroniEndtoEndPipelinePerspective2025}
+\ac{ABR} streaming is the mechanism by which a player dynamically switches between multiple encoded representations of a video according to available bandwidth, buffer occupancy, and device capabilities.\cite{peroniEndtoEndPipelinePerspective2025} Without \ac{ABR}, a single high-quality stream stalls whenever the network cannot sustain the selected rate, while a low-bitrate stream underuses available capacity on better connections. \ac{ABR} logic is typically implemented client-side and depends on manifests listing available representations and segment locations. As summarized by Peroni, early classes of \ac{ABR} algorithms are commonly described as rate-based, buffer-based, or hybrid, while recent work also studies learning-based optimization using network traces and \ac{QoE} data.\cite{peroniEndtoEndPipelinePerspective2025}
 
 \subsubsection{Streaming Protocols and Formats}
 Video streaming is not a single protocol but a family of delivery mechanisms. In mainstream deployments, HLS and MPEG-DASH dominate HTTP-based distribution.\cite{pantos_http_2017,noauthor_standards_nodate} RTSP and WebRTC are used in real-time and interactive scenarios.\cite{schulzrinneRealTimeStreamingProtocol2016,noauthor_webrtc_nodate,peroniEndtoEndPipelinePerspective2025}
@@ -140,7 +140,7 @@ In this thesis, loss behavior is measured at the transport level by analyzing ga
 The implementation applies practical loss-mitigation choices at multiple levels. Low-latency encoder settings are described in \S\ref{sec:gstreamer-recorder}, periodic SPS/PPS insertion (\texttt{h264parse config-interval=1}) supports faster decoder resynchronization after loss, and bounded queues prefer dropping stale buffers over unbounded latency growth. These architectural choices reflect a real-time priority: graceful degradation under loss is preferred over delayed playback of outdated frames.
 
 \section{Handling video streams}
-Common stream sources include cameras and computer screens. In raw form, these sources produce data volumes that are impractical for direct network transport.
+Common stream sources include cameras and computer screens. In raw form, these sources produce data volumes that are impractical for direct network transport.\cite{WebVideoCodec2025,apostolopoulosVideoStreamingConcepts}
 
 \begin{itemize}
     \item \begin{quote}A single frame of high definition (1920x1080) video in full color (4 bytes per pixel) is 8,294,400 bytes.\end{quote} \cite{WebVideoCodec2025}
@@ -228,7 +228,7 @@ FFmpeg provides a comprehensive multimedia toolchain with command-line tools and
 Besides command-line usage, FFmpeg exposes a set of developer libraries (for example, \texttt{libavcodec}, \texttt{libavformat}, and \texttt{libavfilter}) that applications can integrate when they need lower-level control over media workflows.\cite{ffmpegDocumentation2026}
 
 \subsubsection{Comparison and relevance}
-At the architectural level, the two frameworks expose different primary control surfaces: GStreamer emphasizes explicit graph composition inside application pipelines, while FFmpeg emphasizes command-line tools and reusable libraries.\cite{gstreamerTutorials2026,ffmpegDocumentation2026}
+At the architectural level, the two frameworks expose different primary control surfaces: GStreamer emphasizes explicit graph composition inside application pipelines, while FFmpeg emphasizes command-line tools and reusable libraries.\cite{gstreamerTutorials2026,ffmpegDocumentation2026,fFFmpegVsGStreamer2024}
 
 For live streaming research, this difference mainly affects how easily a prototype can isolate and replace one stage (for example, encoder, packetizer, or sink) while keeping the rest of the path stable, which is important for attributing observed latency or loss behavior to the intended experimental variable.\cite{peroniEndtoEndPipelinePerspective2025,apostolopoulosVideoStreamingConcepts}
 
@@ -296,8 +296,8 @@ In practice, this enables hardware/software fallback at runtime (for both encode
 The corresponding rendering pipeline accepts RTP H.264 payloads on \texttt{appsrc}, passes them through jitter buffering and depayloading, decodes with hardware-first fallback, converts the video format, and displays frames using \texttt{autovideosink}.
 \subsection{Network Layer}
 The transport layer is built on libp2p, a modular 
-\ac{P2P} stack used in production decentralized systems.
-The implementation uses \ac{QUIC} transport and mDNS peer discovery in local test networks, while higher-level dissemination logic is varied per protocol implementation.\cite{cheshireMulticastDNS2013}
+\ac{P2P} stack used in production decentralized systems.\cite{Libp2pIPFSDocs,Libp2pEthereumMerge}
+The implementation uses \ac{QUIC} transport and mDNS peer discovery in local test networks, while higher-level dissemination logic is varied per protocol implementation.\cite{thomsonUsingTLSSecure2021,cheshireMulticastDNS2013}
 
 All transport variants implement a common trait interface (
 \texttt{P2PSwarm}) with two operations: receive inbound chunks and enqueue outbound chunks. This abstraction allows producer/renderer/analyzer components to stay unchanged while only the transport strategy is replaced.
