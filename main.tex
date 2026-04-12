@@ -41,6 +41,10 @@
 \usepackage{url}
 \usepackage{pifont}
 \usepackage{setspace}
+\usepackage{csquotes}
+\usepackage[backend=biber,style=iso-numeric,urldate=iso]{biblatex}
+\addbibresource{text-02-literatura/text-02-literatura.bib}
+\AtBeginBibliography{\sloppy}
 
 \onehalfspacing
 
@@ -174,25 +178,16 @@
   % Pouzita literatura / Bibliography
   % ----------------------------------------------
 \pagebreak
-\ifslovak
-  \makeatletter
-  \def\@openbib@code{\addcontentsline{toc}{section}{Literatúra}}
-\else
-  \ifczech
-    \makeatletter
-    \def\@openbib@code{\addcontentsline{toc}{section}{Literatura}}
-  \else 
-    \makeatletter
-    \def\@openbib@code{\addcontentsline{toc}{section}{Bibliography}}
-  \fi
-\fi
-  \makeatother
-  \begin{flushleft}
   \label{references}
-
-  \bibliographystyle{iso690}
-  \bibliography{text-02-literatura/text-02-literatura}
-  \end{flushleft}
+  \ifslovak
+    \printbibliography[heading=bibintoc,title={Literatúra}]
+  \else
+    \ifczech
+      \printbibliography[heading=bibintoc,title={Literatura}]
+    \else
+      \printbibliography[heading=bibintoc,title={Bibliography}]
+    \fi
+  \fi
   
   \newpage
 

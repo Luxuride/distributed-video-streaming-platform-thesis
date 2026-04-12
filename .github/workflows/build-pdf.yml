@@ -105,14 +105,11 @@ jobs:
         run: |
           nix develop -c bash -lc '
             set -euo pipefail
-            rm -f main.pdf main.aux main.bbl main.blg main.fdb_latexmk main.fls main.lof main.log main.lot main.out main.toc main.synctex.gz
+            rm -f main.pdf main.aux main.bbl main.blg main.bcf main.run.xml main.fdb_latexmk main.fls main.lof main.log main.lot main.out main.toc main.synctex.gz
             mkdir -p out/recorder-pipeline out/renderer-pipeline
             plantuml -tpng recorder-pipeline.puml -o out/recorder-pipeline/
             plantuml -tpng renderer-pipeline.puml -o out/renderer-pipeline/
-            pdflatex --shell-escape -synctex=1 -interaction=nonstopmode -file-line-error main.tex
-            bibtex main
-            pdflatex --shell-escape -synctex=1 -interaction=nonstopmode -file-line-error main.tex
-            pdflatex --shell-escape -synctex=1 -interaction=nonstopmode -file-line-error main.tex
+            latexmk -pdf -shell-escape -synctex=1 -interaction=nonstopmode -file-line-error main.tex
             ! grep -E "Citation .* undefined|There were undefined references" main.log
             test -f main.pdf
           '
