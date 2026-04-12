@@ -42,6 +42,8 @@ repo_url="$(normalize_remote_url "${remote_url_raw}")"
 repo_url="${repo_url%.git}"
 
 commit_url="${repo_url}/tree/${commit_hash}"
+commit_url_base="${repo_url}/tree/"
+commit_hash_breakable="$(printf '%s' "${commit_hash}" | sed 's/.\{8\}/&\\\\allowbreak{}/g')"
 action_run_id="${APPENDIX_ACTION_RUN_ID:-${GITHUB_RUN_ID:-}}"
 if [ -n "${action_run_id}" ]; then
   workflow_runs_url="${repo_url}/actions/runs/${action_run_id}"
@@ -56,6 +58,8 @@ fi
 
 template_content="$(cat "${TEMPLATE_FILE}")"
 output_content="${template_content//__COMMIT_URL__/${commit_url}}"
+output_content="${output_content//__COMMIT_URL_BASE__/${commit_url_base}}"
+output_content="${output_content//__COMMIT_HASH_BREAKABLE__/${commit_hash_breakable}}"
 output_content="${output_content//__WORKFLOW_RUNS_URL__/${workflow_runs_url}}"
 
 printf '%s\n' "${output_content}" > "${OUTPUT_FILE}"
