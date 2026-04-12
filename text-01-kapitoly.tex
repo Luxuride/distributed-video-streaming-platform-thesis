@@ -206,6 +206,7 @@ The compressed bitstream is organized into \textit{NAL units} (Network Abstracti
 NAL units are serialized in one of two byte-stream formats: \textit{Annex B} (start-code prefixed, standard for broadcast and file storage) or \textit{AVCC} (length-prefixed, used inside MP4/MOV containers).\cite{jesup_rtp_2011}
 
 \subsubsection{RTP packetization}
+\label{sec:rtp_packetization}
 For real-time network delivery, NAL units are wrapped into RTP (Real-time Transport Protocol) packets as specified in RFC~6184\cite{jesup_rtp_2011} using the RTP header format defined in RFC~3550\cite{schulzrinne_rtp_2003}:
 \begin{itemize}
     \item \textbf{Fragmentation} --- A NAL unit larger than the path MTU (typically around 1400 bytes on Ethernet paths to avoid IP-level fragmentation) is split into \textit{Fragmentation Units} (FU-A), each sized to fit in a single IP datagram.\cite{jesup_rtp_2011}
@@ -283,8 +284,9 @@ The key design goal is separation of concerns:
 At the transport boundary, each packet is represented by a shared structure called VideoStreamChunk.
 It contains serialized media bytes, creation timestamp, and monotonic sequence index.
 This metadata enables the measurement methodology described later in \S\ref{sec:metric_definitions} (latency, packet loss, reordering, and throughput).
-The implementation evaluates two packetization contexts: a live recorder path using \ac{RTP} over MPEG-TS payloading, and a file-based test path using direct H.264-in-\ac{RTP} payloading.
-This distinction separates live-capture integration constraints from controlled transport benchmarking.
+Both the live recorder path and the file-based test path use direct H.264-in-\ac{RTP} payloading (\texttt{rtph264pay}), while differing in source and orchestration constraints.
+This keeps transport format consistent between interactive capture and controlled benchmarking.
+An earlier development variant used MPEG-TS packetization, which produced very small transport units and did not allow practical MTU tuning in this setup; this contributed to the Gossipsub saturation issue described in \S\ref{sec:gossipsub_saturation}.
 \subsection{Screen Recording}
 Screen capture is implemented for Wayland using the \texttt{ashpd} interface to the XDG desktop portal.
 This approach delegates monitor/window selection and user permissions to the compositor and portal service.
@@ -334,8 +336,6 @@ The current prototype does not implement a full authorization policy (e.g., allo
 
 \section{Current implementation}
 The implementation is organized as a Rust workspace consisting of four library crates and two executable binaries. The library crates handle distinct concerns --- screen capture, rendering, \ac{P2P} network transport, and file-based video reading --- while the binaries integrate them for live use and automated testing respectively.
-
-An early prototype used bare MPEG-TS streams, where each MPEG-TS packet has a fixed size of 188 bytes. Forwarding one network packet per MPEG-TS packet produced an extremely high packet rate that saturated the Gossipsub message queue and caused the stream to stall. The fix was to multiplex several MPEG-TS packets into a single larger RTP datagram: \texttt{mpegtsmux} with \texttt{alignment=7} groups seven 188-byte MPEG-TS packets into one 1316-byte RTP payload, reducing the packet rate by a factor of seven. The file-based testing pipeline goes further and adopts direct H.264-in-RTP payloading (\texttt{rtph264pay}) with a configurable MTU of 4096 bytes, eliminating the MPEG-TS layer entirely.
 
 \subsection{Workspace and crate structure}
 The Cargo workspace contains five members. Table~\ref{tab:crate_overview} lists each member's role and key external dependencies.
@@ -430,8 +430,7 @@ The GStreamer recorder pipeline elements and their relevant parameters are:
     The \texttt{zerolatency} tune disables B-frame look-ahead and internal output buffering, minimizing encoding latency at some cost to compression efficiency.
     \item \textbf{\texttt{h264parse}} with \texttt{config-interval=1} --- instructs the parser to inject SPS and PPS parameter-set NAL units at every key-frame boundary.
     This allows a newly joining consumer, or one recovering from packet loss, to resynchronize immediately without waiting for the next natural key-frame.
-    \item \textbf{\texttt{mpegtsmux alignment=7}} --- multiplexes the H.264 elementary stream into MPEG-TS and groups seven 188-byte MPEG-TS packets per output buffer, yielding 1316-byte payloads.
-    \item \textbf{\texttt{rtpmp2tpay pt=33}} --- wraps each MPEG-TS payload in an RTP datagram using payload type 33, the IANA-registered type for MPEG-TS over RTP.
+    \item \textbf{\texttt{rtph264pay mtu=\{configured\} pt=96}} --- packetizes H.264 NAL units directly into RTP datagrams with a configurable MTU; this parameter directly controls packet/message rate in the transport layer.
     \item \textbf{\texttt{appsink max-buffers=1 drop=true}} --- exposes RTP samples to application code. A buffer limit of one combined with \texttt{drop=true} discards any sample that arrives while the previous one has not yet been consumed, preventing unbounded memory growth under transport congestion.
 \end{itemize}
 
@@ -502,6 +501,10 @@ A shared, thread-safe peer set (\texttt{HashSet<PeerId>} guarded by an \texttt{A
 \label{sec:gossipsub_saturation}
 During development, the main practical issue of the Gossipsub transport was saturation under higher traffic.
 The observable symptom was gradual stalling: new chunks were still produced at the sender, but real-time delivery degraded until playback stopped progressing.
+
+The earliest prototype variant used MPEG-TS, where packetization produced fixed small packets (188-byte TS units). In that phase, practical MTU tuning was not available in the payloading path, so packet/message rate could not be reduced through MTU configuration. This led to very high message frequency and quickly saturated the Gossipsub path.
+
+After migration to direct H.264-in-RTP payloading (\texttt{rtph264pay}), MTU became explicitly configurable; from this point onward, packet rate became a controllable parameter in experiments and runtime tuning. With smaller MTU, large NAL units are fragmented into more RTP packets (see \S\ref{sec:rtp_packetization}), which still increases per-second message count and queue pressure.
 
 The bottleneck was not a single failing component but the interaction between packetization and processing cost.
 In the implementation repository, each inbound Gossipsub message must be deserialized from CBOR into \texttt{VideoStreamChunk} (see \path{libraries/network/src/gossipsub.rs}), and each outbound chunk is serialized and published through the mesh in the same transport backend.
@@ -576,7 +579,7 @@ The \texttt{VideoReader} in \texttt{libraries/video-reader} reads a pre-recorded
     \item \texttt{timeoverlay} --- embeds a wall-clock timestamp for visual end-to-end latency verification.
     \item \textbf{Re-encode:} preferred path: \texttt{vaapih264enc} with quality level 6 and bitrate 500. Fallback path: \texttt{x264enc} configured for zerolatency, ultrafast preset, bitrate 500, and keyframe period 30. Re-encoding produces a fresh H.264 stream with the same encoder settings as the live recorder, ensuring format and bitrate compatibility across test scenarios.
     \item \texttt{h264parse config-interval=1} --- injects inline SPS/PPS parameter sets.
-    \item \texttt{rtph264pay mtu=4096 pt=96} --- packetizes NAL units into RTP datagrams with payload type 96 and an MTU of $2^{12}$ = 4096 bytes. The large MTU produces substantially fewer packets per second than the 1316-byte MPEG-TS payloads of the recorder, reducing serialization and dispatch overhead in the transport layer.
+    \item \texttt{rtph264pay mtu=4096 pt=96} --- packetizes NAL units into RTP datagrams with payload type 96 and an MTU of $2^{12}$ = 4096 bytes. The large MTU produces substantially fewer packets per second than a smaller RTP MTU profile (e.g., 1200 bytes), reducing serialization and dispatch overhead in the transport layer.
     \item \texttt{appsink max-buffers=1 drop=true} --- exposes samples to application code with the same back-pressure policy as the recorder.
 \end{enumerate}
 
