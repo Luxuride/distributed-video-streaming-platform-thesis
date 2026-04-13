@@ -40,6 +40,8 @@ Or with `latexmk`:
 ```sh
 latexmk -pdf main
 ```
+## Develompent workflow
+- You can use `nix-shell -c` to run needed commands
 
 ## Key Conventions
 
@@ -52,6 +54,8 @@ latexmk -pdf main
 - Cite with `\cite{citekey}`, e.g. `\cite{schollmeierDefinitionPeertopeerNetworking2001}`
 - BibTeX keys follow pattern: `authorNameShortTitleYear`
  - Use citations wherever possible. If new sources are needed, search for them and note them, but expect the user to add them to Zotero and re-export the `.bib` file.
+- When adding citations, make sure to check it against full-text sources to ensure it is relevant and supports the point being made. Avoid making claims that are not supported by the cited source. If a claim is made that is not supported by the cited source, either find a different source that supports the claim or rephrase the claim to accurately reflect what the cited source says.
+- Never make up citations without verifying that the source actually supports the claim being made. If a citation is needed but cannot be found, it is better to omit the claim than to include an unsupported citation.
 
 ### Cross-references
 - Use `\label{sec:abr}` on sections/figures, reference with `\ref{sec:abr}` or `\S\ref{sec:abr}`
