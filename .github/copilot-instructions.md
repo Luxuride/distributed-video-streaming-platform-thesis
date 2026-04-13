@@ -51,7 +51,7 @@ latexmk -pdf main
 
 ### Citations
 - Bibliography style is `iso690` — entries go in `text-02-literatura/text-02-literatura.bib`
-- Cite with `\cite{citekey}`, e.g. `\cite{schollmeierDefinitionPeertopeerNetworking2001}`
+- Cite with `~\cite{citekey}`, e.g. `~\cite{schollmeierDefinitionPeertopeerNetworking2001}`
 - BibTeX keys follow pattern: `authorNameShortTitleYear`
  - Use citations wherever possible. If new sources are needed, search for them and note them, but expect the user to add them to Zotero and re-export the `.bib` file.
 - When adding citations, make sure to check it against full-text sources to ensure it is relevant and supports the point being made. Avoid making claims that are not supported by the cited source. If a claim is made that is not supported by the cited source, either find a different source that supports the claim or rephrase the claim to accurately reflect what the cited source says.
@@ -72,6 +72,7 @@ The `quote` environment is redefined (in `main.tex`) to render as inline italic 
 
 The implementation described covers:
 - **Recorder crate** — Wayland screen capture via `ashpd` → PipeWire FD → GStreamer pipeline → RTP/H.264 packets
-- **Renderer crate** — RTP packets → GStreamer decode pipeline → `autovideosink`  
-- **Transport layer** — Two libp2p implementations: Gossipsub (mesh, higher latency) vs. direct Stream (lower latency, no mesh)
-- **Testing** — QEMU/KVM VMs on Fedora Silverblue 43, Big Buck Bunny as test source, CSV-based metrics (latency, packet loss, sequence order, throughput)
+- **Renderer crate** — RTP packets → GStreamer decode pipeline → `autovideosink`
+- **Video Reader crate** — Raw Y4M video file reader (e.g., Big Buck Bunny) serving as a reproducible source for automated testing.
+- **Transport layer** — Three libp2p implementations: Gossipsub (mesh, higher latency), direct Stream (lower latency, no mesh), and a Hybrid approach (Gossipsub for control/spares, Stream for heavy payload).
+- **Testing & Analysis** — Automated testing framework to evaluate stream metrics (latency, packet loss, misordered packets, bitrate, MTU sizes). Analysis is done via R scripts (`analysis_metrics.R`) to generate comparison plots.
