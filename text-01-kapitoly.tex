@@ -3,7 +3,7 @@ This thesis explores decentralized live video streaming using \ac{P2P} networkin
 
 Most production streaming systems currently rely on centralized origins and \ac{CDN} to deliver media.~\cite{peroniEndtoEndPipelinePerspective2025} Although this model provides strong operational control and broad compatibility, provider-side outages demonstrate that central dependencies can still impact service availability at significant scale.~\cite{ServiceHealthNov}
 
-The thesis therefore examines whether \ac{P2P} transport can provide a practical complement for live distribution. It evaluates expected benefits such as resource sharing and resilience,\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} including potential cost reduction for large-scale delivery.~\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} It also evaluates expected trade-offs such as latency sensitivity, quality instability under churn, and security/governance requirements.~\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012,SecurityConsiderations}
+The thesis therefore examines whether \ac{P2P} transport can provide a practical complement for live distribution. It evaluates expected benefits such as resource sharing and resilience,~\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} including potential cost reduction for large-scale delivery.~\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} It also evaluates expected trade-offs such as latency sensitivity, quality instability under churn, and security/governance requirements.~\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012,SecurityConsiderations}
 
 The scope is live video streaming with emphasis on the transport layer.
 
@@ -74,7 +74,7 @@ In the context of this thesis, the most relevant part of that pipeline is the di
 
 Modern distribution pipelines also generate manifests (playlists) and implement adaptive bitrate (ABR) logic in the player. The player then selects among multiple encoded representations based on observed throughput and buffer state (see \S\ref{sec:abr}).~\cite{peroniEndtoEndPipelinePerspective2025} Manifest protocols such as HLS and MPEG-DASH are transported over HTTP, commonly on top of TCP.~\cite{pantos_http_2017,noauthor_standards_nodate} Any P2P replacement therefore needs to interoperate with or replicate these behaviours.
 
-Apostolopoulos describes the end-to-end streaming pipeline as follows:\cite{apostolopoulosVideoStreamingConcepts}
+Apostolopoulos describes the end-to-end streaming pipeline as follows:~\cite{apostolopoulosVideoStreamingConcepts}
 \begin{quote}
 The basic idea of video streaming is to split the video
 into parts, transmit these parts in succession, and enable the receiver to
@@ -106,7 +106,7 @@ This section narrows the focus from general concepts to transport-level constrai
 Core transport problems in video streaming include limited bandwidth, delay jitter, and packet loss rate.~\cite{apostolopoulosVideoStreamingConcepts} Overlay forwarding across multiple peers can additionally increase delay variation and out-of-order arrival in practice due to multi-path forwarding and asynchronous peer scheduling.
 
 \subsubsection{Bandwidth}
-Apostolopoulos describes the bandwidth constraint as follows:\cite{apostolopoulosVideoStreamingConcepts}
+Apostolopoulos describes the bandwidth constraint as follows:~\cite{apostolopoulosVideoStreamingConcepts}
 \begin{quote}
 The bandwidth available between two points in the Internet is generally
 unknown and time-varying. If the sender transmits faster than the available
@@ -118,7 +118,7 @@ bandwidth then the receiver produces sub-optimal video quality.
 This thesis addresses bandwidth management through two different transport architectures: direct libp2p Streams (\S\ref{sec:stream_transport}) and mesh-based Gossipsub (\S\ref{sec:gossipsub_transport}). Both approaches must handle variable available bandwidth while maintaining acceptable latency and delivery reliability. The evaluation framework tests these architectures across different bitrate and packet-size conditions, described in \S\ref{sec:test_matrix}.
 \subsubsection{Delay jitter}
 \label{sec:delay_jitter}
-Apostolopoulos describes delay jitter as follows:\cite{apostolopoulosVideoStreamingConcepts}
+Apostolopoulos describes delay jitter as follows:~\cite{apostolopoulosVideoStreamingConcepts}
 \begin{quote}
 The end-to-end delay that a packet experiences may fluctuate from packet to
 packet. This variation in end-to-end delay is referred to as the delay jitter.
@@ -130,7 +130,7 @@ can produce problems in the reconstructed video, e.g. jerks in the video.
 In practice, this effect is often more pronounced in mesh-like \ac{P2P} overlays. Packets can arrive out of order and must be reordered before decoding. If packets arrive too late for their playback deadline, they are effectively unusable for real-time rendering. Reordering buffers (jitter buffers) mitigate this issue but increase end-to-end latency.~\cite{schulzrinne_rtp_2003}
 
 \subsubsection{Loss rate}
-Apostolopoulos describes packet loss as follows:\cite{apostolopoulosVideoStreamingConcepts}
+Apostolopoulos describes packet loss as follows:~\cite{apostolopoulosVideoStreamingConcepts}
 \begin{quote}
 A number of different types of
 losses may occur, depending on the particular network under consideration.
@@ -153,10 +153,10 @@ These choices prioritize graceful degradation over delayed playback of outdated 
 Common stream sources include cameras and computer screens. In raw form, these sources produce data volumes that are impractical for direct network transport.~\cite{WebVideoCodec2025,apostolopoulosVideoStreamingConcepts}
 
 \begin{itemize}
-    \item \begin{quote}A single frame of high definition (1920x1080) video in full color (4 bytes per pixel) is 8,294,400 bytes.\end{quote} \cite{WebVideoCodec2025}
-    \item \begin{quote}At a typical 30 frames per second, each second of HD video would occupy 248,832,000 bytes (~249 MB).\end{quote} \cite{WebVideoCodec2025}
-    \item \begin{quote}A minute of HD video would need 14.93 GB of storage.\end{quote} \cite{WebVideoCodec2025}
-    \item \begin{quote}A fairly typical 30 minute video conference would need about 447.9 GB of storage, and a 2-hour movie would take almost 1.79 TB (that is, 1790 GB).\end{quote} \cite{WebVideoCodec2025}
+    \item \begin{quote}A single frame of high definition (1920x1080) video in full color (4 bytes per pixel) is 8,294,400 bytes.\end{quote}~\cite{WebVideoCodec2025}
+    \item \begin{quote}At a typical 30 frames per second, each second of HD video would occupy 248,832,000 bytes (~249 MB).\end{quote}~\cite{WebVideoCodec2025}
+    \item \begin{quote}A minute of HD video would need 14.93 GB of storage.\end{quote}~\cite{WebVideoCodec2025}
+    \item \begin{quote}A fairly typical 30 minute video conference would need about 447.9 GB of storage, and a 2-hour movie would take almost 1.79 TB (that is, 1790 GB).\end{quote}~\cite{WebVideoCodec2025}
 \end{itemize}
 
 The preceding calculation quantifies raw stream size for sources such as screen capture. The stream therefore must be encoded into a substantially more efficient representation before transport.
@@ -191,7 +191,7 @@ Before the compressed encoder can accept frames, several normalization steps ada
 \subsubsection{Intra-frame compression}
 An \textit{I-frame} (intra-coded frame) is encoded entirely from its own content, without reference to any other frame. It is therefore fully self-contained and can be decoded independently — a property essential for random access, stream join, and error recovery.~\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
-Intra-frame compression exploits spatial redundancy using block prediction, transform coding, and quantization. In practice, this means codecs preserve dominant visual structure while discarding less perceptually important detail to reduce bitrate.~\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025} For live streaming, periodic I-frames are critical because they allow late-joining receivers to synchronize\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025} and bound recovery time after loss.~\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
+Intra-frame compression exploits spatial redundancy using block prediction, transform coding, and quantization. In practice, this means codecs preserve dominant visual structure while discarding less perceptually important detail to reduce bitrate.~\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025} For live streaming, periodic I-frames are critical because they allow late-joining receivers to synchronize~\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025} and bound recovery time after loss.~\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
 \subsubsection{Inter-frame compression}
 After the first I-frame, subsequent frames are encoded as \textit{P-frames} (predictive) or \textit{B-frames} (bi-directionally predicted). These exploit \textit{temporal redundancy}: consecutive frames in video of natural scenes are nearly identical because most content moves slowly relative to the frame rate.~\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
@@ -204,7 +204,7 @@ The periodic insertion of I-frames is governed by the \textit{Group of Pictures}
 After transform and quantization, entropy coding removes remaining statistical redundancy losslessly to produce the final compressed bitstream.~\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
 \subsubsection{Network Abstraction Layer}
-The compressed bitstream is organized into \textit{NAL units} (Network Abstraction Layer units, defined in RFC~6184 for RTP transport\cite{jesup_rtp_2011}), which are self-delimiting data units designed to be carried over diverse network environments without knowledge of their contents:
+The compressed bitstream is organized into \textit{NAL units} (Network Abstraction Layer units, defined in RFC~6184 for RTP transport~\cite{jesup_rtp_2011}), which are self-delimiting data units designed to be carried over diverse network environments without knowledge of their contents:
 \begin{itemize}
     \item \textbf{SPS} (Sequence Parameter Set) --- carries codec-level configuration: profile, level, resolution, frame rate, and decoder buffer requirements. A decoder must receive at least one SPS before it can decode any picture data.~\cite{jesup_rtp_2011}
     \item \textbf{PPS} (Picture Parameter Set) --- carries per-picture encoding parameters (e.g., entropy coder selection, deblocking filter settings) referenced by slice headers.~\cite{jesup_rtp_2011}
@@ -214,7 +214,7 @@ NAL units are serialized in one of two byte-stream formats: \textit{Annex B} (st
 
 \subsubsection{RTP packetization}
 \label{sec:rtp_packetization}
-For real-time network delivery, NAL units are wrapped into RTP (Real-time Transport Protocol) packets as specified in RFC~6184\cite{jesup_rtp_2011} using the RTP header format defined in RFC~3550\cite{schulzrinne_rtp_2003}:
+For real-time network delivery, NAL units are wrapped into RTP (Real-time Transport Protocol) packets as specified in RFC~6184~\cite{jesup_rtp_2011} using the RTP header format defined in RFC~3550~\cite{schulzrinne_rtp_2003}:
 \begin{itemize}
     \item \textbf{Fragmentation} --- A NAL unit larger than the path MTU (typically around 1400 bytes on Ethernet paths to avoid IP-level fragmentation) is split into \textit{Fragmentation Units} (FU-A), each sized to fit in a single IP datagram.~\cite{jesup_rtp_2011}
     \item \textbf{Sequence number} --- A monotonically increasing 16-bit counter in each RTP packet allows the receiver to detect missing packets and restore arrival order, both of which are required before the H.264 decoder can assemble a complete frame.~\cite{schulzrinne_rtp_2003}
