@@ -562,9 +562,9 @@ The
 }
 compiled \texttt{stream\_test} testing binary and its runtime environment are built and distributed exclusively for Linux platforms both as a standard executable and an AppImage. 
 
-Distributing multimedia applications is notably complex. The official GStreamer documentation states: \begin{quote}Deploying a GStreamer application is slightly different from deploying a normal application because GStreamer is heavily modular and relies on a large number of shared libraries (plugins) loaded at runtime. If you want to distribute your application to computers that do not have GStreamer installed, you need to bundle GStreamer with your application.\end{quote}~\cite{gstreamerDeployingApplication2026} 
+Distributing multimedia applications is notably complex. According to the official GStreamer documentation, deploying an application to a target machine usually requires providing it in the form of a package or installer that bundles the necessary dependencies.~\cite{gstreamerDeployingApplication2026}
 
-To satisfy this requirement without forcing the user to install the exact set of required system libraries, the application is packaged as an AppImage. This cohesive format bundles the binary together with its entire sequence of GStreamer framework dependencies into a self-contained, isolated payload. 
+To satisfy this requirement without forcing the user to install the exact set of required system libraries, the application is packaged as an AppImage. This cohesive format bundles the binary together with its entire sequence of GStreamer framework dependencies into a self-contained, isolated payload.
 
 Other desktop platforms, such as Windows and macOS, were not targeted for two primary reasons. First, they do not support the Wayland display server protocol; implementing native screen capture pipelines for other operating systems represents a distinct engineering effort unrelated to the thesis's primary focus on evaluating the P2P transport layer. Second, these platforms lack a conceptually equivalent deployment format as straightforward as AppImage for seamlessly bundling deep, system-level multimedia dependencies into a single distributable artifact.
 
