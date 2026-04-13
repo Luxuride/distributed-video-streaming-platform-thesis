@@ -47,13 +47,17 @@ commit_url_short="${repo_url}/tree/${commit_hash_short}"
 commit_url_base="${repo_url}/tree/"
 commit_hash_breakable="$(printf '%s' "${commit_hash}" | sed 's/.\{8\}/&\\\\allowbreak{}/g')"
 commit_url_breakable="${commit_url_base}${commit_hash_breakable}"
-action_run_id="${APPENDIX_ACTION_RUN_ID:-${GITHUB_RUN_ID:-}}"
-if [ -n "${action_run_id}" ]; then
+
+api_url="${repo_url/https:\/\/github.com\//https:\/\/api.github.com\/repos\/}"
+run_id_output="$(curl -sL "${api_url}/actions/runs?head_sha=${commit_hash}" -H "Accept: application/vnd.github+json" || true)"
+run_id="$(echo "$run_id_output" | grep -o '"id": [0-9]*' | head -n 1 | grep -o '[0-9]*' || true)"
+
+if [ -n "$run_id" ]; then
   workflow_runs_url_base="${repo_url}/actions/runs/"
-  workflow_runs_url="${workflow_runs_url_base}${action_run_id}"
+  workflow_runs_url="${workflow_runs_url_base}${run_id}"
 else
-  workflow_runs_url_base="${repo_url}/actions/workflows/"
-  workflow_runs_url="${workflow_runs_url_base}rust.yml"
+  workflow_runs_url_base="${repo_url}/actions/"
+  workflow_runs_url="${workflow_runs_url_base}?query=commit%3A${commit_hash}"
 fi
 
 if [ ! -f "${TEMPLATE_FILE}" ]; then

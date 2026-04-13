@@ -106,8 +106,6 @@ jobs:
           fi
 
       - name: Generate appendix metadata
-        env:
-          APPENDIX_ACTION_RUN_ID: ${{ github.run_id }}
         run: |
           bash scripts/generate_appendix_submodule_info.sh
 
