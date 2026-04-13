@@ -242,7 +242,7 @@ Besides command-line usage, FFmpeg exposes a set of developer libraries (for exa
 
 \subsubsection{Comparison and relevance}
 At the architectural level, the two frameworks expose different primary control surfaces.
-GStreamer emphasizes explicit graph composition inside application pipelines, while FFmpeg emphasizes command-line tools and reusable libraries.~\cite{gstreamerTutorials2026,ffmpegDocumentation2026,fFFmpegVsGStreamer2024}
+GStreamer emphasizes explicit graph composition inside application pipelines, while FFmpeg emphasizes command-line tools and reusable libraries.~\cite{gstreamerTutorials2026,ffmpegDocumentation2026}
 
 For live streaming research, this difference mainly affects how easily a prototype can isolate and replace one stage (for example, encoder, packetizer, or sink) while keeping the rest of the path stable, which is important for attributing observed latency or loss behavior to the intended experimental variable.~\cite{peroniEndtoEndPipelinePerspective2025,apostolopoulosVideoStreamingConcepts}
 
@@ -311,9 +311,9 @@ The recorder pipeline performs rate normalization and encoding before handing pa
 The implementation uses low-latency settings such as bounded sink buffers and frame dropping when downstream is overloaded.
 This prevents unbounded queue growth during transport congestion.
 \subsection{Encoding}
-As discussed in \S\ref{sec:gstreamer_ffmpeg_theory}, the two dominant open-source media stacks considered for the encoding pipeline were FFmpeg and GStreamer.~\cite{fFFmpegVsGStreamer2024} For this prototype, GStreamer was chosen because its graph-based pipeline model maps naturally to a modular experimental architecture where individual stages can be replaced dynamically.~\cite{gstreamerTutorials2026,peroniEndtoEndPipelinePerspective2025}
+As discussed in \S\ref{sec:gstreamer_ffmpeg_theory}, the two dominant open-source media stacks considered for the encoding pipeline were FFmpeg and GStreamer. For this prototype, GStreamer was chosen because its graph-based pipeline model maps naturally to a modular experimental architecture where individual stages can be replaced dynamically.~\cite{gstreamerTutorials2026,peroniEndtoEndPipelinePerspective2025}
 
-While FFmpeg provides a highly optimized suite of command-line tools and libraries (\texttt{libavcodec}), integrating its components requires manual management of buffers and timing within the application.~\cite{ffmpegDocumentation2026,fFFmpegVsGStreamer2024} In contrast, GStreamer abstracts these concerns through self-contained processing elements and negotiated pads, allowing the application to assemble complex paths at runtime without manual memory orchestration.~\cite{gstreamerTutorials2026}
+While FFmpeg provides a highly optimized suite of command-line tools and libraries (\texttt{libavcodec}), integrating its components requires manual management of buffers and timing within the application.~\cite{ffmpegDocumentation2026} In contrast, GStreamer abstracts these concerns through self-contained processing elements and negotiated pads, allowing the application to assemble complex paths at runtime without manual memory orchestration.~\cite{gstreamerTutorials2026}
 
 In practice, this architecture enables the prototype to implement hardware-accelerated H.264 encoding and decoding with automatic software fallback. It also simplifies the integration of RTP packetization stages required for transport. The Rust application interfaces with these pipelines explicitly using \texttt{appsink} to capture outgoing payloads and \texttt{appsrc} to inject incoming data.~\cite{peroniEndtoEndPipelinePerspective2025} This symmetrical design is used in both the recorder and renderer crates, which keeps the encoding logic completely decoupled from the experimental \ac{P2P} network transport.
 \subsection{Network Layer}
