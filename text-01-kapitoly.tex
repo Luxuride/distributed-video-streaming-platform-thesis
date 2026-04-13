@@ -3,7 +3,7 @@ This thesis explores decentralized live video streaming using \ac{P2P} networkin
 
 Most production streaming systems currently rely on centralized origins and \ac{CDN} to deliver media.\cite{peroniEndtoEndPipelinePerspective2025} Although this model provides strong operational control and broad compatibility, provider-side outages demonstrate that central dependencies can still impact service availability at significant scale.\cite{ServiceHealthNov}
 
-The thesis therefore examines whether \ac{P2P} transport can provide a practical complement for live distribution. It evaluates expected benefits such as resource sharing and resilience,\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} including potential cost reduction for large-scale delivery.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} It also evaluates expected trade-offs such as latency sensitivity, quality instability under churn, and security/governance requirements.\cite{SecurityConsiderations}
+The thesis therefore examines whether \ac{P2P} transport can provide a practical complement for live distribution. It evaluates expected benefits such as resource sharing and resilience,\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} including potential cost reduction for large-scale delivery.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} It also evaluates expected trade-offs such as latency sensitivity, quality instability under churn, and security/governance requirements.\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012,SecurityConsiderations}
 
 The scope is live video streaming with emphasis on the transport layer.
 
@@ -159,7 +159,7 @@ A video codec addresses this by exploiting spatial and temporal redundancy, redu
 Encoding starts from raw captured frames (for example camera or screen frames), compresses them using codec-specific prediction and transform steps, and produces a compact bitstream while preserving target visual quality. The encoded stream is then packaged into a transport or container format that carries timing and synchronization metadata for playback.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
 \subsection{Video codec}
-A video codec is software (or hardware logic) that compresses and decompresses digital video. The term "codec" is a portmanteau of "coder and decoder" (or "compressor and decompressor"). Codecs are essential for reducing bitrate and storage requirements while maintaining acceptable visual quality.\cite{WebVideoCodec2025}
+A video codec is software (or hardware logic) that compresses and decompresses digital video. The term "codec" is a portmanteau of "coder and decoder" (or "compressor and decompressor"). Codecs are essential for reducing bitrate and storage requirements while maintaining acceptable visual quality.\cite{VideoCodec2025,WebVideoCodec2025}
 
 Codec selection is a practical trade-off between quality, bitrate efficiency, computational cost, hardware support, and licensing constraints.\cite{WebVideoCodec2025,apostolopoulosVideoStreamingConcepts} Although newer codecs can deliver better compression in some workloads, this thesis focuses on H.264 because it offers broad hardware acceleration support, mature tooling, and predictable interoperability across the used pipeline components.
 
@@ -194,7 +194,7 @@ Inter coding estimates motion between frames and stores compact motion vectors p
 The periodic insertion of I-frames is governed by the \textit{Group of Pictures} (GOP) parameter. A shorter GOP generally improves resilience to packet loss and late joins, while a longer GOP improves compression efficiency.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
 \subsubsection{Entropy coding}
-After transform and quantization, entropy coding removes remaining statistical redundancy losslessly to produce the final compressed bitstream. In H.264, CAVLC prioritizes lower complexity while CABAC provides better compression at higher computational cost.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025,jesup_rtp_2011}
+After transform and quantization, entropy coding removes remaining statistical redundancy losslessly to produce the final compressed bitstream.\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
 \subsubsection{Network Abstraction Layer}
 The compressed bitstream is organized into \textit{NAL units} (Network Abstraction Layer units, defined in RFC~6184 for RTP transport\cite{jesup_rtp_2011}), which are self-delimiting data units designed to be carried over diverse network environments without knowledge of their contents:
