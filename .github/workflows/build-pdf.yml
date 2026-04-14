@@ -60,11 +60,6 @@ jobs:
           lfs: true
           submodules: recursive
 
-      - name: Pull Git LFS objects
-        run: |
-          git lfs install --local
-          git lfs pull
-
       - name: Install Nix
         uses: cachix/install-nix-action@v31
         with:
@@ -76,7 +71,7 @@ jobs:
 
       - name: Download source attachments
         continue-on-error: true
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: source-attachments
           path: attachments
