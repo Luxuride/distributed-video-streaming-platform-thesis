@@ -464,7 +464,8 @@ Incoming RTP H.264 payloads are decoded and displayed by the \texttt{GstRenderer
 
 \subsection{Transport layer crate}
 \label{sec:network_crate}
-The \texttt{libraries/network} crate provides two concrete implementations of the \texttt{P2PSwarm} trait.
+The \texttt{libraries/network} crate provides two stable implementations of the \texttt{P2PSwarm} trait used in this thesis (Gossipsub and Stream).
+The repository also contains a Hybrid backend prototype, but it is currently in a non-functional experimental stage and is therefore excluded from the evaluated implementation.
 Both share the same underlying stack: QUIC transport over UDP listening on all interfaces at a random ephemeral port (\texttt{/ip4/0.0.0.0/udp/0/quic-v1}), and mDNS for automatic peer discovery on local networks.~\cite{cheshireMulticastDNS2013}
 Each node generates a fresh Ed25519 keypair at startup, giving it a unique but ephemeral cryptographic identity for the duration of the session.~\cite{josefssonEdwardsCurveDigitalSignature2017}
 
@@ -519,19 +520,40 @@ On the sending side, each \texttt{send\_message} call serializes the chunk into 
 
 The same mDNS autodiscovery logic and shared peer set bookkeeping used in the Gossipsub backend are reused unchanged. The Stream backend does not apply a TTL filter; staleness checking is left to the receiving application.
 
+\subsection{Video reader crate}
+\label{sec:video_reader_pipeline}
+\IfFileExists{generated/appendix-p2p-stream.tex}{%
+The \texttt{VideoReader} in \texttt{libraries/video-reader} is part of the implementation referenced in Appendix~\ref{sec:appendix-implementation-commit}.
+}{%
+The \texttt{VideoReader} in \texttt{libraries/video-reader} is part of the thesis implementation.
+}
+It reads a pre-recorded MP4 file provided either by the \texttt{--video-path} argument or the \texttt{VIDEO\_SOURCE} environment variable, and emits it as a sequence of RTP H.264 \texttt{VideoStreamChunk} values. Its GStreamer pipeline is designed to produce output in RTP H.264 format compatible with the rest of the transport and renderer path. The pipeline stages are:
+
+\begin{enumerate}
+    \item \texttt{filesrc} $\rightarrow$ \texttt{qtdemux} --- reads and demultiplexes the MP4 container; the H.264 elementary stream is exposed on a dynamic pad.
+    \item \texttt{h264parse} --- normalizes the H.264 bytestream.
+    \item \textbf{Decode:} \texttt{vaapih264dec} (hardware, VA-API) with fallback to \texttt{avdec\_h264} (software). Converting to raw frames is required for the subsequent re-encoding step.
+    \item \texttt{timeoverlay} --- embeds a wall-clock timestamp for visual end-to-end latency verification.
+    \item \textbf{Re-encode:} preferred path: \texttt{vaapih264enc} with configurable bitrate (from \texttt{--bitrate}), \texttt{keyframe-period=30}, and explicit \texttt{rate-control=cbr}. Fallback path: \texttt{x264enc} configured for \texttt{zerolatency}, \texttt{ultrafast}, configurable bitrate, CBR mode, \texttt{key-int-max=30}, and bytestream output.
+    \item \texttt{h264parse config-interval=1} --- injects inline SPS/PPS parameter sets.
+    \item \texttt{queue} --- provides decoupling before payloading.
+    \item \texttt{rtph264pay mtu=\{chunk\_size\} pt=96} --- packetizes NAL units into RTP datagrams with payload type 96 and configurable MTU (from \texttt{--chunk-size}, default $2^{12}$ = 4096 bytes). Larger MTU produces fewer packets per second than smaller RTP MTU profiles (e.g., 1200 bytes), reducing serialization and dispatch overhead in the transport layer.
+    \item \texttt{appsink max-buffers=1 drop=true} --- exposes samples to application code with the same back-pressure policy as the recorder.
+\end{enumerate}
+
 \subsection{Testing binary}
 \label{sec:test_binary}
 The \texttt{stream\_test} binary is the primary tool for controlled experiments. It accepts two orthogonal command-line arguments via \texttt{clap}:
 
 \begin{itemize}
     \item \textbf{\texttt{--protocol}} --- selects the transport backend: \texttt{gossipsub} or \texttt{stream}.
-    \item \textbf{\texttt{--role}} --- selects the operational role: \texttt{manager}, \texttt{producer}, \texttt{analyzer}, or \texttt{renderer}.
+    \item \textbf{\texttt{--role}} --- selects the operational role: \texttt{manager}, \texttt{producer}, \texttt{analyzer}, \texttt{renderer}, or \texttt{screen-producer}.
 \end{itemize}
 
-The four roles operate as follows:
+The roles primarily used in the evaluation operate as follows:
 \begin{itemize}
     \item \textbf{Manager} --- spawns two child processes of the same binary: one as \texttt{producer} and one as \texttt{analyzer}, both with the same \texttt{--protocol} flag. It waits for both children to exit or handles Ctrl+C by sending \texttt{SIGINT} to each child before joining them, ensuring clean shutdown of all media pipelines and transport tasks.
-    \item \textbf{Producer} --- instantiates a \texttt{VideoReader} (described below) and the chosen transport swarm, then continuously sends every \texttt{VideoStreamChunk} produced by the video pipeline through \texttt{send\_message} until the source reaches end-of-stream.
+    \item \textbf{Producer} --- instantiates a \texttt{VideoReader} (described in \S\ref{sec:video_reader_pipeline}) and the chosen transport swarm, then continuously sends every \texttt{VideoStreamChunk} produced by the video pipeline through \texttt{send\_message} until the source reaches end-of-stream.
     \item \textbf{Analyzer} --- subscribes to the inbound channel of the chosen swarm and records each received chunk as an \texttt{AnalysisItem}. After five seconds of inactivity, it writes all collected items to \texttt{Output.csv} using the \texttt{csv} crate:
 \begin{Verbatim}[samepage=true]
 #[derive(Serialize)]
@@ -544,22 +566,8 @@ pub struct AnalysisItem {
 \end{Verbatim}
     \texttt{creation\_time} and \texttt{arrival\_time} are UNIX timestamps in milliseconds; their difference gives per-packet one-way latency. \texttt{index} allows detection of lost and out-of-order packets. \texttt{size} is the chunk payload length plus 24 bytes for the serialized \texttt{timestamp} and \texttt{index} metadata.
     \item \textbf{Renderer} --- receives inbound chunks and pushes each raw byte payload to the renderer backend (\texttt{GstRenderer}). This produces a live decoded video window for visual inspection.
+    \item \textbf{Screen producer} --- captures live screen frames via the recorder crate instead of using the file-based \texttt{VideoReader}; this role is available in the implementation for non-file-based streaming scenarios.
 \end{itemize}
-
-\subsubsection{Video reader pipeline}
-\label{sec:video_reader_pipeline}
-The \texttt{VideoReader} in \texttt{libraries/video-reader} reads a pre-recorded MP4 file specified by the \texttt{VIDEO\_SOURCE} environment variable and emits it as a sequence of RTP H.264 \texttt{VideoStreamChunk} values at the file's original encoded frame rate. Its GStreamer pipeline is designed to produce output in the same RTP H.264 format as a live capture session, keeping test results directly comparable. The pipeline stages are:
-
-\begin{enumerate}
-    \item \texttt{filesrc} $\rightarrow$ \texttt{qtdemux} --- reads and demultiplexes the MP4 container; the H.264 elementary stream is exposed on a dynamic pad.
-    \item \texttt{h264parse} --- normalizes the H.264 bytestream.
-    \item \textbf{Decode:} \texttt{vaapih264dec} (hardware, VA-API) with fallback to \texttt{avdec\_h264} (software). Converting to raw frames is required for the subsequent re-encoding step.
-    \item \texttt{timeoverlay} --- embeds a wall-clock timestamp for visual end-to-end latency verification.
-    \item \textbf{Re-encode:} preferred path: \texttt{vaapih264enc} with quality level 6 and bitrate 500. Fallback path: \texttt{x264enc} configured for zerolatency, ultrafast preset, bitrate 500, and keyframe period 30. Re-encoding produces a fresh H.264 stream with the same encoder settings as the live recorder, ensuring format and bitrate compatibility across test scenarios.
-    \item \texttt{h264parse config-interval=1} --- injects inline SPS/PPS parameter sets.
-    \item \texttt{rtph264pay mtu=4096 pt=96} --- packetizes NAL units into RTP datagrams with payload type 96 and an MTU of $2^{12}$ = 4096 bytes. The large MTU produces substantially fewer packets per second than a smaller RTP MTU profile (e.g., 1200 bytes), reducing serialization and dispatch overhead in the transport layer.
-    \item \texttt{appsink max-buffers=1 drop=true} --- exposes samples to application code with the same back-pressure policy as the recorder.
-\end{enumerate}
 
 \subsubsection{Availability and distribution}
 \label{sec:availability_distribution}
