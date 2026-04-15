@@ -1,20 +1,22 @@
 @startuml
-left to right direction
-[*] --> appsrc
-appsrc: Input from application memory
-appsrc --> rtpjitterbuffer
-rtpjitterbuffer: Reorder RTP packets\nwhen they are out of order
-rtpjitterbuffer --> rtmp2tdepay
-rtmp2tdepay: RTP depayloader for RTMP
-rtmp2tdepay -right-> tsdemux
-tsdemux: Demux MPEG-TS stream
-tsdemux -up-> h264parse
+top to bottom direction
+appsrc: Input from application memory\n(application/x-rtp, H264, pt=96)
+rtpjitterbuffer: Reorder RTP packets\n(latency=5000)
 h264parse: Parse H.264 stream
-h264parse -up-> vaapih264dec
-vaapih264dec: Hardware H.264 decoding
-vaapih264dec -right-> videoconvert
+rtph264depay: RTP H.264 depayloader
+decoder: vaapih264dec\n(or v4l2h264dec/avdec_h264 fallback)
+postproc: vaapipostproc\n(optional)
 videoconvert: Convert video format
-videoconvert --> autovideosink
+dec_queue: Buffering queue
 autovideosink: Output to screen
-autovideosink --> [*]
+[*] -right-> appsrc
+appsrc -right-> rtpjitterbuffer
+rtpjitterbuffer -right-> rtph264depay
+rtph264depay -down-> h264parse
+h264parse -left-> decoder
+decoder -left-> postproc
+postproc -down-> videoconvert
+videoconvert -right-> dec_queue
+dec_queue -right-> autovideosink
+autovideosink -right-> [*]
 @enduml
