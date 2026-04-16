@@ -74,13 +74,13 @@ In the context of this thesis, the most relevant part of that pipeline is the di
 
 Modern distribution pipelines also generate manifests (playlists) and implement adaptive bitrate (ABR) logic in the player. The player then selects among multiple encoded representations based on observed throughput and buffer state (see \S\ref{sec:abr}).~\cite{peroniEndtoEndPipelinePerspective2025} Manifest protocols such as HLS and MPEG-DASH are transported over HTTP, commonly on top of TCP.~\cite{pantos_http_2017,noauthor_standards_nodate} Any P2P replacement therefore needs to interoperate with or replicate these behaviours.
 
-Apostolopoulos describes the end-to-end streaming pipeline as follows:~\cite{apostolopoulosVideoStreamingConcepts}
+Apostolopoulos describes the end-to-end streaming pipeline as follows:
 \begin{quote}
 The basic idea of video streaming is to split the video
 into parts, transmit these parts in succession, and enable the receiver to
 decode and playback the video as these parts are received, without having to
 wait for the entire video to be delivered.
-\end{quote}
+\end{quote}~\cite{apostolopoulosVideoStreamingConcepts}
 
 From a transport perspective, streaming can be represented by three logical roles:
 \begin{itemize}
@@ -106,31 +106,31 @@ This section narrows the focus from general concepts to transport-level constrai
 Core transport problems in video streaming include limited bandwidth, delay jitter, and packet loss rate.~\cite{apostolopoulosVideoStreamingConcepts} Overlay forwarding across multiple peers can additionally increase delay variation and out-of-order arrival in practice due to multi-path forwarding and asynchronous peer scheduling.
 
 \subsubsection{Bandwidth}
-Apostolopoulos describes the bandwidth constraint as follows:~\cite{apostolopoulosVideoStreamingConcepts}
+Apostolopoulos describes the bandwidth constraint as follows:
 \begin{quote}
 The bandwidth available between two points in the Internet is generally
 unknown and time-varying. If the sender transmits faster than the available
 bandwidth then congestion occurs, packets are lost, and there is a severe
 drop in video quality. If the sender transmits slower than the available
 bandwidth then the receiver produces sub-optimal video quality.
-\end{quote}
+\end{quote}~\cite{apostolopoulosVideoStreamingConcepts}
 
 This thesis addresses bandwidth management through two different transport architectures: direct libp2p Streams (\S\ref{sec:stream_transport}) and mesh-based Gossipsub (\S\ref{sec:gossipsub_transport}). Both approaches must handle variable available bandwidth while maintaining acceptable latency and delivery reliability. The evaluation framework tests these architectures across different bitrate and packet-size conditions, described in \S\ref{sec:test_matrix}.
 \subsubsection{Delay jitter}
 \label{sec:delay_jitter}
-Apostolopoulos describes delay jitter as follows:~\cite{apostolopoulosVideoStreamingConcepts}
+Apostolopoulos describes delay jitter as follows:
 \begin{quote}
 The end-to-end delay that a packet experiences may fluctuate from packet to
 packet. This variation in end-to-end delay is referred to as the delay jitter.
 Delay jitter is a problem because the receiver must receive/decode/display
 frames at a constant rate, and any late frames resulting from the delay jitter
 can produce problems in the reconstructed video, e.g. jerks in the video.
-\end{quote}
+\end{quote}~\cite{apostolopoulosVideoStreamingConcepts}
 
 In practice, this effect is often more pronounced in mesh-like \ac{P2P} overlays. Packets can arrive out of order and must be reordered before decoding. If packets arrive too late for their playback deadline, they are effectively unusable for real-time rendering. Reordering buffers (jitter buffers) mitigate this issue but increase end-to-end latency.~\cite{schulzrinne_rtp_2003}
 
 \subsubsection{Loss rate}
-Apostolopoulos describes packet loss as follows:~\cite{apostolopoulosVideoStreamingConcepts}
+Apostolopoulos describes packet loss as follows:
 \begin{quote}
 A number of different types of
 losses may occur, depending on the particular network under consideration.
@@ -140,7 +140,7 @@ wireless channels are typically afflicted by bit errors or burst errors. Losses
 can have a very destructive effect on the reconstructed video quality. To
 combat the effect of losses, a video streaming system is designed with error
 control.
-\end{quote}
+\end{quote}~\cite{apostolopoulosVideoStreamingConcepts}
 
 In this thesis, loss behavior is measured at the transport level by analyzing gaps in the monotonic packet index carried in each \texttt{VideoStreamChunk} (see \S\ref{sec:chunk_trait}).
 The metrics and methodology are documented in \S\ref{sec:metric_definitions}.
