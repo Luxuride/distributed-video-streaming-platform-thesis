@@ -19,7 +19,7 @@ During writing, GitHub Copilot was used as an auxiliary tool for generating draf
 \subsection{Author responsibility and verification}
 The author retains full responsibility for the final content of the thesis, including the correctness of factual claims, the selection and interpretation of sources, the accuracy of citations, the final proofreading of all text, and the verification of passages that were initially assisted by AI, and before final submission the complete manuscript was checked for consistency, technical accuracy, and compliance with the intended thesis structure.
 
-\section{Foundations of P2P Video Streaming}
+\section{Foundations of \ac{P2P} Video Streaming}
 \subsection{Peer-to-Peer}
 
 Peer-to-peer (\ac{P2P}) networking is a communication model where participating nodes (peers) can directly exchange data and services without relying exclusively on a permanently available central server.~\cite{xuAnalysisCDNP2P2006} In practical architecture discussions, \ac{P2P} systems are characterized by direct resource sharing between autonomous participants and reduced reliance on centralized delivery components.~\cite{xuAnalysisCDNP2P2006}
@@ -39,7 +39,7 @@ Mesh quality is maintained by periodic control loops (heartbeats) that rebalance
 
 Message acceptance is separated from transport reception through explicit validation rules.~\cite{SpecsPubsubGossipsub} In signed-message mode, each message carries origin authentication material so receivers can verify provenance before forwarding it further.~\cite{SpecsPubsubGossipsub} This model does not by itself implement full application-level authorization, but it provides a protocol-level trust primitive that can be combined with admission policies and abuse controls.~\cite{SecurityConsiderations} Peer scoring extends this mechanism by rewarding well-behaved forwarding and penalizing invalid, spam-like, or otherwise harmful traffic patterns.~\cite{SpecsPubsubGossipsub}
 
-In topic-based pub/sub, peers can join and leave topics while dissemination continues through currently connected participants.~\cite{WhatPublishSubscribe,SpecsPubsubGossipsub} For live media overlays, prior hybrid CDN-P2P studies report a recurring trade-off: multi-hop dissemination can improve reachability, but can also increase delay variation and out-of-order behavior relative to more direct paths.
+In topic-based pub/sub, peers can join and leave topics while dissemination continues through currently connected participants.~\cite{WhatPublishSubscribe,SpecsPubsubGossipsub} For live media overlays, prior hybrid \ac{CDN}-\ac{P2P} studies report a recurring trade-off: multi-hop dissemination can improve reachability, but can also increase delay variation and out-of-order behavior relative to more direct paths.
 
 In this thesis, these theoretical properties directly motivate the practical comparison between Gossipsub and direct Stream transport. The concrete implementation choices and runtime behavior of Gossipsub are described in \S\ref{sec:gossipsub_transport}, \S\ref{sec:transport_format_evolution}, and \S\ref{sec:gossipsub_saturation}, while measured delay, reordering, and stability effects are analyzed in \S\ref{sec:analysis_mtu_1200_comparison} and \S\ref{sec:analysis_mtu_4096}.
 
@@ -53,7 +53,7 @@ Despite its scaling limitations, the structural simplicity and optimal latency o
 \subsection{Video Streaming}
 Video streaming is a method of delivering video data over a network as a continuous flow, allowing playback without downloading the entire file in advance.~\cite{apostolopoulosVideoStreamingConcepts,peroniEndtoEndPipelinePerspective2025}
 
-The term covers both ``on-demand'' services (pre-recorded content fetched by the client) and ``live'' broadcasts where the stream is generated and consumed simultaneously.~\cite{peroniEndtoEndPipelinePerspective2025} In practice the distinction blurs: on-demand systems still deliver chunks progressively, and live systems may buffer a few seconds of content to tolerate network variability.~\cite{peroniEndtoEndPipelinePerspective2025} In current large-scale deployments, HTTP-based delivery (for example HLS and MPEG-DASH) is widely used because it aligns with existing web and CDN infrastructure.~\cite{pantos_http_2017,noauthor_standards_nodate}
+The term covers both ``on-demand'' services (pre-recorded content fetched by the client) and ``live'' broadcasts where the stream is generated and consumed simultaneously.~\cite{peroniEndtoEndPipelinePerspective2025} In practice the distinction blurs: on-demand systems still deliver chunks progressively, and live systems may buffer a few seconds of content to tolerate network variability.~\cite{peroniEndtoEndPipelinePerspective2025} In current large-scale deployments, HTTP-based delivery (for example HLS and MPEG-DASH) is widely used because it aligns with existing web and \ac{CDN} infrastructure.~\cite{pantos_http_2017,noauthor_standards_nodate}
 
 Streaming differs from simple progressive download because the receiver decodes and presents frames as they arrive.~\cite{apostolopoulosVideoStreamingConcepts} In adaptive systems, the delivered bitrate is adjusted according to network conditions (see \S\ref{sec:abr}).~\cite{peroniEndtoEndPipelinePerspective2025}
 
@@ -64,7 +64,7 @@ Streaming differs from simple progressive download because the receiver decodes 
 \subsubsection{Streaming Protocols and Formats}
 Video streaming is not a single protocol but a family of delivery mechanisms. In mainstream deployments, HLS and MPEG-DASH dominate HTTP-based distribution.~\cite{pantos_http_2017,noauthor_standards_nodate} RTSP and WebRTC are used in real-time and interactive scenarios.~\cite{schulzrinneRealTimeStreamingProtocol2016,noauthor_webrtc_nodate,peroniEndtoEndPipelinePerspective2025}
 
-These protocol families impose different transport expectations. Conventional HTTP-based systems inherit in-order delivery from the transport they use, typically TCP.~\cite{pantos_http_2017} The introduction of QUIC provides a secure, UDP-based multiplexed transport alternative; as defined in RFC~9001, it integrates \ac{TLS}~1.3 directly into the transport layer to provide confidentiality and integrity.~\cite{thomsonUsingTLSSecure2021} This integration supports connection establishment in fewer round trips than layered TCP and TLS handshakes.~\cite{thomsonUsingTLSSecure2021} Alternatively, bare \ac{RTP}/UDP-style delivery exposes network packet loss, jitter, and reordering directly to the application layer.~\cite{schulzrinne_rtp_2003} These contrasting transport characteristics motivate the use of QUIC as the underlying secure transport in this thesis's implementation (\S\ref{sec:network_crate}).
+These protocol families impose different transport expectations. Conventional HTTP-based systems inherit in-order delivery from the transport they use, typically TCP.~\cite{pantos_http_2017} The introduction of \ac{QUIC} provides a secure, UDP-based multiplexed transport alternative; as defined in RFC~9001, it integrates \ac{TLS}~1.3 directly into the transport layer to provide confidentiality and integrity.~\cite{thomsonUsingTLSSecure2021} This integration supports connection establishment in fewer round trips than layered TCP and \ac{TLS} handshakes.~\cite{thomsonUsingTLSSecure2021} Alternatively, bare \ac{RTP}/UDP-style delivery exposes network packet loss, jitter, and reordering directly to the application layer.~\cite{schulzrinne_rtp_2003} These contrasting transport characteristics motivate the use of \ac{QUIC} as the underlying secure transport in this thesis's implementation (\S\ref{sec:network_crate}).
 
 
 \subsubsection{Video Streaming Pipeline}
@@ -72,7 +72,7 @@ Peroni et al. describe the end-to-end streaming pipeline as a sequence of ingest
 
 In the context of this thesis, the most relevant part of that pipeline is the distribution stage, specifically the transport layer between producer and consumers. \ac{P2P} mechanisms are evaluated as alternatives to centralized distribution in this stage. Encoding and decoding aspects are also addressed because practical transport viability depends on media packetization format, decoder tolerance, and buffering behavior.
 
-Modern distribution pipelines also generate manifests (playlists) and implement adaptive bitrate (ABR) logic in the player. The player then selects among multiple encoded representations based on observed throughput and buffer state (see \S\ref{sec:abr}).~\cite{peroniEndtoEndPipelinePerspective2025} Manifest protocols such as HLS and MPEG-DASH are transported over HTTP, commonly on top of TCP.~\cite{pantos_http_2017,noauthor_standards_nodate} Any P2P replacement therefore needs to interoperate with or replicate these behaviours.
+Modern distribution pipelines also generate manifests (playlists) and implement adaptive bitrate (\ac{ABR}) logic in the player. The player then selects among multiple encoded representations based on observed throughput and buffer state (see \S\ref{sec:abr}).~\cite{peroniEndtoEndPipelinePerspective2025} Manifest protocols such as HLS and MPEG-DASH are transported over HTTP, commonly on top of TCP.~\cite{pantos_http_2017,noauthor_standards_nodate} Any \ac{P2P} replacement therefore needs to interoperate with or replicate these behaviours.
 
 Apostolopoulos describes the end-to-end streaming pipeline as follows:
 \begin{quote}
@@ -204,7 +204,7 @@ The periodic insertion of I-frames is governed by the \textit{Group of Pictures}
 After transform and quantization, entropy coding removes remaining statistical redundancy losslessly to produce the final compressed bitstream.~\cite{apostolopoulosVideoStreamingConcepts,WebVideoCodec2025}
 
 \subsubsection{Network Abstraction Layer}
-The compressed bitstream is organized into \textit{NAL units} (Network Abstraction Layer units, defined in RFC~6184 for RTP transport~\cite{jesup_rtp_2011}), which are self-delimiting data units designed to be carried over diverse network environments without knowledge of their contents:
+The compressed bitstream is organized into \textit{NAL units} (Network Abstraction Layer units, defined in RFC~6184 for \ac{RTP} transport~\cite{jesup_rtp_2011}), which are self-delimiting data units designed to be carried over diverse network environments without knowledge of their contents:
 \begin{itemize}
     \item \textbf{SPS} (Sequence Parameter Set) --- carries codec-level configuration: profile, level, resolution, frame rate, and decoder buffer requirements. A decoder must receive at least one SPS before it can decode any picture data.~\cite{jesup_rtp_2011}
     \item \textbf{PPS} (Picture Parameter Set) --- carries per-picture encoding parameters (e.g., entropy coder selection, deblocking filter settings) referenced by slice headers.~\cite{jesup_rtp_2011}
@@ -212,17 +212,17 @@ The compressed bitstream is organized into \textit{NAL units} (Network Abstracti
 \end{itemize}
 NAL units are serialized in one of two byte-stream formats: \textit{Annex B} (start-code prefixed, standard for broadcast and file storage) or \textit{AVCC} (length-prefixed, used inside MP4/MOV containers).~\cite{jesup_rtp_2011}
 
-\subsubsection{RTP packetization}
+\subsubsection{\ac{RTP} packetization}
 \label{sec:rtp_packetization}
-For real-time network delivery, NAL units are wrapped into RTP (Real-time Transport Protocol) packets as specified in RFC~6184~\cite{jesup_rtp_2011} using the RTP header format defined in RFC~3550~\cite{schulzrinne_rtp_2003}:
+For real-time network delivery, NAL units are wrapped into \ac{RTP} (Real-time Transport Protocol) packets as specified in RFC~6184~\cite{jesup_rtp_2011} using the \ac{RTP} header format defined in RFC~3550~\cite{schulzrinne_rtp_2003}:
 \begin{itemize}
-    \item \textbf{Fragmentation} --- A NAL unit larger than the path MTU (typically around 1400 bytes on Ethernet paths to avoid IP-level fragmentation) is split into \textit{Fragmentation Units} (FU-A), each sized to fit in a single IP datagram.~\cite{jesup_rtp_2011}
-    \item \textbf{Sequence number} --- A monotonically increasing 16-bit counter in each RTP packet allows the receiver to detect missing packets and restore arrival order, both of which are required before the H.264 decoder can assemble a complete frame.~\cite{schulzrinne_rtp_2003}
+    \item \textbf{Fragmentation} --- A NAL unit larger than the path \ac{MTU} (typically around 1400 bytes on Ethernet paths to avoid IP-level fragmentation) is split into \textit{Fragmentation Units} (FU-A), each sized to fit in a single IP datagram.~\cite{jesup_rtp_2011}
+    \item \textbf{Sequence number} --- A monotonically increasing 16-bit counter in each \ac{RTP} packet allows the receiver to detect missing packets and restore arrival order, both of which are required before the H.264 decoder can assemble a complete frame.~\cite{schulzrinne_rtp_2003}
     \item \textbf{Timestamp} --- A 32-bit timestamp based on a 90~kHz clock encodes the presentation time of the frame carried by the packet, enabling the receiver to schedule frames for display at the correct moment and to detect clock drift.~\cite{jesup_rtp_2011,schulzrinne_rtp_2003}
     \item \textbf{SSRC} (Synchronization Source Identifier) --- uniquely identifies the media source, allowing a receiver to demultiplex multiple streams arriving on the same socket.~\cite{schulzrinne_rtp_2003}
-    \item \textbf{Marker bit} --- set on the last RTP packet of each frame, signaling to the receiver that it may assemble all collected fragments and submit the complete frame to the decoder.~\cite{jesup_rtp_2011,schulzrinne_rtp_2003}
+    \item \textbf{Marker bit} --- set on the last \ac{RTP} packet of each frame, signaling to the receiver that it may assemble all collected fragments and submit the complete frame to the decoder.~\cite{jesup_rtp_2011,schulzrinne_rtp_2003}
 \end{itemize}
-The resulting RTP datagrams are handed off to the transport layer for delivery to consumers.
+The resulting \ac{RTP} datagrams are handed off to the transport layer for delivery to consumers.
 
 \subsection{GStreamer and FFmpeg}
 \label{sec:gstreamer_ffmpeg_theory}
@@ -258,7 +258,7 @@ Decentralized \ac{P2P} delivery can reduce single-operator dependence, but it st
 \subsection{Existing \ac{P2P} video streaming solutions}
 Existing \ac{P2P} streaming solutions often combine peer exchange with centralized infrastructure for bootstrap, fallback, or coordination.~\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012} This compromise preserves robustness under variable peer capacity while reducing provider bandwidth demand.~\cite{xuAnalysisCDNP2P2006,meskovicContentDeliveryArchitectures2012}
 
-P2P Media Loader illustrates this pattern by adding peer-assisted delivery to browser playback without removing the origin HTTP path.~\cite{NovageP2pmedialoader2025} The broader libp2p ecosystem provides reusable decentralized transport primitives, but low-latency live distribution still requires careful handling of timing, reordering, and fan-out behavior.~\cite{Libp2pIPFSDocs,SecurityConsiderations}
+\ac{P2P} Media Loader illustrates this pattern by adding peer-assisted delivery to browser playback without removing the origin HTTP path.~\cite{NovageP2pmedialoader2025} The broader libp2p ecosystem provides reusable decentralized transport primitives, but low-latency live distribution still requires careful handling of timing, reordering, and fan-out behavior.~\cite{Libp2pIPFSDocs,SecurityConsiderations}
 
 \subsection{Why fully decentralized live streaming is still uncommon}
 Despite the conceptual appeal of \ac{P2P} delivery, fully decentralized live video streaming remains less common in mainstream deployments than centralized or hybrid approaches. Live media is particularly sensitive to transport instability, and the architectural trade-offs are fundamental: mesh-style dissemination improves resilience by allowing multi-hop forwarding, but each additional hop increases delay and reordering. Conversely, direct sender-to-receiver paths minimize latency but require the producer to maintain connections to many consumers. This tension is central to this thesis and directly motivates the comparison between Gossipsub (mesh-based, resilient but higher latency) and direct libp2p streams (low-latency but less scalable).
@@ -281,10 +281,10 @@ This makes it possible to keep capture, transport, and rendering in one language
 The implementation repository is organized as a Rust workspace with reusable library crates and executable binaries.
 The key design goal is separation of concerns:
 \begin{itemize}
-    \item \textbf{Media capture / source layer} --- produces RTP payloads from either live screen capture or a deterministic file source used in testing.
+    \item \textbf{Media capture / source layer} --- produces \ac{RTP} payloads from either live screen capture or a deterministic file source used in testing.
     \item \textbf{Transport layer} --- abstracts 
     \ac{P2P} communication behind a common trait so multiple transport strategies can be evaluated with the same producer and consumer logic.
-    \item \textbf{Rendering / sink layer} --- accepts incoming RTP payloads and decodes them to a local video sink.
+    \item \textbf{Rendering / sink layer} --- accepts incoming \ac{RTP} payloads and decodes them to a local video sink.
     \item \textbf{Testing orchestration layer} --- runs producer, renderer, and analyzer roles for repeatable experiments and CSV export.
 \end{itemize}
 
@@ -293,7 +293,7 @@ It contains serialized media bytes, creation timestamp, and monotonic sequence i
 This metadata enables the measurement methodology described later in \S\ref{sec:metric_definitions} (latency, packet loss, reordering, and throughput).
 Both the live recorder path and the file-based test path use direct H.264-in-\ac{RTP} payloading (\texttt{rtph264pay}), while differing in source and orchestration constraints.
 This keeps transport format consistent between interactive capture and controlled benchmarking.
-The format used at the transport boundary evolved during development from earlier non-RTP variants to the final RTP-based path. This evolution and its relation to packet ordering and saturation behavior are described in \S\ref{sec:transport_format_evolution} and \S\ref{sec:gossipsub_saturation}.
+The format used at the transport boundary evolved during development from earlier non-\ac{RTP} variants to the final \ac{RTP}-based path. This evolution and its relation to packet ordering and saturation behavior are described in \S\ref{sec:transport_format_evolution} and \S\ref{sec:gossipsub_saturation}.
 \subsection{Screen Recording}
 Screen capture is implemented for Wayland using the \texttt{ashpd} interface to the XDG desktop portal.
 This approach delegates monitor/window selection and user permissions to the compositor and portal service.
@@ -305,7 +305,7 @@ The recorder pipeline performs rate normalization and encoding before handing pa
     \item \texttt{pipewiresrc} $\rightarrow$ \texttt{videorate} $\rightarrow$ \texttt{videoconvert} for acquisition and normalization,
     \item \texttt{timeoverlay} for visible timing/debug annotation,
     \item hardware-first H.264 encoding (VA-API) with automatic fallback to software \texttt{x264enc},
-    \item parser/mux/payloader stages that produce RTP payloads consumed via \texttt{appsink}.
+    \item parser/mux/payloader stages that produce \ac{RTP} payloads consumed via \texttt{appsink}.
 \end{itemize}
 
 The implementation uses low-latency settings such as bounded sink buffers and frame dropping when downstream is overloaded.
@@ -315,7 +315,7 @@ As discussed in \S\ref{sec:gstreamer_ffmpeg_theory}, the two dominant open-sourc
 
 While FFmpeg provides a highly optimized suite of command-line tools and libraries (\texttt{libavcodec}), integrating its components requires manual management of buffers and timing within the application.~\cite{ffmpegDocumentation2026} In contrast, GStreamer abstracts these concerns through self-contained processing elements and negotiated pads, allowing the application to assemble complex paths at runtime without manual memory orchestration.~\cite{gstreamerTutorials2026}
 
-In practice, this architecture enables the prototype to implement hardware-accelerated H.264 encoding and decoding with automatic software fallback. It also simplifies the integration of RTP packetization stages required for transport. The Rust application interfaces with these pipelines explicitly using \texttt{appsink} to capture outgoing payloads and \texttt{appsrc} to inject incoming data.~\cite{peroniEndtoEndPipelinePerspective2025} This symmetrical design is used in both the recorder and renderer crates, which keeps the encoding logic completely decoupled from the experimental \ac{P2P} network transport.
+In practice, this architecture enables the prototype to implement hardware-accelerated H.264 encoding and decoding with automatic software fallback. It also simplifies the integration of \ac{RTP} packetization stages required for transport. The Rust application interfaces with these pipelines explicitly using \texttt{appsink} to capture outgoing payloads and \texttt{appsrc} to inject incoming data.~\cite{peroniEndtoEndPipelinePerspective2025} This symmetrical design is used in both the recorder and renderer crates, which keeps the encoding logic completely decoupled from the experimental \ac{P2P} network transport.
 \subsection{Network Layer}
 The transport layer is built on libp2p, a modular 
 \ac{P2P} stack used in production decentralized systems.~\cite{Libp2pIPFSDocs,Libp2pEthereumMerge}
@@ -356,13 +356,13 @@ The Cargo workspace contains five members. Table~\ref{tab:crate_overview} lists 
             \hline
             \textbf{Crate} & \textbf{Role} & \textbf{Key dependencies} \\
             \hline
-            \texttt{libraries/recorder}     & Live Wayland screen capture $\rightarrow$ RTP output   & \texttt{ashpd}, \texttt{gstreamer} \\
+            \texttt{libraries/recorder}     & Live Wayland screen capture $\rightarrow$ \ac{RTP} output   & \texttt{ashpd}, \texttt{gstreamer} \\
             \hline
-            \texttt{libraries/renderer}     & RTP H.264 input $\rightarrow$ decoded video display     & \texttt{gstreamer}, \texttt{gst-app} \\
+            \texttt{libraries/renderer}     & \ac{RTP} H.264 input $\rightarrow$ decoded video display     & \texttt{gstreamer}, \texttt{gst-app} \\
             \hline
             \texttt{libraries/network}      & \ac{P2P} transport backends                             & \texttt{libp2p}, \texttt{serde\_cbor}, \texttt{tokio} \\
             \hline
-            \texttt{libraries/video-reader} & File-based RTP source for testing                       & \texttt{gstreamer}, \texttt{tokio} \\
+            \texttt{libraries/video-reader} & File-based \ac{RTP} source for testing                       & \texttt{gstreamer}, \texttt{tokio} \\
             \hline
             \texttt{stream\_test}           & Testing and orchestration binary                        & all above, \texttt{clap}, \texttt{csv} \\
             \hline
@@ -386,7 +386,7 @@ pub struct VideoStreamChunk {
 }
 \end{Verbatim}
 
-The three fields serve distinct purposes. \texttt{chunk} carries the raw RTP payload bytes; the \texttt{serde\_bytes} attribute instructs the CBOR serializer to encode it as a compact byte array rather than as a sequence of integers, which is important for throughput.~\cite{bormannConciseBinaryObject2020} \texttt{timestamp} records the wall-clock time at which the chunk was created on the producer; the analyzer subtracts this from its local arrival time to derive per-packet latency. \texttt{index} is a monotonically increasing counter used to detect lost packets (gaps in the sequence) and out-of-order delivery (arrivals where \texttt{index} is less than the highest seen so far).
+The three fields serve distinct purposes. \texttt{chunk} carries the raw \ac{RTP} payload bytes; the \texttt{serde\_bytes} attribute instructs the CBOR serializer to encode it as a compact byte array rather than as a sequence of integers, which is important for throughput.~\cite{bormannConciseBinaryObject2020} \texttt{timestamp} records the wall-clock time at which the chunk was created on the producer; the analyzer subtracts this from its local arrival time to derive per-packet latency. \texttt{index} is a monotonically increasing counter used to detect lost packets (gaps in the sequence) and out-of-order delivery (arrivals where \texttt{index} is less than the highest seen so far).
 
 Serialization between peers uses CBOR via the \texttt{serde\_cbor} crate. CBOR is a compact binary encoding that handles raw byte arrays natively and requires no schema, making it straightforward to extend the structure without a versioning step.~\cite{bormannConciseBinaryObject2020}
 
@@ -437,13 +437,13 @@ The GStreamer recorder pipeline elements and their relevant parameters are:
     The \texttt{zerolatency} tune disables B-frame look-ahead and internal output buffering, minimizing encoding latency at some cost to compression efficiency.
     \item \textbf{\texttt{h264parse}} with \texttt{config-interval=1} --- instructs the parser to inject SPS and PPS parameter-set NAL units at every key-frame boundary.
     This allows a newly joining consumer, or one recovering from packet loss, to resynchronize immediately without waiting for the next natural key-frame.
-    \item \textbf{\texttt{rtph264pay mtu=\{configured\} pt=96}} --- packetizes H.264 NAL units directly into RTP datagrams with a configurable MTU; this parameter directly controls packet/message rate in the transport layer.
-    \item \textbf{\texttt{appsink max-buffers=1 drop=true}} --- exposes RTP samples to application code. A buffer limit of one combined with \texttt{drop=true} discards any sample that arrives while the previous one has not yet been consumed, preventing unbounded memory growth under transport congestion.
+    \item \textbf{\texttt{rtph264pay mtu=\{configured\} pt=96}} --- packetizes H.264 NAL units directly into \ac{RTP} datagrams with a configurable \ac{MTU}; this parameter directly controls packet/message rate in the transport layer.
+    \item \textbf{\texttt{appsink max-buffers=1 drop=true}} --- exposes \ac{RTP} samples to application code. A buffer limit of one combined with \texttt{drop=true} discards any sample that arrives while the previous one has not yet been consumed, preventing unbounded memory growth under transport congestion.
 \end{itemize}
 
 \subsection{Rendering crate}
 \label{sec:renderer_crate}
-Incoming RTP H.264 payloads are decoded and displayed by the \texttt{GstRenderer} struct in \texttt{libraries/renderer}. The renderer is built around the RTP H.264 format produced by the file-based test source (\texttt{rtph264pay pt=96}) and processes chunks through the following pipeline:
+Incoming \ac{RTP} H.264 payloads are decoded and displayed by the \texttt{GstRenderer} struct in \texttt{libraries/renderer}. The renderer is built around the \ac{RTP} H.264 format produced by the file-based test source (\texttt{rtph264pay pt=96}) and processes chunks through the following pipeline:
 
 \begin{figure}[H]
     \centering
@@ -452,11 +452,11 @@ Incoming RTP H.264 payloads are decoded and displayed by the \texttt{GstRenderer
 \end{figure}
 
 \begin{itemize}
-    \item \textbf{\texttt{appsrc}} --- configured with RTP H.264 caps before the first buffer arrives.
+    \item \textbf{\texttt{appsrc}} --- configured with \ac{RTP} H.264 caps before the first buffer arrives.
     The configuration uses \texttt{encoding-name=H264}, \texttt{payload=96}, \texttt{clock-rate=90000}, \texttt{is-live=true}, \texttt{do-timestamp=false}, and \texttt{format=Time}.
     Declaring the caps before the first buffer arrives allows GStreamer to negotiate the downstream pipeline topology immediately.
-    \item \textbf{\texttt{rtpjitterbuffer latency=5000}} --- accumulates incoming RTP packets for up to 5000 milliseconds and reorders them by sequence number before passing them downstream. The large window absorbs worst-case reordering from Gossipsub's multi-hop mesh, trading initial latency for stable decoding order.
-    \item \textbf{\texttt{rtph264depay}}, \textbf{\texttt{h264parse}} --- strip the RTP framing and reassemble NAL units into a continuous H.264 bytestream.
+    \item \textbf{\texttt{rtpjitterbuffer latency=5000}} --- accumulates incoming \ac{RTP} packets for up to 5000 milliseconds and reorders them by sequence number before passing them downstream. The large window absorbs worst-case reordering from Gossipsub's multi-hop mesh, trading initial latency for stable decoding order.
+    \item \textbf{\texttt{rtph264depay}}, \textbf{\texttt{h264parse}} --- strip the \ac{RTP} framing and reassemble NAL units into a continuous H.264 bytestream.
     \item \textbf{H.264 decoding, fallback chain:} \texttt{vaapih264dec low-latency=true} (hardware, VA-API) is tried first; \texttt{v4l2h264dec} (hardware, V4L2) second; \texttt{avdec\_h264} (software, libavcodec) third. The \texttt{low-latency} property on the VA-API decoder disables its internal frame reordering buffer, reducing decoder-introduced latency.
     \item \textbf{\texttt{vaapipostproc}} (optional) --- inserted when available to perform colorspace conversion on the VA-API surface before the software path.
     \item \textbf{\texttt{videoconvert}}, \textbf{\texttt{queue}}, and \textbf{\texttt{autovideosink}} with \texttt{sync=false} --- \texttt{sync=false} instructs GStreamer to display each decoded frame immediately upon arrival, instead of waiting for the presentation clock. For a live \ac{P2P} stream, minimizing end-to-end latency takes priority over smooth frame pacing.
@@ -465,8 +465,7 @@ Incoming RTP H.264 payloads are decoded and displayed by the \texttt{GstRenderer
 \subsection{Transport layer crate}
 \label{sec:network_crate}
 The \texttt{libraries/network} crate provides two stable implementations of the \texttt{P2PSwarm} trait used in this thesis (Gossipsub and Stream).
-The repository also contains a Hybrid backend prototype, but it is currently in a non-functional experimental stage and is therefore excluded from the evaluated implementation.
-Both share the same underlying stack: QUIC transport over UDP listening on all interfaces at a random ephemeral port (\texttt{/ip4/0.0.0.0/udp/0/quic-v1}), and mDNS for automatic peer discovery on local networks.~\cite{cheshireMulticastDNS2013}
+Both share the same underlying stack: \ac{QUIC} transport over UDP listening on all interfaces at a random ephemeral port (\texttt{/ip4/0.0.0.0/udp/0/quic-v1}), and mDNS for automatic peer discovery on local networks.~\cite{cheshireMulticastDNS2013}
 Each node generates a fresh Ed25519 keypair at startup, giving it a unique but ephemeral cryptographic identity for the duration of the session.~\cite{josefssonEdwardsCurveDigitalSignature2017}
 
 \subsubsection{Gossipsub}
@@ -527,7 +526,7 @@ The \texttt{VideoReader} in \texttt{libraries/video-reader} is part of the imple
 }{%
 The \texttt{VideoReader} in \texttt{libraries/video-reader} is part of the thesis implementation.
 }
-It reads a pre-recorded MP4 file provided either by the \texttt{--video-path} argument or the \texttt{VIDEO\_SOURCE} environment variable, and emits it as a sequence of RTP H.264 \texttt{VideoStreamChunk} values. Its GStreamer pipeline is designed to produce output in RTP H.264 format compatible with the rest of the transport and renderer path. The pipeline stages are:
+It reads a pre-recorded MP4 file provided either by the \texttt{--video-path} argument or the \texttt{VIDEO\_SOURCE} environment variable, and emits it as a sequence of \ac{RTP} H.264 \texttt{VideoStreamChunk} values. Its GStreamer pipeline is designed to produce output in \ac{RTP} H.264 format compatible with the rest of the transport and renderer path. The pipeline stages are:
 
 \begin{enumerate}
     \item \texttt{filesrc} $\rightarrow$ \texttt{qtdemux} --- reads and demultiplexes the MP4 container; the H.264 elementary stream is exposed on a dynamic pad.
@@ -537,7 +536,7 @@ It reads a pre-recorded MP4 file provided either by the \texttt{--video-path} ar
     \item \textbf{Re-encode:} preferred path: \texttt{vaapih264enc} with configurable bitrate (from \texttt{--bitrate}), \texttt{keyframe-period=30}, and explicit \texttt{rate-control=cbr}. Fallback path: \texttt{x264enc} configured for \texttt{zerolatency}, \texttt{ultrafast}, configurable bitrate, CBR mode, \texttt{key-int-max=30}, and bytestream output.
     \item \texttt{h264parse config-interval=1} --- injects inline SPS/PPS parameter sets.
     \item \texttt{queue} --- provides decoupling before payloading.
-    \item \texttt{rtph264pay mtu=\{chunk\_size\} pt=96} --- packetizes NAL units into RTP datagrams with payload type 96 and configurable MTU (from \texttt{--chunk-size}, default $2^{12}$ = 4096 bytes). Larger MTU produces fewer packets per second than smaller RTP MTU profiles (e.g., 1200 bytes), reducing serialization and dispatch overhead in the transport layer.
+    \item \texttt{rtph264pay mtu=\{chunk\_size\} pt=96} --- packetizes NAL units into \ac{RTP} datagrams with payload type 96 and configurable \ac{MTU} (from \texttt{--chunk-size}, default $2^{12}$ = 4096 bytes). Larger \ac{MTU} produces fewer packets per second than smaller \ac{RTP} \ac{MTU} profiles (e.g., 1200 bytes), reducing serialization and dispatch overhead in the transport layer.
     \item \texttt{appsink max-buffers=1 drop=true} --- exposes samples to application code with the same back-pressure policy as the recorder.
 \end{enumerate}
 
@@ -582,7 +581,7 @@ Distributing multimedia applications is notably complex. According to the offici
 
 To satisfy this requirement without forcing the user to install the exact set of required system libraries, the application is packaged as an AppImage. This cohesive format bundles the binary together with its entire sequence of GStreamer framework dependencies into a self-contained, isolated payload.
 
-Other desktop platforms, such as Windows and macOS, were not targeted for two primary reasons. First, they do not support the Wayland display server protocol; implementing native screen capture pipelines for other operating systems represents a distinct engineering effort unrelated to the thesis's primary focus on evaluating the P2P transport layer. Second, these platforms lack a conceptually equivalent deployment format as straightforward as AppImage for seamlessly bundling deep, system-level multimedia dependencies into a single distributable artifact.
+Other desktop platforms, such as Windows and macOS, were not targeted for two primary reasons. First, they do not support the Wayland display server protocol; implementing native screen capture pipelines for other operating systems represents a distinct engineering effort unrelated to the thesis's primary focus on evaluating the \ac{P2P} transport layer. Second, these platforms lack a conceptually equivalent deployment format as straightforward as AppImage for seamlessly bundling deep, system-level multimedia dependencies into a single distributable artifact.
 
 \section{Issues encountered during implementation}
 \subsection{Evolution of media transport format and packet ordering}
@@ -593,37 +592,37 @@ In the first stage, the project used pure H264 and H264 in Matroska (MKV) stream
 
 As Gossipsub traffic increased, out-of-order arrival became a recurring practical problem. The first mitigation approach used MPEG-TS together with manual ordering logic in the application path. This approach improved control over sequence handling, but the practical reason for replacing MPEG-TS is discussed in detail in \S\ref{sec:gossipsub_saturation}.
 
-The next iteration moved to direct H.264-in-RTP payloading and delegated packet reordering to the transport-aware receiver path using \texttt{rtpjitterbuffer}. This provided explicit sequence-based reordering behavior in the media pipeline and became the final baseline for experiments.
+The next iteration moved to direct H.264-in-\ac{RTP} payloading and delegated packet reordering to the transport-aware receiver path using \texttt{rtpjitterbuffer}. This provided explicit sequence-based reordering behavior in the media pipeline and became the final baseline for experiments.
 
 \subsection{Practical saturation issue in Gossipsub}
 \label{sec:gossipsub_saturation}
 During development, the main practical issue of the Gossipsub transport was saturation under higher traffic.
 The observable symptom was gradual stalling: new chunks were still produced at the sender, but real-time delivery degraded until playback stopped progressing.
 
-As described in \S\ref{sec:transport_format_evolution}, one of the intermediate variants used MPEG-TS, where packetization produced fixed small packets (188-byte TS units). In that phase, practical MTU tuning was not available in the payloading path, so packet/message rate could not be reduced through MTU configuration. This led to very high message frequency and quickly saturated the Gossipsub path.
+As described in \S\ref{sec:transport_format_evolution}, one of the intermediate variants used MPEG-TS, where packetization produced fixed small packets (188-byte TS units). In that phase, practical \ac{MTU} tuning was not available in the payloading path, so packet/message rate could not be reduced through \ac{MTU} configuration. This led to very high message frequency and quickly saturated the Gossipsub path.
 
-After migration to direct H.264-in-RTP payloading (\texttt{rtph264pay}), MTU became explicitly configurable; from this point onward, packet rate became a controllable parameter in experiments and runtime tuning. With smaller MTU, large NAL units are fragmented into more RTP packets (see \S\ref{sec:rtp_packetization}), which still increases per-second message count and queue pressure.
+After migration to direct H.264-in-\ac{RTP} payloading (\texttt{rtph264pay}), \ac{MTU} became explicitly configurable; from this point onward, packet rate became a controllable parameter in experiments and runtime tuning. With smaller \ac{MTU}, large NAL units are fragmented into more \ac{RTP} packets (see \S\ref{sec:rtp_packetization}), which still increases per-second message count and queue pressure.
 
 The bottleneck was not a single failing component but the interaction between packetization and processing cost.
 In the implementation repository, each inbound Gossipsub message must be deserialized from CBOR into \texttt{VideoStreamChunk} (see \path{libraries/network/src/gossipsub.rs}), and each outbound chunk is serialized and published through the mesh in the same transport backend.
 When packet rate increased, serialization/deserialization and mesh dispatch competed for runtime time slices and queue capacity.
 
-In practice, this behavior depended strongly on the ratio between bitrate and MTU.
-Higher bitrate increases the amount of payload generated per second, and smaller MTU splits the same payload into more packets; together they increase message frequency approximately proportionally to:
+In practice, this behavior depended strongly on the ratio between bitrate and \ac{MTU}.
+Higher bitrate increases the amount of payload generated per second, and smaller \ac{MTU} splits the same payload into more packets; together they increase message frequency approximately proportionally to:
 \[
-\text{messages per second} \propto \frac{\text{bitrate}}{\text{MTU}}.
+\text{messages per second} \propto \frac{\text{bitrate}}{\text{\ac{MTU}}}.
 \]
-Therefore, the worst saturation occurred at high bitrate with small MTU, while larger MTU at the same bitrate reduced message pressure.
+Therefore, the worst saturation occurred at high bitrate with small \ac{MTU}, while larger \ac{MTU} at the same bitrate reduced message pressure.
 
 The mitigation was applied in three steps:
 \begin{itemize}
     \item inbound CBOR deserialization was moved out of the critical swarm loop into a separate async task, reducing blocking in the main handling path,
-    \item MTU was increased (configured through the \texttt{chunk\_size} parameter in \texttt{stream\_test} and through payloader MTU in the media pipelines), reducing packet/message count per second,
+    \item \ac{MTU} was increased (configured through the \texttt{chunk\_size} parameter in \texttt{stream\_test} and through payloader \ac{MTU} in the media pipelines), reducing packet/message count per second,
     \item bitrate was reduced in unstable scenarios so that offered load stayed below the practical processing limit of the Gossipsub path.
 \end{itemize}
 
-This development issue explains why the practical evaluation in \S\ref{sec:test_matrix} varies both bitrate and MTU: these two parameters jointly determine whether Gossipsub remains stable for live media in this prototype.
-It also explains the observed trend in the analysis chapter (\S\ref{sec:analysis_mtu_1200_comparison}), where larger MTU substantially improves Gossipsub behavior under higher bitrates.
+This development issue explains why the practical evaluation in \S\ref{sec:test_matrix} varies both bitrate and \ac{MTU}: these two parameters jointly determine whether Gossipsub remains stable for live media in this prototype.
+It also explains the observed trend in the analysis chapter (\S\ref{sec:analysis_mtu_1200_comparison}), where larger \ac{MTU} substantially improves Gossipsub behavior under higher bitrates.
 
 \section{Analysis Methodology}
 This section describes the systematic approach used to measure and evaluate transport behavior. The methodology comprises five components: the standardized video test source, the factorial test matrix design, the data collection workflow, metric computation from raw packet data, and visualization strategy for comparative interpretation.
@@ -631,7 +630,7 @@ This section describes the systematic approach used to measure and evaluate tran
 \subsection{Test Setup and Data Source}
 All experiments use Big Buck Bunny to ensure repeatable and representative measurements.~\cite{BigBuckBunny} It is a widely recognized open-source test video for streaming research and benchmarking. Big Buck Bunny provides a royalty-free, standardized stream with consistent motion complexity and codec characteristics across repeated runs. Using a file-based source instead of live screen capture eliminates variability caused by changing content, allowing transport behavior to be isolated from capture-side effects.
 
-The video is played through the \texttt{VideoReader} pipeline (described in \S\ref{sec:video_reader_pipeline}), which emits the same RTP H.264 format as the live recorder capture path.
+The video is played through the \texttt{VideoReader} pipeline (described in \S\ref{sec:video_reader_pipeline}), which emits the same \ac{RTP} H.264 format as the live recorder capture path.
 This ensures that test results faithfully represent the codec characteristics and packetization behavior of a real live streaming scenario.
 
 \subsection{Test Matrix Design}
@@ -641,7 +640,7 @@ The experimental evaluation employs a factorial test matrix structure to systema
 \begin{itemize}
     \item \textbf{Protocols:} Two transport backends are compared: direct libp2p Streams (point-to-point, \S\ref{sec:stream_transport}) and Gossipsub (mesh-based, \S\ref{sec:gossipsub_transport}).
     \item \textbf{Bitrates:} Four source bitrates are tested: 500 kbps, 2500 kbps, 5000 kbps, and 10000 kbps. As described in \S\ref{sec:abr}, an \ac{ABR} algorithm dynamically switches between discrete encoded representations to adapt to network behavior.~\cite{peroniEndtoEndPipelinePerspective2025} These fixed evaluation step values simulate those distinct quality tiers, generating stable transport payloads that represent a full range from smooth low-quality playback up to bandwidth-constrained conditions.
-    \item \textbf{Packet size (MTU):} Two packet sizes are tested: 1200 bytes (Internet-compatible baseline reflecting typical path MTU constraints) and 4096 bytes (jumbo-frame environments supporting larger payloads end-to-end).
+    \item \textbf{Packet size (\ac{MTU}):} Two packet sizes are tested: 1200 bytes (Internet-compatible baseline reflecting typical path \ac{MTU} constraints) and 4096 bytes (jumbo-frame environments supporting larger payloads end-to-end).
     \item \textbf{Repetitions:} Ten runs per condition ensure statistical confidence in measurements and capture run-to-run variability in transport behavior.
 \end{itemize}
 
@@ -649,13 +648,13 @@ This yields a complete matrix of $2 \times 4 \times 2 \times 10 = 80$ experiment
 
 The selection of bitrates reflects practical deployment scenarios: 500 kbps is typical for mobile or bandwidth-constrained networks; 2500 kbps and 5000 kbps cover standard adaptive bitrate ladder segments; and 10000 kbps represents the upper bound of this transport evaluation, where mesh-based protocols are expected to show increased sensitivity to queueing and scheduling overhead.
 
-The MTU choice is particularly significant. MTU 1200 is chosen as the conservative baseline because it aligns with Internet-standard assumptions and avoids fragmentation across heterogeneous networks. MTU 4096 represents an optimized deployment scenario where jumbo frames are available end-to-end; results at this MTU reveal protocol behavior when packetization overhead is minimized.
+The \ac{MTU} choice is particularly significant. \ac{MTU} 1200 is chosen as the conservative baseline because it aligns with Internet-standard assumptions and avoids fragmentation across heterogeneous networks. \ac{MTU} 4096 represents an optimized deployment scenario where jumbo frames are available end-to-end; results at this \ac{MTU} reveal protocol behavior when packetization overhead is minimized.
 
 \subsection{Data Collection Workflow}
 Each experimental run employs the role-based \texttt{stream\_test} binary architecture described in \S\ref{sec:test_binary}.
 The manager process spawns two child processes, a producer and an analyzer, both with the same \texttt{--protocol} parameter.
 The producer instantiates the chosen transport swarm and streams Big Buck Bunny through the \texttt{VideoReader} pipeline (\S\ref{sec:video_reader_pipeline}).~\cite{BigBuckBunny}
-Each RTP packet is wrapped in a \texttt{VideoStreamChunk} with creation timestamp and sequence index.
+Each \ac{RTP} packet is wrapped in a \texttt{VideoStreamChunk} with creation timestamp and sequence index.
 The analyzer subscribes to the inbound channel and logs each received packet as an \texttt{AnalysisItem} record to CSV.
 
 Each \texttt{AnalysisItem} record contains four fields:
@@ -678,7 +677,7 @@ Raw CSV data from each of the 80 runs is processed by a three-stage R-based anal
 \begin{enumerate}
     \item \textbf{Per-run aggregation:} For each run's CSV, the pipeline computes run-level summary statistics including mean delay, delay percentiles (p50, p95, p99), jitter (mean and p95 of inter-packet delay deltas), packet loss rate, packet reordering statistics, throughput (goodput), and a composite stability score. These per-run metrics are written to CSV rows.
     
-    \item \textbf{Grouping and averaging:} Per-run metrics are then grouped by (protocol, bitrate, MTU) combination. For each group, aggregate statistics are computed: mean and standard deviation of each metric across the ten runs in that group.
+    \item \textbf{Grouping and averaging:} Per-run metrics are then grouped by (protocol, bitrate, \ac{MTU}) combination. For each group, aggregate statistics are computed: mean and standard deviation of each metric across the ten runs in that group.
     
     \item \textbf{Event extraction:} Supplementary analysis identifies specific events (e.g., delay spikes exceeding a threshold, consecutive out-of-order packets) and exports event-level data for detailed investigation.
 \end{enumerate}
@@ -686,7 +685,7 @@ Raw CSV data from each of the 80 runs is processed by a three-stage R-based anal
 The output of this pipeline includes:
 \begin{itemize}
     \item \texttt{per\_run\_metrics.csv}: One row per experimental run with all computed metrics.
-    \item \texttt{grouped\_metrics.csv}: One row per (protocol, bitrate, MTU) combination with aggregate statistics.
+    \item \texttt{grouped\_metrics.csv}: One row per (protocol, bitrate, \ac{MTU}) combination with aggregate statistics.
     \item Event CSVs and supporting data for detailed analysis and visualization.
 \end{itemize}
 
@@ -716,7 +715,7 @@ The following metrics are computed from raw packet sequences:
 Analysis results are presented through a hierarchically organized set of visualizations:
 
 \begin{itemize}
-    \item \textbf{Organization:} Plots are grouped by metric type (delay, packet loss, reordering, throughput, stability) and further split by MTU and bitrate conditions, allowing readers to focus on specific comparisons.
+    \item \textbf{Organization:} Plots are grouped by metric type (delay, packet loss, reordering, throughput, stability) and further split by \ac{MTU} and bitrate conditions, allowing readers to focus on specific comparisons.
     
     \item \textbf{Color and marker conventions:} Stream protocol results are shown in blue; Gossipsub results in red. This consistent color scheme facilitates quick visual comparison across all plots.
     
@@ -727,63 +726,63 @@ Analysis results are presented through a hierarchically organized set of visuali
     \item \textbf{Boxplots for variability:} Key metrics (delay percentiles, reorder depth, stability scores) are shown as boxplots across the ten runs per condition, allowing inspection of run-to-run variability and identification of outliers.
 \end{itemize}
 
-This methodology is applied to ten runs per condition using Big Buck Bunny as the consistent video source.~\cite{BigBuckBunny} Results from the grouped metrics and visualizations are presented in the following Analysis section, organized by MTU profile and deployment perspective to address practical deployment questions.
+This methodology is applied to ten runs per condition using Big Buck Bunny as the consistent video source.~\cite{BigBuckBunny} Results from the grouped metrics and visualizations are presented in the following Analysis section, organized by \ac{MTU} profile and deployment perspective to address practical deployment questions.
 
 \section{Analysis}
 This section evaluates measured transport behavior using aggregated results from ten runs per condition and the generated plots in the 
-\texttt{analysis/plots} directory. The interpretation focuses on three deployment perspectives: (1) MTU 1200 versus MTU 4096, (2) protocol comparison under MTU 1200 as the Internet-compatible baseline, and (3) a shorter MTU 4096 perspective for jumbo-frame capable environments.
+\texttt{analysis/plots} directory. The interpretation focuses on three deployment perspectives: (1) \ac{MTU} 1200 versus \ac{MTU} 4096, (2) protocol comparison under \ac{MTU} 1200 as the Internet-compatible baseline, and (3) a shorter \ac{MTU} 4096 perspective for jumbo-frame capable environments.
 
 The analysis is structured around delay, packet ordering, and stability. Each subsection therefore focuses on one deployment question and then summarizes the operational implication.
-\subsection{MTU 1200 versus MTU 4096}
+\subsection{\ac{MTU} 1200 versus \ac{MTU} 4096}
 \label{sec:analysis_mtu_1200_comparison}
 \subsubsection{Delay behavior}
-At a high level, MTU 4096 provides better transport efficiency and lower delay variability, especially for Gossipsub at higher bitrates. However, MTU 1200 remains the practical baseline for Internet transport due to path MTU constraints and fragmentation risk across heterogeneous networks.
+At a high level, \ac{MTU} 4096 provides better transport efficiency and lower delay variability, especially for Gossipsub at higher bitrates. However, \ac{MTU} 1200 remains the practical baseline for Internet transport due to path \ac{MTU} constraints and fragmentation risk across heterogeneous networks.
 
-For Stream, both MTUs are stable, but MTU 4096 still improves latency. At 10000 kbps, Stream mean one-way delay decreases from 33.08 ms (MTU 1200) to 8.35 ms (MTU 4096), while p95 delay decreases from 123.7 ms to 31.0 ms. Gossipsub shows a much stronger MTU dependency: at 10000 kbps, mean delay drops from 347.95 ms (MTU 1200) to 33.42 ms (MTU 4096), and p95 delay from 1159.8 ms to 94.1 ms.
+For Stream, both MTUs are stable, but \ac{MTU} 4096 still improves latency. At 10000 kbps, Stream mean one-way delay decreases from 33.08 ms (\ac{MTU} 1200) to 8.35 ms (\ac{MTU} 4096), while p95 delay decreases from 123.7 ms to 31.0 ms. Gossipsub shows a much stronger \ac{MTU} dependency: at 10000 kbps, mean delay drops from 347.95 ms (\ac{MTU} 1200) to 33.42 ms (\ac{MTU} 4096), and p95 delay from 1159.8 ms to 94.1 ms.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/mtu/compare_delay_p95_by_mtu_5000kbps.png}
-    \caption{p95 one-way delay by protocol at 5000 kbps, compared between MTU 1200 and MTU 4096. Source: author.}
+    \caption{p95 one-way delay by protocol at 5000 kbps, compared between \ac{MTU} 1200 and \ac{MTU} 4096. Source: author.}
     \label{fig:analysis_mtu_delay_p95_5000}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/mtu/compare_delay_p95_by_mtu_10000kbps.png}
-    \caption{p95 one-way delay by protocol at 10000 kbps, compared between MTU 1200 and MTU 4096. Source: author.}
+    \caption{p95 one-way delay by protocol at 10000 kbps, compared between \ac{MTU} 1200 and \ac{MTU} 4096. Source: author.}
     \label{fig:analysis_mtu_delay_p95_10000}
 \end{figure}
 
 \subsubsection{Reordering and stability}
-Reordering behavior confirms the same trend. For Gossipsub at 10000 kbps, misordered packet rate is 71.70\% with MTU 1200 versus 14.46\% with MTU 4096. Stream remains near-zero in both cases. This indicates that larger packetization units reduce ordering turbulence and scheduling overhead in mesh forwarding.
+Reordering behavior confirms the same trend. For Gossipsub at 10000 kbps, misordered packet rate is 71.70\% with \ac{MTU} 1200 versus 14.46\% with \ac{MTU} 4096. Stream remains near-zero in both cases. This indicates that larger packetization units reduce ordering turbulence and scheduling overhead in mesh forwarding.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/mtu/compare_misordered_bytes_rate_by_mtu_10000kbps.png}
-    \caption{Misordered packet rate at 10000 kbps for MTU 1200 versus MTU 4096. Source: author.}
+    \caption{Misordered packet rate at 10000 kbps for \ac{MTU} 1200 versus \ac{MTU} 4096. Source: author.}
     \label{fig:analysis_mtu_misordered_rate_10000}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/mtu/compare_stability_score_by_mtu_10000kbps.png}
-    \caption{Composite stability score at 10000 kbps for MTU 1200 versus MTU 4096. Source: author.}
+    \caption{Composite stability score at 10000 kbps for \ac{MTU} 1200 versus \ac{MTU} 4096. Source: author.}
     \label{fig:analysis_mtu_stability_10000}
 \end{figure}
 
-The practical consequence is that MTU 4096 is preferred where the network supports jumbo-like payloads end-to-end, but MTU 1200 must remain the default profile for general Internet operation.
+The practical consequence is that \ac{MTU} 4096 is preferred where the network supports jumbo-like payloads end-to-end, but \ac{MTU} 1200 must remain the default profile for general Internet operation.
 
-\subsection{MTU 1200: Stream versus Gossipsub}
+\subsection{\ac{MTU} 1200: Stream versus Gossipsub}
 \subsubsection{Delay behavior}
-Under MTU 1200, Stream is consistently low-latency and stable across all tested bitrates, while Gossipsub degrades significantly with bitrate growth. This subsection therefore represents the most relevant real-world comparison.
+Under \ac{MTU} 1200, Stream is consistently low-latency and stable across all tested bitrates, while Gossipsub degrades significantly with bitrate growth. This subsection therefore represents the most relevant real-world comparison.
 
 At 500 kbps, Gossipsub already has higher delay than Stream (mean 18.36 ms vs. 3.43 ms; p95 42.6 ms vs. 11.2 ms). At 2500 kbps, the gap widens (mean 40.19 ms vs. 10.91 ms; p95 122.2 ms vs. 45.9 ms). At 5000 kbps, Gossipsub reaches mean 58.24 ms and p95 175.3 ms, while Stream remains at mean 16.95 ms and p95 69.9 ms.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/bitrate/mtu_1200/compare_delay_p95_by_bitrate.png}
-    \caption{p95 one-way delay by bitrate for MTU 1200, comparing Stream and Gossipsub. Source: author.}
+    \caption{p95 one-way delay by bitrate for \ac{MTU} 1200, comparing Stream and Gossipsub. Source: author.}
     \label{fig:analysis_1200_delay_p95_bitrate}
 \end{figure}
 At 10000 kbps, Gossipsub behavior changes from degraded to unstable: mean delay rises to 347.95 ms, p95 to 1159.8 ms, and maximum delay reaches 5428.9 ms. In the same condition, Stream remains at mean 33.08 ms, p95 123.7 ms, and maximum 499.8 ms.
@@ -791,14 +790,14 @@ At 10000 kbps, Gossipsub behavior changes from degraded to unstable: mean delay 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/delay/mtu_1200/delay_spike_boxplot.png}
-    \caption{Delay spike distribution for MTU 1200 conditions. Source: author.}
+    \caption{Delay spike distribution for \ac{MTU} 1200 conditions. Source: author.}
     \label{fig:analysis_1200_delay_spike_boxplot}
 \end{figure}
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/delay/bitrate/mtu_1200/delay_p95_by_bitrate_boxplot_gossipsub.png}
-    \caption{Run-to-run p95 delay spread for Gossipsub at MTU 1200 by bitrate. Source: author.}
+    \caption{Run-to-run p95 delay spread for Gossipsub at \ac{MTU} 1200 by bitrate. Source: author.}
     \label{fig:analysis_1200_gossipsub_delay_boxplot}
 \end{figure}
 
@@ -808,56 +807,56 @@ Packet ordering metrics show the same escalation. Gossipsub misordered packet ra
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/bitrate/mtu_1200/compare_misorder_rate_by_bitrate.png}
-    \caption{Misordered packet rate by bitrate for MTU 1200, comparing Stream and Gossipsub. Source: author.}
+    \caption{Misordered packet rate by bitrate for \ac{MTU} 1200, comparing Stream and Gossipsub. Source: author.}
     \label{fig:analysis_1200_misorder_rate_bitrate}
 \end{figure}
 \subsubsection{Stability and recommendation}
-The composite stability score from the analysis scripts is included as a supplementary aggregate indicator. In MTU 1200 results, Stream stays in the high 80s at 500--5000 kbps and still averages 75.17 at 10000 kbps, while Gossipsub falls from 86.64 at 500 kbps to 75.88 at 2500 kbps, 67.07 at 5000 kbps, and 45.75 at 10000 kbps.
+The composite stability score from the analysis scripts is included as a supplementary aggregate indicator. In \ac{MTU} 1200 results, Stream stays in the high 80s at 500--5000 kbps and still averages 75.17 at 10000 kbps, while Gossipsub falls from 86.64 at 500 kbps to 75.88 at 2500 kbps, 67.07 at 5000 kbps, and 45.75 at 10000 kbps.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/bitrate/mtu_1200/compare_stability_score_by_bitrate.png}
-    \caption{Composite stability score by bitrate for MTU 1200. Source: author.}
+    \caption{Composite stability score by bitrate for \ac{MTU} 1200. Source: author.}
     \label{fig:analysis_1200_stability_bitrate}
 \end{figure}
 
-For practical operation on MTU 1200 paths, results suggest a conservative recommendation: when using Gossipsub for media transport, keep bitrate around 5000 kbps or below. The transition to 10000 kbps causes large delay spikes and much worse ordering behavior, which would visibly degrade interactive playback quality.
-\subsection{MTU 4096 in jumbo-frame environments}
+For practical operation on \ac{MTU} 1200 paths, results suggest a conservative recommendation: when using Gossipsub for media transport, keep bitrate around 5000 kbps or below. The transition to 10000 kbps causes large delay spikes and much worse ordering behavior, which would visibly degrade interactive playback quality.
+\subsection{\ac{MTU} 4096 in jumbo-frame environments}
 \label{sec:analysis_mtu_4096}
 \subsubsection{Delay behavior}
-When MTU 4096 is available end-to-end, both protocols improve, but the relative protocol ranking remains unchanged: Stream is still more stable and lower latency than Gossipsub.
+When \ac{MTU} 4096 is available end-to-end, both protocols improve, but the relative protocol ranking remains unchanged: Stream is still more stable and lower latency than Gossipsub.
 
-At 10000 kbps and MTU 4096, Stream mean delay is 8.35 ms (p95 31.0 ms), while Gossipsub reaches 33.42 ms (p95 94.1 ms). Compared to MTU 1200, this is a substantial Gossipsub improvement and removes the extreme long-tail spikes observed previously.
+At 10000 kbps and \ac{MTU} 4096, Stream mean delay is 8.35 ms (p95 31.0 ms), while Gossipsub reaches 33.42 ms (p95 94.1 ms). Compared to \ac{MTU} 1200, this is a substantial Gossipsub improvement and removes the extreme long-tail spikes observed previously.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/bitrate/mtu_4096/compare_delay_p95_by_bitrate.png}
-    \caption{p95 one-way delay by bitrate for MTU 4096, comparing Stream and Gossipsub. Source: author.}
+    \caption{p95 one-way delay by bitrate for \ac{MTU} 4096, comparing Stream and Gossipsub. Source: author.}
     \label{fig:analysis_4096_delay_p95_bitrate}
 \end{figure}
 \subsubsection{Packet ordering}
-Reordering also improves versus MTU 1200, although Gossipsub still exhibits nontrivial disorder at high bitrate (14.46\% misordered packets at 10000 kbps), whereas Stream remains near-zero.
+Reordering also improves versus \ac{MTU} 1200, although Gossipsub still exhibits nontrivial disorder at high bitrate (14.46\% misordered packets at 10000 kbps), whereas Stream remains near-zero.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=1\textwidth]{analysis/plots/bitrate/mtu_4096/compare_misorder_rate_by_bitrate.png}
-    \caption{Misordered packet rate by bitrate for MTU 4096, comparing Stream and Gossipsub. Source: author.}
+    \caption{Misordered packet rate by bitrate for \ac{MTU} 4096, comparing Stream and Gossipsub. Source: author.}
     \label{fig:analysis_4096_misorder_rate_bitrate}
 \end{figure}
 
-The stability score mirrors the same pattern: at 10000 kbps, Stream averages 90.05 under MTU 4096, while Gossipsub rises to 81.12. Jumbo frames therefore improve stability substantially, but they do not remove the advantage of direct Stream delivery.
+The stability score mirrors the same pattern: at 10000 kbps, Stream averages 90.05 under \ac{MTU} 4096, while Gossipsub rises to 81.12. Jumbo frames therefore improve stability substantially, but they do not remove the advantage of direct Stream delivery.
 
 \subsection{Analysis conclusion}
 \label{sec:analysis_conclusion}
 The measurements lead to four clear conclusions.
 
-First, MTU 4096 is technically superior for this transport workload, especially for Gossipsub under high bitrate, because it reduces packet processing pressure and significantly improves delay, ordering, and stability metrics.
+First, \ac{MTU} 4096 is technically superior for this transport workload, especially for Gossipsub under high bitrate, because it reduces packet processing pressure and significantly improves delay, ordering, and stability metrics.
 
-Second, MTU 1200 must still be treated as the primary deployment target for Internet transport. Therefore, protocol decisions should be guided primarily by MTU 1200 results.
+Second, \ac{MTU} 1200 must still be treated as the primary deployment target for Internet transport. Therefore, protocol decisions should be guided primarily by \ac{MTU} 1200 results.
 
-Third, under MTU 1200, Stream provides consistently low latency, negligible reordering, and higher stability scores across all tested bitrates. Gossipsub is viable at lower rates but its stability score falls sharply as bitrate increases, with the 10000 kbps profile showing the weakest behavior.
+Third, under \ac{MTU} 1200, Stream provides consistently low latency, negligible reordering, and higher stability scores across all tested bitrates. Gossipsub is viable at lower rates but its stability score falls sharply as bitrate increases, with the 10000 kbps profile showing the weakest behavior.
 
-Fourth, for practical operation with Gossipsub on Internet-compatible MTU 1200 paths, a bitrate cap near 5000 kbps remains a sensible upper bound to avoid the large delay spikes, reordering penalties, and stability degradation observed at 10000 kbps.
+Fourth, for practical operation with Gossipsub on Internet-compatible \ac{MTU} 1200 paths, a bitrate cap near 5000 kbps remains a sensible upper bound to avoid the large delay spikes, reordering penalties, and stability degradation observed at 10000 kbps.
 
 \section{Conclusion}
 This thesis addressed the design and evaluation of a distributed \ac{P2P} live video streaming solution implemented in Rust. The work focused on replacing centralized distribution assumptions with direct peer-to-peer transport while preserving practical stream quality requirements for interactive playback. The resulting system demonstrates that a modular architecture combining media capture, processing, transport abstraction, rendering, and instrumentation can be implemented in a consistent and reproducible way using contemporary open-source technologies.
