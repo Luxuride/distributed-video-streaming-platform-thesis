@@ -108,9 +108,9 @@ jobs:
         run: |
           set -euo pipefail
           if [ "${{ matrix.layout }}" = "oneside" ]; then
-            sed -i 's/\\documentclass\[english,twoside\]{fim-uhk-thesis}/\\documentclass[english]{fim-uhk-thesis}/' main.tex
+            sed -i 's/\\documentclass\[english,twoside,print\]{fim-uhk-thesis}/\\documentclass[english]{fim-uhk-thesis}/' main.tex
           else
-            sed -i 's/\\documentclass\[english\]{fim-uhk-thesis}/\\documentclass[english,twoside]{fim-uhk-thesis}/' main.tex
+            sed -i 's/\\documentclass\[english\]{fim-uhk-thesis}/\\documentclass[english,twoside,print]{fim-uhk-thesis}/' main.tex
           fi
 
       - name: Build thesis PDF
