@@ -130,13 +130,16 @@
 \begin{document}
   % Vysazeni titulnich stran / Typesetting of the title pages
   % ----------------------------------------------
+  \pagestyle{empty}
   \maketitle
-  \pagenumbering{gobble}
   % Obsah
   % ----------------------------------------------
   \setlength{\parskip}{0pt}
 
   \thispagestyle{empty}
+  \iftwoside
+    \cleardoublepage
+  \fi
   {\hypersetup{hidelinks}\tableofcontents}
   
   % Seznam obrazku a tabulek (pokud prace obsahuje velke mnozstvi obrazku, tak se to hodi)
@@ -170,6 +173,7 @@
   % Text prace / Thesis text
   % ----------------------------------------------
   \cleardoublepage
+  \pagestyle{plain}
   \pagenumbering{arabic}
   \input{text-01-kapitoly}
 
